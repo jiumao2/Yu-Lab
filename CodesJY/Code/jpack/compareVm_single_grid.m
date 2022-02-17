@@ -1,0 +1,1 @@
+function [vsingle, vgrid]=compareVm(wv)

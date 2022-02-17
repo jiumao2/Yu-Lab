@@ -1,0 +1,16 @@
+path_project = '';
+end_reading = 180000;
+path_seq = '';
+path_jpg = '';
+path_timestamp_mat = '';
+path_avi = '';
+path_bpod = '';
+path_med = '';
+x_pos = {'',''};
+y_pos = {'',''};
+threshold_type = '自动设定';
+threshold = 0;
+frame_rate = 100;
+sec_before = 2;
+sec_after = 2;
+%path_jpg = [path_project,'/', path_seq(end-24:end-8)];

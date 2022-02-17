@@ -1,0 +1,9 @@
+按文件后缀分为两种使用方法：
+1、“video_analysis.m”为GUI的m文件，可直接在matlab编辑器中运行，但使用了“my_track_training_progress_advanced.m”(删除了“track_training_progress_advanced.m”中保存“bAll.mat”的部分)等相关程序来实现MedTxt和PressIndex的对应，所以需要和其他的m文件一起使用。
+2、也可直接点“video_analysis.mlappinstall”，该文件为matlab的APP安装包，集成了与gui相关的各个函数，所以安装完后即可使用。
+
+使用注意事项：
+1、键盘控制前后帧需先点击一下GUI
+2、鼠标滚轮往后滚为帧前进
+3、为保证“Continue”按键的通用性，所以程序会在D盘建立“cache”文件夹用来存下当前分析视频的视频索引（只有1kb，需要已经有一个已分析并保存了的视频数据）
+4、附带的示例图片仅供结构示范，具体的分析信息均为随机点击，不具有参考价值。

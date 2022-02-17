@@ -1,0 +1,3 @@
+global path_project
+save([path_project,'\','config.mat'],"path_project","end_reading","path_seq","path_jpg","path_avi","x_pos","y_pos","path_bpod","path_med","threshold_type","threshold",...
+"frame_rate","sec_before","sec_after","path_timestamp_mat");
