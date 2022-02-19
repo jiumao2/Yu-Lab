@@ -6,6 +6,7 @@ isWave = true;
 isAnalog = false;
 isVideo = false;
 isVideoInfos = true;
+MergeIndex = 1:length(r_path);
 
 if nargin>=2
     for i=1:2:size(varargin,2)
@@ -23,36 +24,17 @@ if nargin>=2
             case 'Video'
                 isVideo =  varargin{i+1};  
             case 'VideoInfos'
-                isVideoInfos =  varargin{i+1};                  
+                isVideoInfos =  varargin{i+1};     
+            case 'MergeIndex'
+                MergeIndex =  varargin{i+1};  
             otherwise
                 errordlg('unknown argument')
         end
     end
 end
     
-if isMeta
-    r_new.Meta = {};
-end
-if isBehavior
-    r_new.Behavior = {};
-end
-if isMeta
-    r_new.Meta = {};
-end
-if isMeta
-    r_new.Meta = {};
-end
-if isMeta
-    r_new.Meta = {};
-end
-if isMeta
-    r_new.Meta = {};
-end
-if isMeta
-    r_new.Meta = {};
-end
-for path_id = 1:length(r_path)
-    load(r_path{path_id});
+for path_id = 1:length(MergeIndex)
+    load(r_path{MergeIndex(path_id)});
     if path_id == 1
         t0 = getReferenceTime(r);
         if isMeta
@@ -66,8 +48,11 @@ for path_id = 1:length(r_path)
             r_new.Units.Definition = r.Units.Definition;
             r_new.Units.UnitsCombined = r_all.UnitsCombined;
             for k = 1:height(r_all.UnitsCombined)
+                r_new.SpikeNotes(k,:) = [r_all.UnitsCombined(1,:).Channel,r_all.UnitsCombined(1,:).Number,1,0];
+            end
+            for k = 1:height(r_all.UnitsCombined)
                 for j = 1:size(r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1},1)
-                    if r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,1) == path_id
+                    if r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,1) == MergeIndex(path_id)
                         unit_num_this = find(r.Units.SpikeNotes(:,1)==r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,2) ...
                             & r.Units.SpikeNotes(:,2)==r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,3));
                         r_new.Units.SpikeTimes(k).timings = r.Units.SpikeTimes(unit_num_this).timings + getReferenceTime(r, t0);
@@ -101,12 +86,12 @@ for path_id = 1:length(r_path)
         if isUnits
             for k = 1:height(r_all.UnitsCombined)
                 for j = 1:size(r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1},1)
-                    if r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,1) == path_id
+                    if r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,1) == MergeIndex(path_id)
                         unit_num_this = find(r.Units.SpikeNotes(:,1)==r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,2) ...
                             & r.Units.SpikeNotes(:,2)==r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,3));
-                        r_new.Units.SpikeTimes(k).timings = r.Units.SpikeTimes(unit_num_this).timings + getReferenceTime(r, t0);
+                        r_new.Units.SpikeTimes(k).timings = [r_new.Units.SpikeTimes(k).timings,r.Units.SpikeTimes(unit_num_this).timings + getReferenceTime(r, t0)];
                         if isWave
-                            r_new.Units.SpikeTimes(k).wave = r.Units.SpikeTimes(unit_num_this).wave;
+                            r_new.Units.SpikeTimes(k).wave = [r_new.Units.SpikeTimes(k).wave;r.Units.SpikeTimes(unit_num_this).wave];
                         end
                     end
                 end
@@ -121,5 +106,5 @@ for path_id = 1:length(r_path)
         end      
     end
 end
-save r_new r_new
+% save r_new r_new
 end

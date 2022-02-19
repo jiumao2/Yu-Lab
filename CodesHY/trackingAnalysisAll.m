@@ -1,14 +1,15 @@
 %% Plot all trajectories
 % set the parameters below
-load RTarrayAll.mat
+r_path = {'20210906_video/RTarrayAll.mat', ...
+          '20210907_video/RTarrayAll.mat', ...
+          '20210908_video/RTarrayAll.mat', ...
+          '20210909_video/RTarrayAll.mat', ...
+          '20210910_video/RTarrayAll.mat'};
 analysis_mode = 'both'; % pre / post / both
-bodypart = 'right_ear';
-bg_path = 'bg.png';
-p_threshold = 0.95;
+bg_path = '20210908_video/bg.png';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ind_bodypart = find(strcmp(r.VideoInfos(1).Tracking.BodyParts1, bodypart));
-bg = imread(bg_path);
+bg = imread(bg_path);      
 h1 = figure;
 ax1 = axes(h1);
 imshow(bg);
@@ -18,8 +19,14 @@ hold on
 h2 = figure;
 ax2 = axes(h2);
 imshow(bg);
-title('Trajectories After Press')
+title('Trajectories Before Press')
 hold on
+for path_id = 1:length(r_path)
+load(r_path{path_id})
+bodypart = 'right_ear';
+ind_bodypart = find(strcmp(r.VideoInfos(1).Tracking.BodyParts, bodypart));
+
+p_threshold = 0.99;
 
 idx_frame_pre = 1:abs(r.VideoInfos(1).t_pre/10);
 idx_frame_post = abs(r.VideoInfos(1).t_pre/10)+1:r.VideoInfos(1).total_frames;
@@ -37,6 +44,7 @@ end
 
 set(h1,'Renderer','opengl')
 set(h2,'Renderer','opengl')
+end
 %% Do classification
 % Make contraints in traj before press and traj after press respectively
 colors = colororder;
@@ -72,10 +80,19 @@ end
 colors = colororder;
 colors(length(trajectory)+1,:) = [0.5,0.5,0.5];
 figure;
+set(gcf,'Renderer','opengl')
 imshow(bg);
 hold on
+cat_all = cell(length(r_path),1);
 
+for path_id = 1:length(r_path)
+load(r_path{path_id})
+ind_correct = find(strcmp({r.VideoInfos.Performance},'Correct'));
+ind_bodypart = find(strcmp(r.VideoInfos(1).Tracking.BodyParts, bodypart));
+idx_frame_pre = 1:abs(r.VideoInfos(1).t_pre/10);
+idx_frame_post = abs(r.VideoInfos(1).t_pre/10)+1:r.VideoInfos(1).total_frames;
 cat = [];
+
 for k = 1:length(ind_correct)
     ind_this = ind_correct(k);
     hold on;
@@ -141,18 +158,36 @@ for k = 1:length(ind_correct)
     hold on
     plot(this_x(idx_good),this_y(idx_good),'.-','Color',colors(cat(end),:));
 
-end    
+end  
+cat_all{path_id} = cat;
+end
 saveas(gcf,'Fig/Traj_classification.png');
 %% save to R
+for path_id = 1:length(r_path)
+load(r_path{path_id});
+ind_correct = find(strcmp({r.VideoInfos.Performance},'Correct'));
 for k = 1:length(ind_correct)
-    r.VideoInfos(ind_correct(k)).Trajectory = cat(k);
+    r.VideoInfos(ind_correct(k)).Trajectory = cat_all{path_id}(k);
+end
+temp_filename = ['TrackingAnalysis/',r_path{path_id}];
+temp_dir = fileparts(temp_filename);
+if ~exist(temp_dir,'dir')
+    mkdir(temp_dir);
+end
+save(['TrackingAnalysis/',r_path{path_id}],'r');
+end
+%% Draw Trajectories
+for k = 1:length(trajectory)+1
+    drawTrajAll(r_path,k,bg_path);
 end
 
-save RTarrayAll.mat r
-for k = 1:num_traj+1
-    drawTraj(r,k);
-end
 %% Make Figures
-for num_unit = 1:length(r.Units.SpikeTimes)
-PlotComparingTrajPSTH(r,num_unit,'event','Press');
+load r_all_20210906_20210910.mat
+for k = 1:length(r_path)
+    r_path{k} = ['TrackingAnalysis/',r_path{k}];
+end
+
+for num_unit = 1:height(r_all.UnitsCombined)
+    r_new = MergingR(r_path,r_all,'MergeIndex',r_all.UnitsCombined(num_unit,:).rIndex_RawChannel_Number{1}(:,1));
+    PlotComparingTrajPSTH(r_new,num_unit,'event','Press');
 end
