@@ -1,5 +1,6 @@
 %% Plot all trajectories
 % load RTarrayAll.mat
+analysis_mode = 'both'; % pre / post / both
 bodypart = 'right_ear';
 ind_bodypart = find(strcmp(r.VideoInfos(1).Tracking.BodyParts1, bodypart));
 
@@ -53,33 +54,25 @@ while true
     if ~is_adding
         break
     end
-    
-    count_constraints = 0;
-    while true
-        count_constraints = count_constraints+1;
-        
+
+    trajectory{count_traj}{1} = {[0,0],[1,1]};
+    trajectory{count_traj}{2} = {[0,0],[1,1]};
+
+    if strcmp(analysis_mode,'both') || strcmp(analysis_mode,'pre')
         axes(ax1);
         [x,y] = ginput(2);
         plot(x,y,'-','LineWidth',5,'Color',colors(count_traj,:))
-        
-        trajectory{count_traj} = {{[x(1),y(1)],[x(2),y(2)]}};
-        
+
+        trajectory{count_traj}{1} = {[x(1),y(1)],[x(2),y(2)]};
+    end
+    
+    if strcmp(analysis_mode,'both') || strcmp(analysis_mode,'post')        
         axes(ax2);
         [x,y] = ginput(2);
         plot(x,y,'-','LineWidth',5,'Color',colors(count_traj,:))
-        trajectory{count_traj}{end+1} = {[x(1),y(1)],[x(2),y(2)]};
-        break
-        
-%         if count_constraints == 1
-%             trajectory{count_traj} = {{[x(1),y(1)],[x(2),y(2)]}};
-%         else
-%             trajectory{count_traj}{end+1} = {[x(1),y(1)],[x(2),y(2)]};
-%         end
-%         is_adding_constrait = input('Type 1 to add new constraints. Type 0 to exit.\n');
-%         if ~is_adding_constrait
-%             break
-%         end
+        trajectory{count_traj}{2} = {[x(1),y(1)],[x(2),y(2)]};
     end
+
 end
 %% Use above constraints to classify the trajectories
 colors = colororder;
@@ -100,7 +93,14 @@ for k = 1:length(ind_correct)
     
     flag = true;
     for i = 1:length(trajectory)
-        idx_pass = [];
+        if strcmp(analysis_mode,'pre')
+            idx_pass = 2;
+        elseif strcmp(analysis_mode,'post')
+            idx_pass = 1;
+        else
+            idx_pass = [];
+        end
+        
         for j = 1:r.VideoInfos(1).total_frames-1
             for ii = 1:length(trajectory{i})
                 if sum(idx_pass == ii)>0
@@ -109,6 +109,9 @@ for k = 1:length(ind_correct)
                 if (ii==1 && j>=idx_frame_pre(end)) || (ii==2 && j<=idx_frame_pre(end))
                     continue;
                 end
+                if this_p(j)<p_threshold
+                    continue;
+                end                
                 
                 P1 = trajectory{i}{ii}{1};
                 P2 = trajectory{i}{ii}{2};
@@ -118,10 +121,7 @@ for k = 1:length(ind_correct)
                     count = count + 1;
                 end                
                 Q2 = [this_x(j+count),this_y(j+count)];
-                
-                if this_p(j)<p_threshold || this_p(j+1)<p_threshold
-                    break;
-                end
+
                 if ~isIntersect(P1,P2,Q1,Q2)
                     continue;
                 else
@@ -146,7 +146,6 @@ for k = 1:length(ind_correct)
     end
     hold on
     plot(this_x(idx_good),this_y(idx_good),'.-','Color',colors(cat(end),:));
-%     drawnow;
 
 end    
 saveas(gcf,'Fig/Traj_classification.png');
