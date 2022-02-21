@@ -7,6 +7,9 @@ r_path = {'20210906_video/RTarrayAll.mat', ...
           '20210910_video/RTarrayAll.mat'};
 analysis_mode = 'both'; % pre / post / both
 bg_path = '20210908_video/bg.png';
+p_threshold = 0.99;
+r_all_path = 'r_all_20210906_20210910.mat';
+event = 'Press';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bg = imread(bg_path);      
@@ -25,8 +28,6 @@ for path_id = 1:length(r_path)
 load(r_path{path_id})
 bodypart = 'right_ear';
 ind_bodypart = find(strcmp(r.VideoInfos(1).Tracking.BodyParts, bodypart));
-
-p_threshold = 0.99;
 
 idx_frame_pre = 1:abs(r.VideoInfos(1).t_pre/10);
 idx_frame_post = abs(r.VideoInfos(1).t_pre/10)+1:r.VideoInfos(1).total_frames;
@@ -182,12 +183,12 @@ for k = 1:length(trajectory)+1
 end
 
 %% Make Figures
-load r_all_20210906_20210910.mat
+load(r_all_path)
 for k = 1:length(r_path)
     r_path{k} = ['TrackingAnalysis/',r_path{k}];
 end
 
 for num_unit = 1:height(r_all.UnitsCombined)
     r_new = MergingR(r_path,r_all,'MergeIndex',r_all.UnitsCombined(num_unit,:).rIndex_RawChannel_Number{1}(:,1));
-    PlotComparingTrajPSTH(r_new,num_unit,'event','Press');
+    PlotComparingTrajPSTH(r_new,num_unit,'event',event);
 end

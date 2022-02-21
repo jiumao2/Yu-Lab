@@ -5,6 +5,7 @@ analysis_mode = 'both'; % pre / post / both
 bodypart = 'right_ear';
 bg_path = 'bg.png';
 p_threshold = 0.95;
+event = 'Press';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ind_bodypart = find(strcmp(r.VideoInfos(1).Tracking.BodyParts1, bodypart));
@@ -149,10 +150,11 @@ for k = 1:length(ind_correct)
 end
 
 save RTarrayAll.mat r
+%% Draw Trajectories
 for k = 1:num_traj+1
     drawTraj(r,k);
 end
 %% Make Figures
 for num_unit = 1:length(r.Units.SpikeTimes)
-PlotComparingTrajPSTH(r,num_unit,'event','Press');
+PlotComparingTrajPSTH(r,num_unit,'event',event);
 end
