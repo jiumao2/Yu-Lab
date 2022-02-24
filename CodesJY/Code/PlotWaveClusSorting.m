@@ -1,7 +1,9 @@
 function PlotWaveClusSorting(chname, varargin)
-% e.g., PlotWaveClusSorting('1', 'trange', [923 925], 'spkrange', [-800 500], 'lfprange', [-500 500])
-% 3/20/2021
-
+% e.g., PlotWaveClusSorting('5', 'trange', [123 130], 'spkrange', [-800 500], 'lfprange', [-500 500])
+% 8/28/2021 modified by HY
+trange = [123 130];
+vrange1 = [-800 500];
+vrange2 = [-500,500];
 name=[];
 for i =1:2:nargin-1
     switch varargin{i}
@@ -15,7 +17,7 @@ for i =1:2:nargin-1
             name = varargin{i+1};
     end;
 end;
-
+%%
 % raw data
 tic
 rawchname =  ['chdat' chname '.mat'];
@@ -42,7 +44,7 @@ end;
 
 spkall.index = spkall.index;
 spksort.cluster_class(:, 2)= spksort.cluster_class(:, 2); % here correcting for the initial timestamp
-
+%%
 figure(23); clf
 set(gcf, 'unit', 'centimeters', 'position',[2 2 15.5 10.5], 'paperpositionmode', 'auto' )
 
@@ -69,7 +71,7 @@ for k =1:nclusters-1
     title(sprintf('%2.1f spk/s', rate_k)) 
 end;
 
-for  k =1:nclusters-1
+for k =1:nclusters-1
     if size(spksort.spikes(spksort.cluster_class(:, 1)== k, :), 1)>20
         spkwave_avg = mean(spksort.spikes(spksort.cluster_class(:, 1)== k, :), 1);
         
@@ -80,7 +82,6 @@ for  k =1:nclusters-1
         plot(spkwave_avg, 'color', allcolors(k+1, :), 'linewidth', 1);
         
     end;
-    
 end;
 
 line([0 30], [vrange1(end) vrange1(end)], 'linewidth', 2, 'color', 'k')
@@ -111,6 +112,20 @@ index_raw=find(tnew>=tbeg*1000 & tnew<=tend*1000);
 data_plot_hp = filtfilt(b_detect, a_detect, raw.data(index_raw));   % high-pass filter data
 axes(ha1)
 plot(tnew(index_raw)/1000, data_plot_hp,  'color','k', 'linewidth', 0.5);
+hold on
+
+t_spikes = tnew(index_raw);
+spike_index = spksort.cluster_class(:,2)>=tbeg*1000 & spksort.cluster_class(:,2)<=tend*1000;
+for k =1:nclusters-1
+    cluster_index = spksort.cluster_class(:,1)==k;
+    spike_time = spksort.cluster_class(spike_index & cluster_index,2);
+    for j = 1:length(spike_time)
+        [~,temp_index] = min(abs(t_spikes-spike_time(j)));
+        temp_index = max(0,temp_index-32):min(temp_index+32,length(t_spikes));
+        plot(t_spikes(temp_index)/1000, data_plot_hp(temp_index),  'color', allcolors(k+1, :), 'linewidth', 0.5);
+    end
+end
+
 % plot detection
 index_detection = find(spkall.index>=tbeg*1000 &  spkall.index<=tend*1000);
 spk_peaks = min(spkall.spikes(index_detection, :), [], 2);
