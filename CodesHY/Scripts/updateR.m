@@ -1,9 +1,6 @@
 clear;
 load('timestamps.mat')
-% load('G:\WHBWork\Ephys\Urey\Sessions\20211126\RTarrayAll_post.mat')
-load('C:/Users/jiumao/Desktop/Urey20211124/RTarrayAll.mat')
-%load('G:\WHBWork\Ephys\Urey\Sessions\20210929\PSTHOut.mat')
-% ts = ts_pre;
+load('RTarrayAll.mat')
 %%
 fr = 10;
 
@@ -63,13 +60,13 @@ for k = 1:length(ts.side)
     disp(ind_side(end))
 end
 %%
-new_sideframe_inds={1:120000,1:119999};
-new_topframe_inds={1:119999,1:119999};
+% new_sideframe_inds={1:120000,1:119999};
+% new_topframe_inds={1:119999,1:119999};
 r = UpdateRFrameSignal(r, 'time_stamps', ts, 'sidevideo_ind', new_sideframe_inds,'topvideo_ind', new_topframe_inds);
 %%
 ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', 'top',...
-    'make_video_with_spikes',true,'sort_by_unit',true,'frame_rate',10,'start_trial',220);
-%%
+    'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1);
+%
 mat_dir = './VideoFrames/MatFile';
 output = dir([mat_dir,'/*.mat']);
 filenames = {output.name};

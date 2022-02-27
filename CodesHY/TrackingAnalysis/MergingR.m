@@ -89,7 +89,11 @@ for path_id = 1:length(MergeIndex)
                     if r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,1) == MergeIndex(path_id)
                         unit_num_this = find(r.Units.SpikeNotes(:,1)==r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,2) ...
                             & r.Units.SpikeNotes(:,2)==r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1}(j,3));
-                        r_new.Units.SpikeTimes(k).timings = [r_new.Units.SpikeTimes(k).timings,r.Units.SpikeTimes(unit_num_this).timings + getReferenceTime(r, t0)];
+                        if k <= length(r_new.Units.SpikeTimes)
+                            r_new.Units.SpikeTimes(k).timings = [r_new.Units.SpikeTimes(k).timings,r.Units.SpikeTimes(unit_num_this).timings + getReferenceTime(r, t0)];
+                        else
+                            r_new.Units.SpikeTimes(k).timings = r.Units.SpikeTimes(unit_num_this).timings + getReferenceTime(r, t0); 
+                        end
                         if isWave
                             r_new.Units.SpikeTimes(k).wave = [r_new.Units.SpikeTimes(k).wave;r.Units.SpikeTimes(unit_num_this).wave];
                         end

@@ -148,7 +148,7 @@ saveas(gcf,'Fig/Traj_classification.png');
 for k = 1:length(ind_correct)
     r.VideoInfos(ind_correct(k)).Trajectory = cat(k);
 end
-
+r.TrajectoryConstraints = trajectory;
 save RTarrayAll.mat r
 %% Draw Trajectories
 for k = 1:num_traj+1

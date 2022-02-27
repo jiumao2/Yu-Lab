@@ -170,6 +170,7 @@ ind_correct = find(strcmp({r.VideoInfos.Performance},'Correct'));
 for k = 1:length(ind_correct)
     r.VideoInfos(ind_correct(k)).Trajectory = cat_all{path_id}(k);
 end
+r.TrajectoryConstraints = trajectory;
 temp_filename = ['TrackingAnalysis/',r_path{path_id}];
 temp_dir = fileparts(temp_filename);
 if ~exist(temp_dir,'dir')
