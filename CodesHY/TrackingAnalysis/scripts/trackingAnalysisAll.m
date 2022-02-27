@@ -22,7 +22,7 @@ hold on
 h2 = figure;
 ax2 = axes(h2);
 imshow(bg);
-title('Trajectories Before Press')
+title('Trajectories After Press')
 hold on
 for path_id = 1:length(r_path)
 load(r_path{path_id})
