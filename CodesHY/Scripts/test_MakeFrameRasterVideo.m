@@ -1,4 +1,4 @@
-% load('Urey20211124_video\RTarrayAll.mat');
+load RTarrayAll.mat
 
 for i = 1:length(r.VideoInfos)
     idx = r.VideoInfos(i).Index;

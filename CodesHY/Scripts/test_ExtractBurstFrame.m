@@ -1,3 +1,4 @@
-load c:/Users/jiumao/Desktop/Urey20211124_video/
+load RTarrayAll
+unit num = 1;
 view = 'top';
 ExtractBurstFrame(r,unit_num);
