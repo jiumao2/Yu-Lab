@@ -1,9 +1,11 @@
 clear;
 load('timestamps.mat')
 load('RTarrayAll.mat')
-%%
-fr = 10;
 
+fr = 10; % frame rate 100Hz
+video_length = 120000; % 120000 frames each block, 20min
+
+%%
 indframe = find(strcmp(r.Behavior.Labels, 'FrameOn'));
 t_frameon = r.Behavior.EventTimings(r.Behavior.EventMarkers == indframe);
 
@@ -29,7 +31,7 @@ for k = 1:length(ts.side)
     diff_top = round(diff_top/10-1);
     ind_top = 1:length(ts.top(k).ts);
     for j = 1:length(diff_top)
-        if r_len >= 120000
+        if r_len >= video_length
             break;
         elseif j==1
             continue;
@@ -46,7 +48,7 @@ for k = 1:length(ts.side)
     diff_side = round(diff_side/10-1);
     ind_side = 1:length(ts.side(k).ts);
     for j = 1:length(diff_side)
-        if r_len >= 120000
+        if r_len >= video_length
             break;
         elseif j==1
             continue;
@@ -60,8 +62,8 @@ for k = 1:length(ts.side)
     disp(ind_side(end))
 end
 %%
-% new_sideframe_inds={1:120000,1:119999};
-% new_topframe_inds={1:119999,1:119999};
+% new_sideframe_inds={1:video_length-1,1:video_length-1};
+% new_topframe_inds={1:video_length-1,1:video_length-1};
 r = UpdateRFrameSignal(r, 'time_stamps', ts, 'sidevideo_ind', new_sideframe_inds,'topvideo_ind', new_topframe_inds);
 %%
 ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', 'top',...
