@@ -1,8 +1,9 @@
 clear
 load('./RTarrayAll.mat')
-dlc_path = 'A:\Ephys\DLC\Eli-HY-2021-10-07';
-data_path = './VideoFrames/RawVideo';
-mat_path = './VideoFrames/MatFile';
+dlc_path = 'A:\Ephys\DLC\Russo_TopView-HY-2022-01-12';
+data_path = './VideoFrames_top/RawVideo';
+mat_path = './VideoFrames_top/MatFile';
+camview = 'top';
 %%
 output_csv = dir([data_path,'/*.csv']);
 filenames_csv = sort({output_csv.name});
@@ -41,7 +42,10 @@ for n = 1:length(filenames_csv)
     disp(n)
     save([data_path,'/',filenames_csv{n}],'VideoInfo');
 end
-
-r.VideoInfos = VideoInfos;
+if strcmp(camview,'top')
+    r.VideoInfos_top = VideoInfos;
+elseif strcmp(camview,'side')
+    r.VideoInfos_side = VideoInfos;
+end
 save('./RTarrayAll.mat','r')
 

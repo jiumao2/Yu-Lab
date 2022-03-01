@@ -18,9 +18,11 @@
       - [Make Video Clips](#make-video-clips)
       - [Extracting Frames When Neuron Bursts (high firing rate)](#extracting-frames-when-neuron-bursts-high-firing-rate)
       - [Extracting Frames With Raster Plot](#extracting-frames-with-raster-plot)
+      - [Add More Information About The Video Clips](#add-more-information-about-the-video-clips)
       - [Encoding Analysis: Generalized Linear Model](#encoding-analysis-generalized-linear-model)
     - [Tracking Analysis](#tracking-analysis)
       - [DeepLabCut](#deeplabcut)
+      - [](#)
   - [Pipeline of Analyzing Data From Multiple Sessions](#pipeline-of-analyzing-data-from-multiple-sessions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -116,16 +118,23 @@
   A New `r` will be saved. `r.VideoInfos_top` merge the information in `./VideoFrame_top/MatFile/`
 #### Extracting Frames When Neuron Bursts (high firing rate)
 - `ExtractBurstFrame(r,1,'view','top')` it will generate `./VideoFrame_top/BurstFrame/Unit1.avi`, which contains the 1000 (or more) frames when the unit has highest firing rate  
+- ![avatar](./readme/Unit3.gif)
 #### Extracting Frames With Raster Plot
 - Copy `.\CodesHY\Scripts\MakeRasterPlotVideo.m` to the current directory (xxx_video)
 - Edit `camview`.
 - Run `MakeRasterPlotVideo.m`. Raw video with raster plot will be generated in `./VideoFrame_camview/Video`  
-<video src='./readme/Press001.avi'> </video>
+![avatar](./readme/Press200.gif)
+#### Add More Information About The Video Clips
+Copy `.\CodesHY\Scripts\merge_r.mlapp` to `.\VideoFrames_side` and use it
 #### Encoding Analysis: Generalized Linear Model
 
 ### Tracking Analysis
-
 #### DeepLabCut
+- Use DeepLabCut and analyze the videos in `./VideoFrame_camview/RawVideo`, .csv files should be generated
+- Run `UpdateTracking.m` to include tracking data to `r`. The tracking information will be saved in `r.VideoInfos_camview.Tracking`
+#### 
+Copy `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysis.m` to the current directory (xxx_video)
+
 
 ## Pipeline of Analyzing Data From Multiple Sessions
   
