@@ -480,8 +480,8 @@ for i = start_trial:length(event_sort)
 %             F       =   struct('cdata', [], 'colormap', []);
 %             F2      =   struct('cdata', [], 'colormap', []);
             
-            thisFolder = fullfile(pwd, 'VideoFrames', 'Video');
-            thisFolder2 = fullfile(pwd, 'VideoFrames', 'RawVideo');
+            thisFolder = fullfile(pwd, ['VideoFrames_',camview], 'Video');
+            thisFolder2 = fullfile(pwd, ['VideoFrames_',camview], 'RawVideo');
             
             if ~exist(thisFolder, 'dir')
                 mkdir(thisFolder)

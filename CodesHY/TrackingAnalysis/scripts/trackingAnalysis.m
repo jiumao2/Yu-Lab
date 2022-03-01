@@ -7,8 +7,7 @@ bg_path = 'bg.png';
 p_threshold = 0.95;
 event = 'Press';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-ind_bodypart = find(strcmp(r.VideoInfos(1).Tracking.BodyParts1, bodypart));
+ind_bodypart = find(strcmp(r.VideoInfos_top(1).Tracking.BodyParts1, bodypart));
 bg = imread(bg_path);
 h1 = figure;
 ax1 = axes(h1);
@@ -22,18 +21,18 @@ imshow(bg);
 title('Trajectories After Press')
 hold on
 
-idx_frame_pre = 1:abs(r.VideoInfos(1).t_pre/10);
-idx_frame_post = abs(r.VideoInfos(1).t_pre/10)+1:r.VideoInfos(1).total_frames;
+idx_frame_pre = 1:abs(r.VideoInfos_top(1).t_pre/10);
+idx_frame_post = abs(r.VideoInfos_top(1).t_pre/10)+1:r.VideoInfos_top(1).total_frames;
 
-ind_correct = find(strcmp({r.VideoInfos.Performance},'Correct'));
+ind_correct = find(strcmp({r.VideoInfos_top.Performance},'Correct'));
 for k = 1:length(ind_correct)
     ind_this = ind_correct(k);
-    idx_good = find(r.VideoInfos(ind_this).Tracking.Coordinates_p{ind_bodypart} > p_threshold);
+    idx_good = find(r.VideoInfos_top(ind_this).Tracking.Coordinates_p{ind_bodypart} > p_threshold);
     idx_pre = intersect(idx_good,idx_frame_pre);
     idx_post = intersect(idx_good,idx_frame_post);
 
-    plot(ax1,r.VideoInfos(ind_this).Tracking.Coordinates_x{ind_bodypart}(idx_pre),r.VideoInfos(ind_this).Tracking.Coordinates_y{ind_bodypart}(idx_pre),'.-')
-    plot(ax2,r.VideoInfos(ind_this).Tracking.Coordinates_x{ind_bodypart}(idx_post),r.VideoInfos(ind_this).Tracking.Coordinates_y{ind_bodypart}(idx_post),'.-')
+    plot(ax1,r.VideoInfos_top(ind_this).Tracking.Coordinates_x{ind_bodypart}(idx_pre),r.VideoInfos_top(ind_this).Tracking.Coordinates_y{ind_bodypart}(idx_pre),'.-')
+    plot(ax2,r.VideoInfos_top(ind_this).Tracking.Coordinates_x{ind_bodypart}(idx_post),r.VideoInfos_top(ind_this).Tracking.Coordinates_y{ind_bodypart}(idx_post),'.-')
 end    
 
 set(h1,'Renderer','opengl')
@@ -81,10 +80,10 @@ for k = 1:length(ind_correct)
     ind_this = ind_correct(k);
     hold on;
     
-    idx_good = r.VideoInfos(ind_this).Tracking.Coordinates_p{ind_bodypart} > p_threshold;
-    this_x = r.VideoInfos(ind_this).Tracking.Coordinates_x{ind_bodypart};
-    this_y = r.VideoInfos(ind_this).Tracking.Coordinates_y{ind_bodypart};
-    this_p = r.VideoInfos(ind_this).Tracking.Coordinates_p{ind_bodypart};
+    idx_good = r.VideoInfos_top(ind_this).Tracking.Coordinates_p{ind_bodypart} > p_threshold;
+    this_x = r.VideoInfos_top(ind_this).Tracking.Coordinates_x{ind_bodypart};
+    this_y = r.VideoInfos_top(ind_this).Tracking.Coordinates_y{ind_bodypart};
+    this_p = r.VideoInfos_top(ind_this).Tracking.Coordinates_p{ind_bodypart};
     
     flag = true;
     for i = 1:length(trajectory)
@@ -96,7 +95,7 @@ for k = 1:length(ind_correct)
             idx_pass = [];
         end
         
-        for j = 1:r.VideoInfos(1).total_frames-1
+        for j = 1:r.VideoInfos_top(1).total_frames-1
             for ii = 1:length(trajectory{i})
                 if sum(idx_pass == ii)>0
                     continue;
@@ -112,7 +111,7 @@ for k = 1:length(ind_correct)
                 P2 = trajectory{i}{ii}{2};
                 Q1 = [this_x(j),this_y(j)];
                 count = 1;
-                while j+count < r.VideoInfos(1).total_frames && this_p(j+count)<p_threshold
+                while j+count < r.VideoInfos_top(1).total_frames && this_p(j+count)<p_threshold
                     count = count + 1;
                 end                
                 Q2 = [this_x(j+count),this_y(j+count)];
@@ -146,7 +145,7 @@ end
 saveas(gcf,'Fig/Traj_classification.png');
 %% save to R
 for k = 1:length(ind_correct)
-    r.VideoInfos(ind_correct(k)).Trajectory = cat(k);
+    r.VideoInfos_top(ind_correct(k)).Trajectory = cat(k);
 end
 r.TrajectoryConstraints = trajectory;
 save RTarrayAll.mat r

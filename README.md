@@ -7,11 +7,20 @@
     - [Necessary Files](#necessary-files)
   - [Pipeline of Analyzing Data From Single Session](#pipeline-of-analyzing-data-from-single-session)
     - [Spike Sorting](#spike-sorting)
+      - [Place Files Properly](#place-files-properly)
+      - [Spike Detection](#spike-detection)
+      - [Simple Clust](#simple-clust)
+      - [Double Checking](#double-checking)
     - [PSTH](#psth)
     - [Video Analysis](#video-analysis)
-      - [Tracking Analysis](#tracking-analysis)
-        - [DeepLabCut](#deeplabcut)
+      - [Place Files Properly](#place-files-properly-1)
+      - [Get Timestamps Of Each Frame](#get-timestamps-of-each-frame)
+      - [Make Video Clips](#make-video-clips)
       - [Extracting Frames When Neuron Bursts (high firing rate)](#extracting-frames-when-neuron-bursts-high-firing-rate)
+      - [Extracting Frames With Raster Plot](#extracting-frames-with-raster-plot)
+      - [Encoding Analysis: Generalized Linear Model](#encoding-analysis-generalized-linear-model)
+    - [Tracking Analysis](#tracking-analysis)
+      - [DeepLabCut](#deeplabcut)
   - [Pipeline of Analyzing Data From Multiple Sessions](#pipeline-of-analyzing-data-from-multiple-sessions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -51,11 +60,11 @@
 ![avatar](./readme/SimpleClustManual.png)
   - open `mua_x.mat`
   - select all points that are noise or not spikes of interest  
-  ![avatar](./readme/SimpleClust1.jpg)
+  ![avatar](./readme/SimpleClust1.png)
   - click '+wavelet'. This step takes about 3 minutes  
-  ![avatar](./readme/SimpleClust2.jpg)
+  ![avatar](./readme/SimpleClust2.png)
   - select different waveforms based on multiple features  
-  ![avatar](./readme/SimpleClust3.jpg)
+  ![avatar](./readme/SimpleClust3.png)
   - removing "bad" waveforms  based on multiple features
   - save and exit
   - tips:
@@ -76,7 +85,20 @@
 - Open `BuildArray_MedOpto.m`. Edit `name`, `blocks` and `units`. Determine whether a unit is a single unit by ISIH (Interspike Interval Histogram) in wc (usually less than 1% in < 3ms).
 - Run `BuildArray_MedOpto.m`. Select the thresholds as instructed. And then PSTH of all units will be plot and saved in `./Fig/`
   ![avatar](./readme/Ch4_Unit3.png)  
-- `RTarrayAll.mat` will save all the behavioral and electrophysiological data.
+- `RTarrayAll.mat` will save all the behavioral and electrophysiological data.  
+![avatar](./readme/r2.jpg)
+- The meaning of fields in `r`:  
+  - Meta: the meta information of each block
+  - Behavior: behavioral data
+    - Labels: the meaning of each label marker
+    - CorrectIndex/PrematureIndex/LateIndex/DarkIndex: the index of correct/premature/late/dark trial. Each trial corresponds to each press.
+    - Foreperiod: the forperiod of each trial
+    - Some trials (presses) are not categorized into either class (correct/premature/late/dark)
+    - EventMarkers/EventTimings: the timings of each event
+  - Units: electrophysilogical data
+    - Profile: the units in each channel
+    - SpikeNotes/Definition: `Definition` defines the `SpikeNotes`
+    - SpikeTimes: the spike time and the waveform of each spike
 ### Video Analysis
 #### Place Files Properly  
 - Include all [Video files](#necessary-files), `ExtractVideoFrames.m`, `updateR.m` and `updateVideoTracking.m` in a single folder  
@@ -88,13 +110,22 @@
 #### Make Video Clips
 - Open `UpdateR.m`. Edit the path of `RTarrayAll.mat`, `fr` and `video_length`.
 - Edit this line `ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', 'top', 'make_video_with_spikes', false, 'sort_by_unit',true,'frame_rate',10,'start_trial',1);` in the last section according to your request
-- Run `UpdateR.m`. A new directory `./VideoFrame/` will be generated.
-  - `./VideoFrame/MatFile/`
-#### Tracking Analysis
-
-##### DeepLabCut
-
+- Run `UpdateR.m`. A new directory `./VideoFrame_top/` or `./VideoFrame_side/` will be generated.  
+  - `./VideoFrame_top/MatFile/`: the information about each video clip
+  - `./VideoFrame_top/RawVideo`: all the raw video clips  
+  A New `r` will be saved. `r.VideoInfos_top` merge the information in `./VideoFrame_top/MatFile/`
 #### Extracting Frames When Neuron Bursts (high firing rate)
+- `ExtractBurstFrame(r,1,'view','top')` it will generate `./VideoFrame_top/BurstFrame/Unit1.avi`, which contains the 1000 (or more) frames when the unit has highest firing rate  
+#### Extracting Frames With Raster Plot
+- Copy `.\CodesHY\Scripts\MakeRasterPlotVideo.m` to the current directory (xxx_video)
+- Edit `camview`.
+- Run `MakeRasterPlotVideo.m`. Raw video with raster plot will be generated in `./VideoFrame_camview/Video`  
+<video src='./readme/Press001.avi'> </video>
+#### Encoding Analysis: Generalized Linear Model
+
+### Tracking Analysis
+
+#### DeepLabCut
 
 ## Pipeline of Analyzing Data From Multiple Sessions
   

@@ -1,4 +1,5 @@
 function ExtractBurstFrame(r,unit_num,varargin)
+% eg. ExtractBurstFrame(r,unit_num,'view','side');
 FrameNum = 1000;
 FrameRate = 20;
 view = 'side';
@@ -16,6 +17,11 @@ if nargin>=3
                 errordlg('unknown argument')
         end
     end
+end
+if strcmp(view,'side')
+    r.VideoInfos = r.VideoInfos_side;
+elseif strcmp(view,'top')
+    r.VideoInfos = r.VideoInfos_top;
 end
 
 spk_time = r.Units.SpikeTimes(unit_num).timings;

@@ -1,9 +1,9 @@
 clear;
 load('timestamps.mat')
 load('RTarrayAll.mat')
-
 fr = 10; % frame rate 100Hz
 video_length = 120000; % 120000 frames each block, 20min
+camview = 'side';
 
 %%
 indframe = find(strcmp(r.Behavior.Labels, 'FrameOn'));
@@ -66,17 +66,29 @@ end
 % new_topframe_inds={1:video_length-1,1:video_length-1};
 r = UpdateRFrameSignal(r, 'time_stamps', ts, 'sidevideo_ind', new_sideframe_inds,'topvideo_ind', new_topframe_inds);
 %%
-ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', 'top',...
+if isfield(r,'VideoInfos')
+    r = rmfield(r,'VideoInfos');
+end
+
+ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', camview,...
     'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1);
 %
-mat_dir = './VideoFrames/MatFile';
+mat_dir = ['./VideoFrames_',camview','/MatFile'];
 output = dir([mat_dir,'/*.mat']);
 filenames = {output.name};
 filenames = sort(filenames);
-for k = 1:length(filenames)
-    temp_filename = [mat_dir,'/',filenames{k}];
-    load(temp_filename);
-    r.VideoInfos(k) = VideoInfo;
+if strcmp(camview,'top')
+    for k = 1:length(filenames)
+        temp_filename = [mat_dir,'/',filenames{k}];
+        load(temp_filename);
+        r.VideoInfos_top(k) = VideoInfo;
+    end
+elseif strcmp(camview,'side')
+    for k = 1:length(filenames)
+        temp_filename = [mat_dir,'/',filenames{k}];
+        load(temp_filename);
+        r.VideoInfos_top(k) = VideoInfo;
+    end    
 end
 %
-save('RTarrayAll.mat','r')
+save(['RTarrayAll_',camview,'.mat'],'r')

@@ -1,4 +1,3 @@
 load RTarrayAll
-unit num = 1;
-view = 'top';
+unit_num = 1;
 ExtractBurstFrame(r,unit_num);
