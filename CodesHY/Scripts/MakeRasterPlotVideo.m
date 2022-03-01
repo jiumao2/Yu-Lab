@@ -1,5 +1,5 @@
 load RTarrayAll.mat
-camview = 'top';
+camview = 'side';
 %%
 if strcmp(camview,'side')
     VideoInfos_this = r.VideoInfos_side;
@@ -13,7 +13,6 @@ end
 
 for i = 1:length(VideoInfos_this)
     idx = VideoInfos_this(i).Index;
-
     
     notes = ['Performance: ',VideoInfos_this(i).Performance,...
         '; FP=',num2str(VideoInfos_this(i).Foreperiod),...

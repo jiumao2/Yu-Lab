@@ -633,7 +633,7 @@ for i = start_trial:length(event_sort)
             close(writerObj);
 
         end
-        mat_dir = fullfile(pwd, 'VideoFrames', 'MatFile');
+        mat_dir = fullfile(pwd, ['VideoFrames_',camview], 'MatFile');
         if ~exist(mat_dir,'dir')
             mkdir(mat_dir);
         end

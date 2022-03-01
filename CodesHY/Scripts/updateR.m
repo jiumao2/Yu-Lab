@@ -72,8 +72,8 @@ end
 
 ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', camview,...
     'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1);
-%
-mat_dir = ['./VideoFrames_',camview','/MatFile'];
+%%
+mat_dir = ['./VideoFrames_',camview,'/MatFile'];
 output = dir([mat_dir,'/*.mat']);
 filenames = {output.name};
 filenames = sort(filenames);
@@ -87,8 +87,8 @@ elseif strcmp(camview,'side')
     for k = 1:length(filenames)
         temp_filename = [mat_dir,'/',filenames{k}];
         load(temp_filename);
-        r.VideoInfos_top(k) = VideoInfo;
+        r.VideoInfos_side(k) = VideoInfo;
     end    
 end
 %
-save(['RTarrayAll_',camview,'.mat'],'r')
+save('RTarrayAll.mat','r')
