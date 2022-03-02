@@ -1,8 +1,8 @@
 function PlotComparingTrajPSTH(r,num_unit,varargin)
 
 event = 'Press';
-t_pre = r.VideoInfos(1).t_pre;
-t_post = r.VideoInfos(1).t_post;
+t_pre = r.VideoInfos_top(1).t_pre;
+t_post = r.VideoInfos_top(1).t_post;
 binwidth = 50;
 
 if nargin>=3
@@ -22,8 +22,8 @@ if nargin>=3
     end
 end
 
-ind_correct = find(strcmp({r.VideoInfos.Performance},'Correct'));
-cat = [r.VideoInfos.Trajectory];
+ind_correct = find(strcmp({r.VideoInfos_top.Performance},'Correct'));
+cat = [r.VideoInfos_top.Trajectory];
 num_traj = max(cat(:))-1;
 colors = colororder;
 colors(num_traj+1,:) = [0.5,0.5,0.5];
@@ -42,7 +42,7 @@ for k = 1:2*(num_traj+2)
     ax_group{2*(num_traj+2)+1-k} = ax;
 end
 
-FP_correct = [r.VideoInfos(ind_correct).Foreperiod];
+FP_correct = [r.VideoInfos_top(ind_correct).Foreperiod];
 index_long_correct = FP_correct == 1500;
 index_short_correct = FP_correct == 750;
 
@@ -65,16 +65,16 @@ for k = 1:num_traj+1
     
     for j = 1:length(ind_traj_long)
         if strcmp(event,'Press')
-            trigtimes_long = [trigtimes_long,r.VideoInfos(ind_traj_long(j)).Time];
+            trigtimes_long = [trigtimes_long,r.VideoInfos_top(ind_traj_long(j)).Time];
         elseif strcmp(event,'Release')
-            trigtimes_long = [trigtimes_long,r.VideoInfos(ind_traj_long(j)).Time+r.VideoInfos(ind_traj_long(j)).ReactTime];
+            trigtimes_long = [trigtimes_long,r.VideoInfos_top(ind_traj_long(j)).Time+r.VideoInfos_top(ind_traj_long(j)).ReactTime];
         end
         temp_spktime = getPlotSpikeTime(r.Units.SpikeTimes(num_unit).timings,trigtimes_long(end),t_pre,t_post);
         for i = 1:length(temp_spktime)
             plot(ax,[1,1]*temp_spktime(i),[j-0.5,j+0.5],'-','Color',colors(k,:))
         end
     end
-    xlim(ax,[r.VideoInfos(k).t_pre,r.VideoInfos(k).t_post])
+    xlim(ax,[r.VideoInfos_top(k).t_pre,r.VideoInfos_top(k).t_post])
     ylim(ax,[0.5,length(ind_traj_long)+0.5])
     yticks(ax,length(ind_traj_long));
     if k == 1
@@ -91,16 +91,16 @@ for k = 1:num_traj+1
     
     for j = 1:length(ind_traj_short)
         if strcmp(event,'Press')
-            trigtimes_short = [trigtimes_short,r.VideoInfos(ind_traj_short(j)).Time];
+            trigtimes_short = [trigtimes_short,r.VideoInfos_top(ind_traj_short(j)).Time];
         elseif strcmp(event,'Release')
-            trigtimes_short = [trigtimes_short,r.VideoInfos(ind_traj_short(j)).Time+r.VideoInfos(ind_traj_short(j)).ReactTime];
+            trigtimes_short = [trigtimes_short,r.VideoInfos_top(ind_traj_short(j)).Time+r.VideoInfos_top(ind_traj_short(j)).ReactTime];
         end
         temp_spktime = getPlotSpikeTime(r.Units.SpikeTimes(num_unit).timings,trigtimes_short(end),t_pre,t_post);
         for i = 1:length(temp_spktime)
             plot(ax,[1,1]*temp_spktime(i),[j-0.5,j+0.5],'-','Color',colors(k,:))
         end
     end
-    xlim(ax,[r.VideoInfos(k).t_pre,r.VideoInfos(k).t_post])
+    xlim(ax,[r.VideoInfos_top(k).t_pre,r.VideoInfos_top(k).t_post])
     ylim(ax,[0.5,length(ind_traj_short)+0.5])
     yticks(ax,length(ind_traj_short));
     if k == 1
@@ -117,7 +117,7 @@ for k = 1:num_traj+1
     xlabel(ax,['Time relative to ',event,' (ms)'])
     ylabel(ax,'Firing Rate (Hz)')
     title(ax,'PSTH')
-    xlim(ax,[r.VideoInfos(k).t_pre,r.VideoInfos(k).t_post])
+    xlim(ax,[r.VideoInfos_top(k).t_pre,r.VideoInfos_top(k).t_post])
     temp = get(ax,'YLim');
     if ylim_max < temp(2)
         ylim_max = temp(2);
@@ -131,7 +131,7 @@ for k = 1:num_traj+1
     plot(ax,tpsth_short,psth_short,'LineWidth',line_width,'Color',colors(k,:))
     xlabel(ax,['Time relative to ',event,' (ms)'])
     title(ax,'PSTH')
-    xlim(ax,[r.VideoInfos(k).t_pre,r.VideoInfos(k).t_post])
+    xlim(ax,[r.VideoInfos_top(k).t_pre,r.VideoInfos_top(k).t_post])
     temp = get(ax,'YLim');
     if ylim_max < temp(2)
         ylim_max = temp(2);

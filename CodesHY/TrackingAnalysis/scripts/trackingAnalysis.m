@@ -7,7 +7,8 @@ bg_path = 'bg.png';
 p_threshold = 0.95;
 event = 'Press';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ind_bodypart = find(strcmp(r.VideoInfos_top(1).Tracking.BodyParts1, bodypart));
+
+ind_bodypart = find(strcmp(r.VideoInfos_top(1).Tracking.BodyParts, bodypart));
 bg = imread(bg_path);
 h1 = figure;
 ax1 = axes(h1);
@@ -141,7 +142,10 @@ for k = 1:length(ind_correct)
     hold on
     plot(this_x(idx_good),this_y(idx_good),'.-','Color',colors(cat(end),:));
 
-end    
+end  
+if ~exist('Fig','dir')
+    mkdir('Fig')
+end
 saveas(gcf,'Fig/Traj_classification.png');
 %% save to R
 for k = 1:length(ind_correct)
@@ -150,10 +154,11 @@ end
 r.TrajectoryConstraints = trajectory;
 save RTarrayAll.mat r
 %% Draw Trajectories
-for k = 1:num_traj+1
+for k = 1:length(trajectory)+1
     drawTraj(r,k);
 end
 %% Make Figures
 for num_unit = 1:length(r.Units.SpikeTimes)
 PlotComparingTrajPSTH(r,num_unit,'event',event);
+close all
 end

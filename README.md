@@ -2,28 +2,31 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Electrophysiology Data Analysis Pipeline](#electrophysiology-data-analysis-pipeline)
-  - [Overview](#overview)
-    - [Necessary Files](#necessary-files)
-  - [Pipeline of Analyzing Data From Single Session](#pipeline-of-analyzing-data-from-single-session)
-    - [Spike Sorting](#spike-sorting)
-      - [Place Files Properly](#place-files-properly)
-      - [Spike Detection](#spike-detection)
-      - [Simple Clust](#simple-clust)
-      - [Double Checking](#double-checking)
-    - [PSTH](#psth)
-    - [Video Analysis](#video-analysis)
-      - [Place Files Properly](#place-files-properly-1)
-      - [Get Timestamps Of Each Frame](#get-timestamps-of-each-frame)
-      - [Make Video Clips](#make-video-clips)
-      - [Extracting Frames When Neuron Bursts (high firing rate)](#extracting-frames-when-neuron-bursts-high-firing-rate)
-      - [Extracting Frames With Raster Plot](#extracting-frames-with-raster-plot)
-      - [Add More Information About The Video Clips](#add-more-information-about-the-video-clips)
-      - [Encoding Analysis: Generalized Linear Model](#encoding-analysis-generalized-linear-model)
-    - [Tracking Analysis](#tracking-analysis)
-      - [DeepLabCut](#deeplabcut)
-      - [](#)
-  - [Pipeline of Analyzing Data From Multiple Sessions](#pipeline-of-analyzing-data-from-multiple-sessions)
+
+- [Overview](#overview)
+  - [Necessary Files](#necessary-files)
+- [Pipeline of Analyzing Data From Single Session](#pipeline-of-analyzing-data-from-single-session)
+  - [Spike Sorting](#spike-sorting)
+    - [Place Files Properly](#place-files-properly)
+    - [Spike Detection](#spike-detection)
+    - [Simple Clust](#simple-clust)
+    - [Double Checking](#double-checking)
+  - [PSTH](#psth)
+  - [Video Analysis](#video-analysis)
+    - [Place Files Properly](#place-files-properly-1)
+    - [Get Timestamps Of Each Frame](#get-timestamps-of-each-frame)
+    - [Make Video Clips](#make-video-clips)
+    - [Extracting Frames When Neuron Bursts (high firing rate)](#extracting-frames-when-neuron-bursts-high-firing-rate)
+    - [Extracting Frames With Raster Plot](#extracting-frames-with-raster-plot)
+    - [Add More Information About The Video Clips](#add-more-information-about-the-video-clips)
+    - [Encoding Analysis: Generalized Linear Model](#encoding-analysis-generalized-linear-model)
+  - [Tracking Analysis](#tracking-analysis)
+    - [DeepLabCut](#deeplabcut)
+    - [Define Tracks And Generate Figures](#define-tracks-and-generate-figures)
+- [Pipeline of Analyzing Data From Multiple Sessions](#pipeline-of-analyzing-data-from-multiple-sessions)
+  - [Combine All The Units](#combine-all-the-units)
+  - [PSTH](#psth-1)
+  - [Tracking Analysis](#tracking-analysis-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -125,16 +128,34 @@
 - Run `MakeRasterPlotVideo.m`. Raw video with raster plot will be generated in `./VideoFrame_camview/Video`  
 ![avatar](./readme/Press200.gif)
 #### Add More Information About The Video Clips
-Copy `.\CodesHY\Scripts\merge_r.mlapp` to `.\VideoFrames_side` and use it
+- `.\CodesHY\Scripts\merge_r.mlapp` should be copied under the directory `VideoFrame_camview/`
+- The information will be saved in 'VideoFrame/MatFile/'
+- This app only deals with 'Correct' trials
 #### Encoding Analysis: Generalized Linear Model
 
 ### Tracking Analysis
 #### DeepLabCut
 - Use DeepLabCut and analyze the videos in `./VideoFrame_camview/RawVideo`, .csv files should be generated
 - Run `UpdateTracking.m` to include tracking data to `r`. The tracking information will be saved in `r.VideoInfos_camview.Tracking`
-#### 
-Copy `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysis.m` to the current directory (xxx_video)
-
+#### Define Tracks And Generate Figures
+- Run `vid=VideoReader('./VideoFrames_top/RawVideo/Press0010.avi');bg = vid.read(1);imwrite(bg,'bg.png')` to generate `bg.png`
+- Copy `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysis.m` to the current directory (xxx_video)
+- Set the parameters and run. Follow the instructions  
+- <text id='Traj_classification'>Traj_classification.png  </text>  
+![Traj_classification](./readme/Traj_classification.png)  
+- Traj1.png  
+![Traj1](./readme/Traj1.png)  
+- Traj2.png  
+![Traj2](./readme/Traj2.png)  
+- PSTH of an example unit (the color corresponds to [Traj_classification.png](#Traj_classification))  
+![PSTH](./readme/TrajComparing_Unit1_Release.png)  
 
 ## Pipeline of Analyzing Data From Multiple Sessions
-  
+
+### Combine All The Units
+- `.\CodesHY\Scripts\merge_r.mlapp`
+- `r_all.mat` will be generated
+### PSTH  
+- `SRTSpikesV6(r_all,unit_num)`
+### Tracking Analysis
+`.\CodesHY\TrackingAnalysis\scripts\trackingAnalysisAll.m`

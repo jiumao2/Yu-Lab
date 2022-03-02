@@ -17,12 +17,18 @@ bin_width = 20; % ms
 
 t_pre = -3500;
 t_post = 3500;
+
+kernel_names = {'press','release','trigger','holding','lift_start'};
+
 press_kernel_pre = round(-1000/bin_width); % bin numbers
 press_kernel_post = round(1000/bin_width);
+
 release_kernel_pre = round(-1000/bin_width);
 release_kernel_post = round(1000/bin_width);
+
 trigger_kernel_pre = round(0/bin_width);
 trigger_kernel_post = round(1000/bin_width);
+
 holding_kernel_pre = round(-40/bin_width);
 holding_kernel_post = round(40/bin_width);
 
@@ -42,7 +48,7 @@ n_folds = 2; % does not support cross validation now
 for number_unit = 1:length(r.Units.SpikeTimes)
 % for number_unit = 24:24
     
-Kernels.names = {'press','release','trigger','holding','lift_start'};
+Kernels.names = kernel_names;
 Kernels.ridge_lambda = {1,1,1,1,1};
 Kernels.l2_lambda = {0,0,0,0,0};
 Kernels.n_par = {press_kernel_post-press_kernel_pre+1,...
