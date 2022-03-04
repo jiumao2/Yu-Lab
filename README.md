@@ -131,7 +131,15 @@
 - `.\CodesHY\Scripts\merge_r.mlapp` should be copied under the directory `VideoFrame_camview/`
 - The information will be saved in 'VideoFrame/MatFile/'
 - This app only deals with 'Correct' trials
-#### Encoding Analysis: Generalized Linear Model
+#### Encoding Analysis: Generalized Linear Model  
+- Copy `.\CodesHY\glm_SRT\glm_main.m` to the current directory (xxx_video)
+- Choose the kernels and set the parameters of each kernel
+- Run `.\CodesHY\glm_SRT\glm_main.m`
+- Output will be saved in `.\Fig\GLM` and in `r`  
+- Four Kernels of generalized linear model  
+![PSTH](./readme/kernel_Unit3.png)
+- Reconstructed PSTH  
+![PSTH](./readme/PSTH_Unit3.png)
 
 ### Tracking Analysis
 #### DeepLabCut
@@ -156,6 +164,8 @@
 - `.\CodesHY\Scripts\merge_r.mlapp`
 - `r_all.mat` will be generated
 ### PSTH  
-- `SRTSpikesV6(r_all,unit_num)`
+- `SRTSpikesV6(r_all,unit_num)`  
+![Avater](./readme/Ch14_Unit1.png)
 ### Tracking Analysis
 `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysisAll.m`
+![Avater](./readme/TrajComparing_Unit13_Press.png)

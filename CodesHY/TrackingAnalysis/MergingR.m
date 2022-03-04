@@ -5,7 +5,8 @@ isUnits = true;
 isWave = true;
 isAnalog = false;
 isVideo = false;
-isVideoInfos = true;
+isVideoInfos_top = true;
+isVideoInfos_side = false;
 MergeIndex = 1:length(r_path);
 
 if nargin>=2
@@ -23,8 +24,10 @@ if nargin>=2
                 isAnalog =  varargin{i+1};    
             case 'Video'
                 isVideo =  varargin{i+1};  
-            case 'VideoInfos'
-                isVideoInfos =  varargin{i+1};     
+            case 'VideoInfos_top'
+                isVideoInfos_top =  varargin{i+1};  
+            case 'VideoInfos_side'
+                isVideoInfos_side =  varargin{i+1};
             case 'MergeIndex'
                 MergeIndex =  varargin{i+1};  
             otherwise
@@ -63,12 +66,19 @@ for path_id = 1:length(MergeIndex)
                 end
             end
         end
-        if isVideoInfos
-            for k = 1:length(r.VideoInfos)
-                r.VideoInfos(k).Time = r.VideoInfos(k).Time+getReferenceTime(r, t0);
-                r.VideoInfos(k).VideoFrameTime = r.VideoInfos(k).VideoFrameTime+getReferenceTime(r, t0);
+        if isVideoInfos_top
+            for k = 1:length(r.VideoInfos_top)
+                r.VideoInfos_top(k).Time = r.VideoInfos_top(k).Time+getReferenceTime(r, t0);
+                r.VideoInfos_top(k).VideoFrameTime = r.VideoInfos_top(k).VideoFrameTime+getReferenceTime(r, t0);
             end
-            r_new.VideoInfos = r.VideoInfos;
+            r_new.VideoInfos_top = r.VideoInfos_top;
+        end
+        if isVideoInfos_side
+            for k = 1:length(r.VideoInfos_side)
+                r.VideoInfos_side(k).Time = r.VideoInfos_side(k).Time+getReferenceTime(r, t0);
+                r.VideoInfos_side(k).VideoFrameTime = r.VideoInfos_side(k).VideoFrameTime+getReferenceTime(r, t0);
+            end
+            r_new.VideoInfos_side = r.VideoInfos_side;
         end
     else
         if isMeta
@@ -101,13 +111,20 @@ for path_id = 1:length(MergeIndex)
                 end
             end
         end
-        if isVideoInfos
-            for k = 1:length(r.VideoInfos)
-                r.VideoInfos(k).Time = r.VideoInfos(k).Time+getReferenceTime(r, t0);
-                r.VideoInfos(k).VideoFrameTime = r.VideoInfos(k).VideoFrameTime+getReferenceTime(r, t0);
+        if isVideoInfos_top
+            for k = 1:length(r.VideoInfos_top)
+                r.VideoInfos_top(k).Time = r.VideoInfos_top(k).Time+getReferenceTime(r, t0);
+                r.VideoInfos_top(k).VideoFrameTime = r.VideoInfos_top(k).VideoFrameTime+getReferenceTime(r, t0);
             end
-            r_new.VideoInfos = [r_new.VideoInfos,r.VideoInfos];
+            r_new.VideoInfos_top = [r_new.VideoInfos_top,r.VideoInfos_top];
         end      
+        if isVideoInfos_side
+            for k = 1:length(r.VideoInfos_side)
+                r.VideoInfos_side(k).Time = r.VideoInfos_side(k).Time+getReferenceTime(r, t0);
+                r.VideoInfos_side(k).VideoFrameTime = r.VideoInfos_side(k).VideoFrameTime+getReferenceTime(r, t0);
+            end
+            r_new.VideoInfos_side = [r_new.VideoInfos_side,r.VideoInfos_side];
+        end
     end
 end
 % save r_new r_new
