@@ -610,7 +610,7 @@ end;
 title('Late presses')
 
 % this is the position of last panel
-yfirstcolumn = [1 6+ntrial1*rasterheight+1];
+yfirstcolumn = [1 6+max(ntrial1,ntrial2)*rasterheight+1];
 
 %% release PSTHs
 ha4 =  axes('unit', 'centimeters', 'position', [17.5 1 4*size(trialspxmat_release{2}, 1)/4000 2], 'nextplot', 'add', 'xlim', [-2000 2500]);
