@@ -18,15 +18,16 @@
     - [Make Video Clips](#make-video-clips)
     - [Extracting Frames When Neuron Bursts (high firing rate)](#extracting-frames-when-neuron-bursts-high-firing-rate)
     - [Extracting Frames With Raster Plot](#extracting-frames-with-raster-plot)
+    - [PCA](#pca)
     - [Add More Information About The Video Clips](#add-more-information-about-the-video-clips)
     - [Encoding Analysis: Generalized Linear Model](#encoding-analysis-generalized-linear-model)
-  - [Tracking Analysis](#tracking-analysis)
+  - [Trajectory Analysis](#trajectory-analysis)
     - [DeepLabCut](#deeplabcut)
-    - [Define Tracks And Generate Figures](#define-tracks-and-generate-figures)
+    - [Define Trajectories And Generate Figures](#define-trajectories-and-generate-figures)
 - [Pipeline of Analyzing Data From Multiple Sessions](#pipeline-of-analyzing-data-from-multiple-sessions)
   - [Combine All The Units](#combine-all-the-units)
   - [PSTH](#psth-1)
-  - [Tracking Analysis](#tracking-analysis-1)
+  - [Tracking Analysis](#tracking-analysis)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -127,6 +128,17 @@
 - Edit `camview`.
 - Run `MakeRasterPlotVideo.m`. Raw video with raster plot will be generated in `./VideoFrame_camview/Video`  
 ![avatar](./readme/Press200.gif)
+#### PCA
+- Run `pca_video_with_tracking()`
+  - `bodypart`: if you have tracking data, this function would do cross correlation with firing rate and label the trackings to videos
+  - `make_video`: map the principle components to video clips
+  - `camview`: `side` default
+  - `unit_of_interest`: choose the units to be included to PCA analysis
+  - `only_single_unit`: true if you only want to include single units
+- Principle Components
+![PC](./readme/PC.png)
+- Video Output
+![PCA](./readme/Press019_PC1.gif)  
 #### Add More Information About The Video Clips
 - `.\CodesHY\Scripts\merge_r.mlapp` should be copied under the directory `VideoFrame_camview/`
 - The information will be saved in 'VideoFrame/MatFile/'
@@ -141,11 +153,11 @@
 - Reconstructed PSTH  
 ![PSTH](./readme/PSTH_Unit3.png)
 
-### Tracking Analysis
+### Trajectory Analysis
 #### DeepLabCut
 - Use DeepLabCut and analyze the videos in `./VideoFrame_camview/RawVideo`, .csv files should be generated
 - Run `UpdateTracking.m` to include tracking data to `r`. The tracking information will be saved in `r.VideoInfos_camview.Tracking`
-#### Define Tracks And Generate Figures
+#### Define Trajectories And Generate Figures
 - Run `vid=VideoReader('./VideoFrames_top/RawVideo/Press0010.avi');bg = vid.read(1);imwrite(bg,'bg.png')` to generate `bg.png`
 - Copy `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysis.m` to the current directory (xxx_video)
 - Set the parameters and run. Follow the instructions  
@@ -161,8 +173,12 @@
 ## Pipeline of Analyzing Data From Multiple Sessions
 
 ### Combine All The Units
-- `.\CodesHY\Scripts\merge_r.mlapp`
-- `r_all.mat` will be generated
+- Copy `.\CodesHY\Scripts\merge_r.mlapp` to the path where you store session data
+- Load `r` from each session
+- Click "Show Example Unit" to see the units inside `r`
+- Click "Pick this r" if you want to include this `r` in `r_all`
+- Click "Compare Units" to compare each single unit in `r` and in `r_all`. You should determine by eye whether 2 units are same or different
+- Click "Save r_all" and `r_all.mat` will be generated in current path
 ### PSTH  
 - `SRTSpikesV6(r_all,unit_num)`  
 ![Avater](./readme/Ch14_Unit1.png)

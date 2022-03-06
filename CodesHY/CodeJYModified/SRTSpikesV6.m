@@ -3,6 +3,7 @@ function PSTHout = SRTSpikesV6(r_all, ind, varargin)
 % V4: 2/17/2021 regular style drinking port. No IR sensor in front of the
 % port. 
 % V5: add poke events following an unsuccesful release
+% V6: for multi-session analysis
 
 % SRTSpikes(r, 13, 'FRrange', [0 35])
 
