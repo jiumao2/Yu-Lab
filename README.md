@@ -122,11 +122,13 @@
   A New `r` will be saved. `r.VideoInfos_top` merge the information in `./VideoFrame_top/MatFile/`
 #### Extracting Frames When Neuron Bursts (high firing rate)
 - `ExtractBurstFrame(r,1,'view','top')` it will generate `./VideoFrame_top/BurstFrame/Unit1.avi`, which contains the 1000 (or more) frames when the unit has highest firing rate  
-- ![avatar](./readme/Unit3.gif)
+  - Urey 2021.11.24 Unit 3  
+![avatar](./readme/Unit3.gif)
 #### Extracting Frames With Raster Plot
 - Copy `.\CodesHY\Scripts\MakeRasterPlotVideo.m` to the current directory (xxx_video)
 - Edit `camview`.
 - Run `MakeRasterPlotVideo.m`. Raw video with raster plot will be generated in `./VideoFrame_camview/Video`  
+  - Urey 2021.11.24 Unit 3 Trail 200  
 ![avatar](./readme/Press200.gif)
 #### PCA
 - Run `pca_video_with_tracking()`
@@ -136,8 +138,10 @@
   - `unit_of_interest`: choose the units to be included to PCA analysis
   - `only_single_unit`: true if you only want to include single units
 - Principle Components
+- Eli 2021.9.23  
 ![PC](./readme/PC.png)
 - Video Output
+  - Eli 2021.9.23 Trial 19
 ![PCA](./readme/Press019_PC1.gif)  
 #### Add More Information About The Video Clips
 - `.\CodesHY\Scripts\merge_r.mlapp` should be copied under the directory `VideoFrame_camview/`
@@ -148,9 +152,10 @@
 - Choose the kernels and set the parameters of each kernel
 - Run `.\CodesHY\glm_SRT\glm_main.m`
 - Output will be saved in `.\Fig\GLM` and in `r`  
-- Four Kernels of generalized linear model  
+- Four Kernels of generalized linear model
+  - Urey 2021.11.24 Unit 3  
 ![PSTH](./readme/kernel_Unit3.png)
-- Reconstructed PSTH  
+- Reconstructed PSTH (Urey 2021.11.24 Unit 3)
 ![PSTH](./readme/PSTH_Unit3.png)
 
 ### Trajectory Analysis
@@ -163,12 +168,12 @@
 - Set the parameters and run. Follow the instructions  
 - <text id='Traj_classification'>Traj_classification.png  </text>  
 ![Traj_classification](./readme/Traj_classification.png)  
-- Traj1.png  
+- Traj1.png (Urey 2021.11.24)  
 ![Traj1](./readme/Traj1.png)  
-- Traj2.png  
+- Traj2.png (Urey 2021.11.24)  
 ![Traj2](./readme/Traj2.png)  
-- PSTH of an example unit (the color corresponds to [Traj_classification.png](#Traj_classification))  
-![PSTH](./readme/TrajComparing_Unit1_Release.png)  
+- PSTH of an example unit (Urey 2021.11.24 Unit 1, the color corresponds to [Traj_classification.png](#Traj_classification))  
+![PSTH](./readme/TrajComparing_Unit1_Press.png)  
 
 ## Pipeline of Analyzing Data From Multiple Sessions
 
@@ -181,7 +186,9 @@
 - Click "Save r_all" and `r_all.mat` will be generated in current path
 ### PSTH  
 - `SRTSpikesV6(r_all,unit_num)`  
+  - Russo 20210906~20210910  
 ![Avater](./readme/Ch14_Unit1.png)
 ### Tracking Analysis
 `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysisAll.m`
+  - Russo 20210906~20210910  
 ![Avater](./readme/TrajComparing_Unit13_Press.png)

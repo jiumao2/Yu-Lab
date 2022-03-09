@@ -67,7 +67,7 @@ for k = 1:num_traj+1
         if strcmp(event,'Press')
             trigtimes_long = [trigtimes_long,r.VideoInfos_top(ind_traj_long(j)).Time];
         elseif strcmp(event,'Release')
-            trigtimes_long = [trigtimes_long,r.VideoInfos_top(ind_traj_long(j)).Time+r.VideoInfos_top(ind_traj_long(j)).ReactTime];
+            trigtimes_long = [trigtimes_long,r.VideoInfos_top(ind_traj_long(j)).Time+r.VideoInfos_top(ind_traj_long(j)).Foreperiod+r.VideoInfos_top(ind_traj_long(j)).ReactTime];
         end
         temp_spktime = getPlotSpikeTime(r.Units.SpikeTimes(num_unit).timings,trigtimes_long(end),t_pre,t_post);
         for i = 1:length(temp_spktime)
@@ -93,7 +93,7 @@ for k = 1:num_traj+1
         if strcmp(event,'Press')
             trigtimes_short = [trigtimes_short,r.VideoInfos_top(ind_traj_short(j)).Time];
         elseif strcmp(event,'Release')
-            trigtimes_short = [trigtimes_short,r.VideoInfos_top(ind_traj_short(j)).Time+r.VideoInfos_top(ind_traj_short(j)).ReactTime];
+            trigtimes_short = [trigtimes_short,r.VideoInfos_top(ind_traj_short(j)).Time+r.VideoInfos_top(ind_traj_short(j)).Foreperiod+r.VideoInfos_top(ind_traj_short(j)).ReactTime];
         end
         temp_spktime = getPlotSpikeTime(r.Units.SpikeTimes(num_unit).timings,trigtimes_short(end),t_pre,t_post);
         for i = 1:length(temp_spktime)
