@@ -1,11 +1,16 @@
-function d = trajDistance(x,y)
+function d = trajDistance(x,y,mode)
 % x,y: nx2 matrix
-x = x(~isnan(x(:,1)),:);
-y = y(~isnan(x(:,1)),:);
+if nargin <= 2
+    mode = 'normal';
+end
+x = x(~isnan(x(:,1)) & ~isnan(x(:,2)),:);
+y = y(~isnan(y(:,1)) & ~isnan(y(:,2)),:);
 
 d1 = 0;
 for k = 1:size(x,1)
-    if ~any(isnan(x(k,:)))
+    if strcmp(mode,'fast')
+        d_this = min(sum((y-x(k,:)).^2,2));
+    else
         d_this = 1e8;
         for j = 1:size(y,1)-1
             p1 = y(j,:);
@@ -25,8 +30,8 @@ for k = 1:size(x,1)
                 d_this = d_temp;
             end
         end
-        d1 = d1+d_this;
     end
+    d1 = d1+d_this;
 end
 d1 = d1./size(x,1);
 
@@ -37,7 +42,9 @@ x = y;
 y = temp;
 
 for k = 1:size(x,1)
-    if ~any(isnan(x(k,:)))
+    if strcmp(mode,'fast')
+        d_this = min(sum((y-x(k,:)).^2,2));
+    else
         d_this = 1e8;
         for j = 1:size(y,1)-1
             p1 = y(j,:);
@@ -57,10 +64,11 @@ for k = 1:size(x,1)
                 d_this = d_temp;
             end
         end
-        d2 = d2+d_this;
     end
+    d2 = d2+d_this;
 end
 d2 = d2./size(x,1);
 
 d = min(d1,d2);
+% d = (d1+d2)/2;
 end
