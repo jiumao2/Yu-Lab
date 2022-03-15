@@ -88,7 +88,7 @@ saveas(gcf,'Fig/Classification.png')
 d_mat_sorted = zeros(length(ind_correct));
 new_idx = [];
 for k = 1:n_cluster+1
-    new_idx = [new_idx;cluster_idx{k}];
+    new_idx = [new_idx,cluster_idx{k}];
 end
 for k = 1:length(ind_correct)
     for j = k+1:length(ind_correct)
@@ -111,7 +111,7 @@ for k = 1:length(ind_correct)
     ind_this = ind_correct(k);
     idx_good = find(r.VideoInfos_top(ind_this).Tracking.Coordinates_p{ind_bodypart} > p_threshold);
 
-    plot(r.VideoInfos_top(ind_this).Tracking.Coordinates_x{ind_bodypart}(idx_good),r.VideoInfos_top(ind_this).Tracking.Coordinates_y{ind_bodypart}(idx_good),'.-','Color',colors(cat(k),:))
+    plot(r.VideoInfos_top(ind_this).Tracking.Coordinates_x{ind_bodypart},r.VideoInfos_top(ind_this).Tracking.Coordinates_y{ind_bodypart},'.-','Color',colors(cat(k),:))
 end   
 saveas(gcf,'Fig/Traj_classification.png');
 %% save to R
