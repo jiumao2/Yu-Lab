@@ -16,12 +16,12 @@ sideviews ={
 ts_top = struct('ts', [], 'skipind', []);
 for i=1:length(topviews)
     ts_top(i) = findts(topviews{i});
-end;
+end
  
 ts_side = struct('ts', [], 'skipind', []);
 for i=1:length(sideviews)
     ts_side(i) = findts(sideviews{i});
-end;
+end
 clear ts
 ts.top = ts_top;
 ts.topviews = topviews;
