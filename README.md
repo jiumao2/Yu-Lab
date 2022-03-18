@@ -23,6 +23,7 @@
     - [Encoding Analysis: Generalized Linear Model](#encoding-analysis-generalized-linear-model)
   - [Trajectory Analysis](#trajectory-analysis)
     - [DeepLabCut](#deeplabcut)
+    - [EphysDLCapp: Manually Check the Trackings](#ephysdlcapp-manually-check-the-trackings)
     - [Define Trajectories And Generate Figures](#define-trajectories-and-generate-figures)
 - [Pipeline of Analyzing Data From Multiple Sessions](#pipeline-of-analyzing-data-from-multiple-sessions)
   - [Combine All The Units](#combine-all-the-units)
@@ -161,7 +162,22 @@
 ### Trajectory Analysis
 #### DeepLabCut
 - Use DeepLabCut and analyze the videos in `./VideoFrame_camview/RawVideo`, .csv files should be generated
-- Run `UpdateTracking.m` to include tracking data to `r`. The tracking information will be saved in `r.VideoInfos_camview.Tracking`
+- Run `UpdateTracking.m` to update mat files in `./VideoFrame_camview/MatFile` and include tracking data to `r`. The tracking information will be saved in `r.VideoInfos_camview.Tracking`
+#### EphysDLCapp: Manually Check the Trackings
+- Change directory to `./VideoFrame_camview/`
+- Run `EphysDLCapp`  
+![](./readme/EphysDLCApp_side.png)
+![](./readme/EphysDLCApp_top.png)
+- Instructions:
+  - Load Video: start this app by load a video in `./VideoFrame_camview/RawVideo`
+  - Next Video: save data to mat and load next "Correct" video
+  - Fill Start: pick the frame number when the rat starts to lift its hand
+  - Fill Highest: pick the frame number when the rat's hand is highest
+  - Hand: choose the hand that the rat first lifts
+  - Manual Check: manually modify the tracking by clicking on the image
+  - Save data to mat: save to `./VideoFrame_camview/MatFile/`
+  - Skip: save the data but set the isGoodTracking to false and move to next "Correct" video
+
 #### Define Trajectories And Generate Figures
 - Run `vid=VideoReader('./VideoFrames_top/RawVideo/Press0010.avi');bg = vid.read(1);imwrite(bg,'bg.png')` to generate `bg.png`
 - Copy `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysis.m` to the current directory (xxx_video)

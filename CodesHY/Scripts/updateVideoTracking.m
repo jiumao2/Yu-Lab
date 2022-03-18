@@ -1,6 +1,6 @@
 clear
 load('./RTarrayAll.mat')
-dlc_path = 'A:\Ephys\DLC\Russo_TopView-HY-2022-01-12';
+dlc_path = 'C:\Users\pku\Desktop\DLC\Urey_top_view-HY-2021-12-31';
 data_path = './VideoFrames_top/RawVideo';
 mat_path = './VideoFrames_top/MatFile';
 camview = 'top';
@@ -38,9 +38,10 @@ for n = 1:length(filenames_csv)
     Tracking.p_threshold = p_threshold;
     Tracking.FirstFrames = firstFrames;
     VideoInfo.Tracking = Tracking;
+    VideoInfo.isGoodTracking = false;
     VideoInfos(n) = VideoInfo;
     disp(n)
-    save([data_path,'/',filenames_csv{n}],'VideoInfo');
+    save([mat_path,'/',filenames_mat{n}],'VideoInfo');
 end
 if strcmp(camview,'top')
     r.VideoInfos_top = VideoInfos;
