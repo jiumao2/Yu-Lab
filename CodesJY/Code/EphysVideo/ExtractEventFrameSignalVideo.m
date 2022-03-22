@@ -246,14 +246,14 @@ for i = start_trial:length(event_sort)
         end
         
         % sort t_trigger
-        hfig = figure(28); clf;
-        set(gcf, 'name', 'side view', 'units', 'centimeters', 'position', [5 5 31 18]);
+%         hfig = figure(28); clf;
+%         set(gcf, 'name', 'side view', 'units', 'centimeters', 'position', [5 5 31 18]);
         
-        for ii=1:7
-            ha(ii)= axes;
-            set(ha(ii), 'units', 'centimeters', 'position', [1+4*(ii-1) 6+6 4 4], 'nextplot', 'add', 'xlim',[0 1000], 'ylim', [0 1000], 'ydir','reverse')
-            axis off
-        end
+%         for ii=1:7
+%             ha(ii)= axes;
+%             set(ha(ii), 'units', 'centimeters', 'position', [1+4*(ii-1) 6+6 4 4], 'nextplot', 'add', 'xlim',[0 1000], 'ylim', [0 1000], 'ydir','reverse')
+%             axis off
+%         end
 
         % last frame before the light
         %         ind_frame_pretrigger = find(t_frameoff<t_trigger_n(i), 1, 'last'); % frame index before the trigger time
@@ -280,34 +280,34 @@ for i = start_trial:length(event_sort)
             
             img = ReadJpegSEQ2(vidfile,frames_to_extract(j)); % ica is image cell array
             
-            axes(ha(j)); cla
-            imagesc(img, [0 200]);
-            title(num2str(indseq(j)))
-            colormap('gray')
-            
-            if j ~= 4
-                relative_frametime = tframes(j) - tframes(4);
-                time_of_frame = sprintf('%1.0d', round(relative_frametime));
-                text(700, 50, [time_of_frame], 'color', [246 233 35]/255, 'fontsize', 12)
-                xticklabel_new{j} = sprintf('%1.0d', round(relative_frametime));
-            else
-                time_of_frame = sprintf('%1.0d', round(tframes(4)));
-                text(400, 50, [time_of_frame ' ms'], 'color', [246 233 35]/255, 'fontsize', 12)
-                xticklabel_new{j} =  sprintf('%1.0d', round(tframes(4)));
-            end
+%             axes(ha(j)); cla
+%             imagesc(img, [0 200]);
+%             title(num2str(indseq(j)))
+%             colormap('gray')
+%             
+%             if j ~= 4
+%                 relative_frametime = tframes(j) - tframes(4);
+%                 time_of_frame = sprintf('%1.0d', round(relative_frametime));
+%                 text(700, 50, [time_of_frame], 'color', [246 233 35]/255, 'fontsize', 12)
+%                 xticklabel_new{j} = sprintf('%1.0d', round(relative_frametime));
+%             else
+%                 time_of_frame = sprintf('%1.0d', round(tframes(4)));
+%                 text(400, 50, [time_of_frame ' ms'], 'color', [246 233 35]/255, 'fontsize', 12)
+%                 xticklabel_new{j} =  sprintf('%1.0d', round(tframes(4)));
+%             end
             
         end
-        drawnow;
-        
-        uicontrol('style', 'text', 'unit', 'centimeters', 'position', [0.1 10.5+6, 10, 0.5],...
-            'string', [events  '_' num2str(i), ' / t=' num2str(round(t_event_n(i))) 'ms'], 'fontsize', 10)
-        
-        uicontrol('style', 'text', 'unit', 'centimeters', 'position', [0.1 11+6, 10, 0.5],...
-            'string', sprintf('FP: %2.0fms / RT: %2.0fms', FP_ni, RT_ni), 'fontsize', 10)
+%         drawnow;
+%         
+%         uicontrol('style', 'text', 'unit', 'centimeters', 'position', [0.1 10.5+6, 10, 0.5],...
+%             'string', [events  '_' num2str(i), ' / t=' num2str(round(t_event_n(i))) 'ms'], 'fontsize', 10)
+%         
+%         uicontrol('style', 'text', 'unit', 'centimeters', 'position', [0.1 11+6, 10, 0.5],...
+%             'string', sprintf('FP: %2.0fms / RT: %2.0fms', FP_ni, RT_ni), 'fontsize', 10)
         
         % add spikes
-        haspk= axes; cla;
-        set(haspk, 'units', 'centimeters', 'position', [1 1+6 28 4.5], 'nextplot', 'add', 'xlim',[0 1000], 'ylim', [0 1000])
+%         haspk= axes; cla;
+%         set(haspk, 'units', 'centimeters', 'position', [1 1+6 28 4.5], 'nextplot', 'add', 'xlim',[0 1000], 'ylim', [0 1000])
         
         tcenter = tframes(4);
         tpre = tframes(4) - tframes(1)+(tframes(2)-tframes(1));
@@ -315,8 +315,8 @@ for i = start_trial:length(event_sort)
         
         spkout = ExtractPhasicPopulationEvents(r, 't', tcenter, 'tpre', tpre , 'tpost', tpost);
         
-        figure(hfig);
-        axes(haspk);
+%         figure(hfig);
+%         axes(haspk);
         
         ch_included = unique(spkout.spk_chs);
         colorcodes = varycolor(length(ch_included)); % color denotes channel address
@@ -324,60 +324,60 @@ for i = start_trial:length(event_sort)
         spkmat = spkout.raster;
         Ncell = spkout.Ncell;
         
-        for nc=1:Ncell
-            ispktime = tspk(find(spkmat(nc, :)));
-            if ~isempty(ispktime)
-                xx = [ispktime; ispktime];
-                yy =[nc; nc+0.8]-0.5;
-                plot(xx, yy, 'color', colorcodes(spkout.spk_chs(nc) == ch_included, :), 'linewidth', 1)
-            end
-        end
-        
-        set(gca, 'xlim', [tcenter-tpre tcenter+tpost], 'ylim', [0 Ncell], 'xtick', round(tframes), 'xticklabel', xticklabel_new);
-        
-        for iframe=1:length(tframes)
-            line([tframes(iframe) tframes(iframe)], [Ncell-5 Ncell], 'color',  [246 233 35]/255, 'linewidth', 2, 'linestyle', '-')
-        end
+%         for nc=1:Ncell
+%             ispktime = tspk(find(spkmat(nc, :)));
+%             if ~isempty(ispktime)
+%                 xx = [ispktime; ispktime];
+%                 yy =[nc; nc+0.8]-0.5;
+%                 plot(xx, yy, 'color', colorcodes(spkout.spk_chs(nc) == ch_included, :), 'linewidth', 1)
+%             end
+%         end
+%         
+%         set(gca, 'xlim', [tcenter-tpre tcenter+tpost], 'ylim', [0 Ncell], 'xtick', round(tframes), 'xticklabel', xticklabel_new);
+%         
+%         for iframe=1:length(tframes)
+%             line([tframes(iframe) tframes(iframe)], [Ncell-5 Ncell], 'color',  [246 233 35]/255, 'linewidth', 2, 'linestyle', '-')
+%         end
         
         % also plot trigger signal and release time
         t_this_press = t_press(t_press>=tframes(1) & t_press<=tframes(end));
-        if ~isempty(t_this_press)
-            for ip =1:length(t_this_press)
-                line([t_this_press(ip) t_this_press(ip)], [0 Ncell], 'color', 'k', 'linewidth', 1, 'linestyle', '-')
-                text(t_this_press(ip)+10, 1, 'Press', 'color', 'k', 'fontsize', 8)
-            end
-        end
+%         if ~isempty(t_this_press)
+%             for ip =1:length(t_this_press)
+%                 line([t_this_press(ip) t_this_press(ip)], [0 Ncell], 'color', 'k', 'linewidth', 1, 'linestyle', '-')
+%                 text(t_this_press(ip)+10, 1, 'Press', 'color', 'k', 'fontsize', 8)
+%             end
+%         end
         
         t_this_release = t_release(t_release>=tframes(1) & t_release<=tframes(end));
         
-        if ~isempty(t_this_release)
-            % sometimes there are multiple releases
-            for ir = 1:length(t_this_release)
-                line([t_this_release(ir) t_this_release(ir)], [0 Ncell], 'color', 'g', 'linewidth', 1, 'linestyle', '-')
-                text(t_this_release(ir)+10, 1, 'Release', 'color', 'g', 'fontsize', 8)
-            end
-            
-        end
+%         if ~isempty(t_this_release)
+%             % sometimes there are multiple releases
+%             for ir = 1:length(t_this_release)
+%                 line([t_this_release(ir) t_this_release(ir)], [0 Ncell], 'color', 'g', 'linewidth', 1, 'linestyle', '-')
+%                 text(t_this_release(ir)+10, 1, 'Release', 'color', 'g', 'fontsize', 8)
+%             end
+%             
+%         end
         
         t_this_trigger = t_trigger(t_trigger>=tframes(1) & t_trigger<=tframes(end));
-        if ~isempty(t_this_trigger)
-            for it =1:length(t_this_trigger)
-                line([t_this_trigger(it) t_this_trigger(it)], [0 Ncell], 'color', 'm', 'linewidth', 1, 'linestyle', '-')
-                text(t_this_trigger(it)+10, 1, 'Trigger', 'color', 'm', 'fontsize', 8)
-            end
-        end
+%         if ~isempty(t_this_trigger)
+%             for it =1:length(t_this_trigger)
+%                 line([t_this_trigger(it) t_this_trigger(it)], [0 Ncell], 'color', 'm', 'linewidth', 1, 'linestyle', '-')
+%                 text(t_this_trigger(it)+10, 1, 'Trigger', 'color', 'm', 'fontsize', 8)
+%             end
+%         end
         
         t_this_reward = t_reward(t_reward>=tframes(1) & t_reward<=tframes(end));
-        if ~isempty(t_this_reward)
-            for iw =1:length(t_this_reward)
-                line([t_this_reward(iw) t_this_reward(iw)], [0 Ncell], 'color', 'c', 'linewidth', 1, 'linestyle', '-')
-                text(t_this_reward(iw)+10, 1, 'Reward', 'color', 'c', 'fontsize', 8)
-            end
-        end
+%         if ~isempty(t_this_reward)
+%             for iw =1:length(t_this_reward)
+%                 line([t_this_reward(iw) t_this_reward(iw)], [0 Ncell], 'color', 'c', 'linewidth', 1, 'linestyle', '-')
+%                 text(t_this_reward(iw)+10, 1, 'Reward', 'color', 'c', 'fontsize', 8)
+%             end
+%         end
         
         % line([0 0], [0 Ncell], 'color', 'k', 'linestyle', ':')
-        xlabel('Time (ms)')
-        ylabel('Neuron #')
+%         xlabel('Time (ms)')
+%         ylabel('Neuron #')
         
 %         switch events
 %             case 'Press'
@@ -480,15 +480,18 @@ for i = start_trial:length(event_sort)
 %             F       =   struct('cdata', [], 'colormap', []);
 %             F2      =   struct('cdata', [], 'colormap', []);
             
-            thisFolder = fullfile(pwd, 'VideoFrames', 'Video');
-            thisFolder2 = fullfile(pwd, 'VideoFrames', 'RawVideo');
-            
+            thisFolder = fullfile(pwd, ['VideoFrames_',camview], 'Video');
+            thisFolder2 = fullfile(pwd, ['VideoFrames_',camview], 'RawVideo');
+            mat_dir = fullfile(pwd, ['VideoFrames_',camview], 'MatFile');
             if ~exist(thisFolder, 'dir')
                 mkdir(thisFolder)
             end
             
             if ~exist(thisFolder2, 'dir')
                 mkdir(thisFolder2)
+            end
+            if ~exist(mat_dir,'dir')
+                mkdir(mat_dir);
             end
             
             F2 = img_seq;
@@ -632,10 +635,6 @@ for i = start_trial:length(event_sort)
             % close the writer object
             close(writerObj);
 
-        end
-        mat_dir = fullfile(pwd, 'VideoFrames', 'MatFile');
-        if ~exist(mat_dir,'dir')
-            mkdir(mat_dir);
         end
         VideoInfo.AnimalName = r.Meta(1).Subject;
         temp_time = datetime(r.Meta(1).DateTime);
