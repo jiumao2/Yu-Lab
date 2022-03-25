@@ -1,4 +1,4 @@
-function indout = matching_time(t2,t1)
+function indout = findseqmatch(t2,t1)
 % t1: the substring
 % t2: the full string
 % intout: the matched index in t2

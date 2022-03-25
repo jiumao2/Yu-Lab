@@ -179,7 +179,7 @@
   - Skip: save the data but set the isGoodTracking to false and move to next "Correct" video
 
 #### Define Trajectories And Generate Figures
-- Run `vid=VideoReader('./VideoFrames_top/RawVideo/Press0010.avi');bg = vid.read(1);imwrite(bg,'bg.png')` to generate `bg.png`
+- Run `vid=VideoReader('./VideoFrames_top/RawVideo/Press010.avi');bg = vid.read(1);imwrite(bg,'bg.png')` to generate `bg.png`
 - Copy `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysis.m` to the current directory (xxx_video)
 - Set the parameters and run. Follow the instructions  
 - <text id='Traj_classification'>Traj_classification.png  </text>  
