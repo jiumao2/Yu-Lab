@@ -5,45 +5,24 @@ function tsout = findts(seqfile)
 % tsout.ts: time stamp in ms
 % tsout.skipind: skip index (frame[s] before this frame is skipped)
 % the function will end once it reaches the end of fid. 
+% Last modified by Yue Huang 3.30.2022
 
-framestart = 1;
-keepcounting = 1;
-skips =[];
+n_frame = ReadFrameNumSEQ(seqfile);
+ts = zeros(1,n_frame);
+ts_start = ReadTimestampSEQ(seqfile, 1);
 tic
-while keepcounting
-    if rem(framestart, 1000)==0
-        sprintf('last frame time %2.0f s', ts(end)/1000)
+
+for k = 1:n_frame
+    ts(k) = ReadTimestampSEQ(seqfile, k) - ts_start;
+    if rem(k, 1000)==0
+        sprintf('last frame time %2.0f s', ts(k)/1000)
     end
-    try
-    tf_current =  ReadTimestampSEQ(seqfile, framestart);
-    catch 
-        toc
-        % it now reaches the end of seq file. now it is the time to end
-        % counting
-        return
-    end
+end
+ts = ts-ts(1);
+tsout.ts = ts;
+tsout.skipind = [];    
     
-    if framestart==1
-        tfstart = tf_current;
-        ts(framestart)=tf_current-tfstart;
-    else
-        if tf_current-ts(end)>1
-            ts(framestart)=tf_current-tfstart;
-            
-            if ts(end)-ts(end-1)>15
-                skips = [skips framestart];
-            end;
-            
-        else
-            keepcounting = 0;
-        end;
-    end;
-    
-    framestart = framestart+1;
-    
-    tsout.ts = ts; 
-    tsout.skipind = [];
-end;
+end
 
 
 

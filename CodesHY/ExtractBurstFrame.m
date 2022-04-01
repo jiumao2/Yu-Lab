@@ -13,6 +13,8 @@ if nargin>=3
         switch varargin{i}
             case 'FrameNum'
                 FrameNum = varargin{i+1};
+            case 'correct_only'
+                correct_only = varargin{i+1};
             case 'FrameRate'
                 FrameRate = varargin{i+1};
             case 'view'
