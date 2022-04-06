@@ -5,6 +5,7 @@ end
 
 ind_bodypart = find(strcmp(r.VideoInfos_top(1).Tracking.BodyParts, bodypart));
 ind_correct = find(strcmp({r.VideoInfos_top.Performance},'Correct'));
+p_threshold = 0.99;
 
 bg = imread('bg.png');
 colors = colororder;
@@ -14,8 +15,8 @@ figure;
 imshow(bg)
 hold on
 for k = 1:length(index_cat1)
-        x = r.VideoInfos_top(ind_correct(index_cat1(k))).Tracking.Coordinates_x{ind_bodypart}(r.VideoInfos_top(ind_correct(index_cat1(k))).Tracking.Coordinates_p{ind_bodypart}>0.99);
-        y = r.VideoInfos_top(ind_correct(index_cat1(k))).Tracking.Coordinates_y{ind_bodypart}(r.VideoInfos_top(ind_correct(index_cat1(k))).Tracking.Coordinates_p{ind_bodypart}>0.99);
+        x = r.VideoInfos_top(ind_correct(index_cat1(k))).Tracking.Coordinates_x{ind_bodypart}(r.VideoInfos_top(ind_correct(index_cat1(k))).Tracking.Coordinates_p{ind_bodypart}>p_threshold);
+        y = r.VideoInfos_top(ind_correct(index_cat1(k))).Tracking.Coordinates_y{ind_bodypart}(r.VideoInfos_top(ind_correct(index_cat1(k))).Tracking.Coordinates_p{ind_bodypart}>p_threshold);
         x = x(1:5:end);
         y = y(1:5:end);
         X = x(1:end-1);

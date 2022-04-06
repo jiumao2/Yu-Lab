@@ -140,7 +140,7 @@ while run
     
     figure(1); clf; 
     set(gcf, 'unit', 'pixels', 'position',[100 100 screensize(3)*0.8 screensize(4)*0.8], 'paperpositionmode', 'auto' )
-%     set(gcf,'renderer','opengl')
+    set(gcf,'renderer','opengl')
 
     hold on; grid off;
     fill([-2 -2 5 5],[-2 2 2 -2],'k','FaceColor',[.92 .92 .92]);
