@@ -52,12 +52,15 @@ margin_right = 0.5;
 margin_up = 0.5;
 margin_bottom = 1;
 space_raster_traj = 0.2;
+space_raster_yt = 0.5;
 space_col_traj = 0.2;
 space_row_raster = 0.2;
 space_col_raster = 1;
 
 width_traj = 3;
 height_traj = 3;
+width_yt = 3;
+height_yt = 3;
 width_raster = 3;
 height_raster = 3;
 width_PSTH = 3;
@@ -65,81 +68,46 @@ height_PSTH = 3;
 
 h = figure('Units','centimeters');
 figure_width = margin_left + margin_right + width_traj*3 + space_col_traj*2;
-figure_height = margin_up + margin_bottom + height_traj + height_raster + height_PSTH + space_row_raster + space_col_traj;
+figure_height = margin_up + margin_bottom + height_traj + height_raster + height_PSTH + space_row_raster + space_raster_yt + height_yt + space_col_traj;
 h.Position = [10,10,figure_width,figure_height];
 
 % traj topview
 ax_topview = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
-ax_topview.Position = [margin_left,margin_bottom+space_row_raster+space_raster_traj+height_raster+height_PSTH,width_traj,height_traj];
+ax_topview.Position = [margin_left,margin_bottom+space_row_raster+space_raster_yt+height_yt+space_raster_traj+height_raster+height_PSTH,width_traj,height_traj];
 image(ax_topview,bg_top);
 ax_topview.XAxis.Visible = 'off';ax_topview.YAxis.Visible = 'off';
 title(ax_topview,'topview');
 
 % traj sideview1
 ax_sideview1 = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
-ax_sideview1.Position = [margin_left+width_traj*1+space_col_traj*1,margin_bottom+space_row_raster+space_raster_traj+height_raster+height_PSTH,width_traj,height_traj];
+ax_sideview1.Position = [margin_left+width_traj*1+space_col_traj*1,margin_bottom+space_row_raster+space_raster_yt+height_yt+space_raster_traj+height_raster+height_PSTH,width_traj,height_traj];
 ax_sideview1.XAxis.Visible = 'off';ax_sideview1.YAxis.Visible = 'off';
 title(ax_sideview1,'sideview');
 image(ax_sideview1,bg_side_traj1);
 xlim(ax_sideview1,[0,size(bg_side_traj1,2)])
 ylim(ax_sideview1,[0,size(bg_side_traj1,2)])
 
-% traj sideview1
+% traj sideview2
 ax_sideview2 = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
-ax_sideview2.Position = [margin_left+width_traj*2+space_col_traj*2,margin_bottom+space_row_raster+space_raster_traj+height_raster+height_PSTH,width_traj,height_traj];
+ax_sideview2.Position = [margin_left+width_traj*2+space_col_traj*2,margin_bottom+space_row_raster+space_raster_yt+height_yt+space_raster_traj+height_raster+height_PSTH,width_traj,height_traj];
 ax_sideview2.XAxis.Visible = 'off';ax_sideview2.YAxis.Visible = 'off';
 title(ax_sideview2,'sideview');
 image(ax_sideview2,bg_side_traj2);
 xlim(ax_sideview2,[0,size(bg_side_traj2,2)])
 ylim(ax_sideview2,[0,size(bg_side_traj2,2)])
 
-%% y vs t
-% figure;
-% subplot(1,2,1);hold on;
-% for k = 1:length(index_cat1)
-%     p1 = r.VideoInfos_side(ind_correct(index_cat1(k))).Tracking.Coordinates_p{ind_bodypart_side};
-%     n_start = 1;
-%     for j = frame_num_press:-1:1
-%         if p1(j)<p_threshold
-%             n_start = j+1;
-%             break
-%         end
-%     end
-%     x1 = r.VideoInfos_side(ind_correct(index_cat1(k))).Tracking.Coordinates_x{ind_bodypart_side}(n_start:frame_num_press);
-%     y1 = r.VideoInfos_side(ind_correct(index_cat1(k))).Tracking.Coordinates_y{ind_bodypart_side}(n_start:frame_num_press);
-%     x1 = x1(1:interval_side:end);
-%     y1 = y1(1:interval_side:end);
-%     plot(-length(y1)*10:10:-1*10,y1);
-% end
-% xlabel('Time from Press (ms)');
-% ylabel('y (pixel)')
-% xlim([-1000,0])
-% ylim([200,900])
-% set(gca,'YDir','reverse')
-% 
-% subplot(1,2,2);hold on;
-% for k = 1:length(index_cat2)        
-%     p2 = r.VideoInfos_side(ind_correct(index_cat2(k))).Tracking.Coordinates_p{ind_bodypart_side};
-%     n_start = 1;
-%     for j = frame_num_press:-1:1
-%         if p2(j)<p_threshold
-%             n_start = j+1;
-%             break
-%         end
-%     end
-%     x2 = r.VideoInfos_side(ind_correct(index_cat2(k))).Tracking.Coordinates_x{ind_bodypart_side}(n_start:frame_num_press);
-%     y2 = r.VideoInfos_side(ind_correct(index_cat2(k))).Tracking.Coordinates_y{ind_bodypart_side}(n_start:frame_num_press);
-%     x2 = x2(1:interval_side:end);
-%     y2 = y2(1:interval_side:end);
-%     plot(-length(y2)*10:10:-1*10,y2);
-% end
-% xlabel('Time from Press (ms)');
-% ylabel('y (pixel)')
-% xlim([-1000,0])
-% ylim([200,900])
-% set(gca,'YDir','reverse')
+% y vs t
+ax_yt1 = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
+ax_yt1.Position = [(figure_width-space_col_raster)/2-width_raster,margin_bottom+space_row_raster+space_raster_yt+height_raster+height_PSTH,width_yt,height_yt];
+ylabel(ax_yt1,'y (pixel)')
+xlim(ax_yt1,[-1000,0])
+ylim(ax_yt1,[200,900])
 
-%%
+ax_yt2 = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
+ax_yt2.Position = [(figure_width+space_col_raster)/2,margin_bottom+space_row_raster+space_raster_yt+height_raster+height_PSTH,width_yt,height_yt];
+ax_yt2.YAxis.Visible = 'off';
+xlim(ax_yt2,[-1000,0])
+ylim(ax_yt2,[200,900])
 
 % raster1
 ax_raster1 = axes(h,'Units','centimeters','NextPlot','add');
@@ -282,13 +250,45 @@ for k = 1:length(index_cat2)
     scatter(ax_sideview2,x2,y2,markersize_side,colors_short{2},'filled');
 %     quiver(ax_sideview2,X,Y,x_diff,y_diff,0,'Color',colors{2});
 end
-
-% raster
+% y vs t
 rand('seed',123);
 rnd_cat1 = randperm(length(index_cat1));
 rnd_cat1 = rnd_cat1(1:ntrial_raster);
 rnd_cat2 = randperm(length(index_cat2));
 rnd_cat2 = rnd_cat2(1:ntrial_raster);
+
+for k = rnd_cat1
+    p1 = r.VideoInfos_side(ind_correct(index_cat1(k))).Tracking.Coordinates_p{ind_bodypart_side};
+    n_start = 1;
+    for j = frame_num_press:-1:1
+        if p1(j)<p_threshold
+            n_start = j+1;
+            break
+        end
+    end
+    x1 = r.VideoInfos_side(ind_correct(index_cat1(k))).Tracking.Coordinates_x{ind_bodypart_side}(n_start:frame_num_press);
+    y1 = r.VideoInfos_side(ind_correct(index_cat1(k))).Tracking.Coordinates_y{ind_bodypart_side}(n_start:frame_num_press);
+    x1 = x1(1:interval_side:end);
+    y1 = y1(1:interval_side:end);
+    plot(ax_yt1,-length(y1)*10:10:-1*10,y1,'Color',colors_name{1});
+end
+for k = rnd_cat2
+    p2 = r.VideoInfos_side(ind_correct(index_cat2(k))).Tracking.Coordinates_p{ind_bodypart_side};
+    n_start = 1;
+    for j = frame_num_press:-1:1
+        if p2(j)<p_threshold
+            n_start = j+1;
+            break
+        end
+    end
+    x2 = r.VideoInfos_side(ind_correct(index_cat2(k))).Tracking.Coordinates_x{ind_bodypart_side}(n_start:frame_num_press);
+    y2 = r.VideoInfos_side(ind_correct(index_cat2(k))).Tracking.Coordinates_y{ind_bodypart_side}(n_start:frame_num_press);
+    x2 = x2(1:interval_side:end);
+    y2 = y2(1:interval_side:end);
+    plot(ax_yt2,-length(y2)*10:10:-1*10,y2,'Color',colors_name{2});
+end
+
+% raster
 
 for k = 1:length(rnd_cat1)
     ind_this = ind_correct(index_cat1(rnd_cat1(k)));
