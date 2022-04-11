@@ -1,36 +1,38 @@
-function indout = findseqmatch(t2,t1)
-% t1: the substring
-% t2: the full string
-% intout: the matched index in t2
-indout = zeros(1,length(t1));
+function indout = findseqmatch(seq_mom,seq_son)
+% FINDSEQMATCH Find matched index in seq_mom.
+% indout = findseqmatch(seq_mom,seq_son)
+% seq_son: the substring
+% seq_mom: the full string
+% indout: the matched index in seq_mom
+indout = zeros(1,length(seq_son));
 
 % for each point in t1, find the corresponding point in t2
 j = 1;
 min_error = 1e8;
 min_k = 0;
-for k = 1:length(t2)-length(t1)+1
-    tmp_t1 = t1;
+for k = 1:length(seq_mom)-length(seq_son)+1
+    tmp_t1 = seq_son;
     tmp_sum = 0;
-    tmp_t1 = tmp_t1-tmp_t1(j)+t2(k);
+    tmp_t1 = tmp_t1-tmp_t1(j)+seq_mom(k);
 
     for i = 1:length(tmp_t1)
         l = 1;
-        r = length(t2);
-        if t2(l) >= tmp_t1(i)
+        r = length(seq_mom);
+        if seq_mom(l) >= tmp_t1(i)
             r = l;
-        elseif t2(r) <= tmp_t1(i)
+        elseif seq_mom(r) <= tmp_t1(i)
             l = r;
         else
             while r-l > 1
                 tmp_idx = round((l+r)/2);
-                if t2(tmp_idx) - tmp_t1(i) > 0
+                if seq_mom(tmp_idx) - tmp_t1(i) > 0
                     r = tmp_idx;
                 else
                     l = tmp_idx;
                 end
             end
         end
-        tmp_sum = tmp_sum + min(abs(t2(r)-tmp_t1(i)),abs(tmp_t1(i)-t2(l)));
+        tmp_sum = tmp_sum + min(abs(seq_mom(r)-tmp_t1(i)),abs(tmp_t1(i)-seq_mom(l)));
     end
 
     if tmp_sum < min_error 
@@ -40,18 +42,18 @@ for k = 1:length(t2)-length(t1)+1
 end
 indout(j) = min_k;
 
-tmp_t1 = tmp_t1-tmp_t1(1)+t2(min_k);
+tmp_t1 = tmp_t1-tmp_t1(1)+seq_mom(min_k);
 for i = 1:length(tmp_t1)
     l = 1;
-    r = length(t2);
-    if t2(l) >= tmp_t1(i)
+    r = length(seq_mom);
+    if seq_mom(l) >= tmp_t1(i)
         r = l;
-    elseif t2(r) <= tmp_t1(i)
+    elseif seq_mom(r) <= tmp_t1(i)
         l = r;
     else
         while r-l > 1
             tmp_idx = round((l+r)/2);
-            if t2(tmp_idx) - tmp_t1(i) > 0
+            if seq_mom(tmp_idx) - tmp_t1(i) > 0
                 r = tmp_idx;
             else
                 l = tmp_idx;
@@ -59,7 +61,7 @@ for i = 1:length(tmp_t1)
         end
     end
 
-    if abs(t2(r)-tmp_t1(i)) > abs(tmp_t1(i)-t2(l))
+    if abs(seq_mom(r)-tmp_t1(i)) > abs(tmp_t1(i)-seq_mom(l))
         indout(i) = l;
     else
         indout(i) = r;
