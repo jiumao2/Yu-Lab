@@ -2,7 +2,7 @@
 r_path = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\RTarrayAll.mat';
 load(r_path)
 
-save_filename_bmp = './fig.bmp';
+% save_filename_bmp = './fig.bmp';
 save_filename_pdf = './fig.pdf';
 save_filename_png = './fig.png';
 save_resolution = 1200;
@@ -322,6 +322,6 @@ ax_PSTH2.YLim = [0,ylim_max];
 
 
 %% Save Figure
-print(h,save_filename_bmp,'-dbmp',['-r',num2str(save_resolution)])
+% print(h,save_filename_bmp,'-dbmp',['-r',num2str(save_resolution)])
 print(h,save_filename_png,'-dpng',['-r',num2str(save_resolution)])
 print(h,save_filename_pdf,'-dpdf',['-r',num2str(save_resolution)])

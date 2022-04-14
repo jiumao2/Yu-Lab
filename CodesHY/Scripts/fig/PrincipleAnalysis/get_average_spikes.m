@@ -1,4 +1,18 @@
-function [average_spikes_long, average_spikes_short] = get_average_spikes(r, unit_of_interest,t_pre,t_post)
+function [average_spikes_long, average_spikes_short] = get_average_spikes(r, unit_of_interest,t_pre,t_post,varargin)
+
+gaussian_kernel = 50;
+normalized = '';
+for i =1:2:nargin-4
+    switch varargin{i}
+        case 'gaussian_kernel'
+            gaussian_kernel = varargin{i+1};
+        case 'normalized'
+            normalized = varargin{i+1};
+        otherwise
+            errordlg('unknown argument')
+    end
+end
+
 t_len = t_post-t_pre+1;
 
 if size(unit_of_interest,1)>1 && size(unit_of_interest,2)>1 
@@ -32,25 +46,27 @@ for k = 1:length(unit_of_interest)
 end
 
 % gaussian kernel
-spikes = smoothdata(spikes','gaussian',250)'; % sigma = 250/5 = 50ms
-spikes = zscore(spikes,0,2);
+spikes = smoothdata(spikes','gaussian',gaussian_kernel*5)'; % sigma = 250/5 = 50ms
 
 % pick correct trials and separate long-FP/short-FP trials
 press_times = round(r.Behavior.EventTimings(r.Behavior.EventMarkers==3));
-FP_long_index = r.Behavior.Foreperiods==1500;
-FP_short_index = r.Behavior.Foreperiods==750;
-correct_index = r.Behavior.CorrectIndex;
 
+correct_index = r.Behavior.CorrectIndex;
 FP_long_index = find(r.Behavior.Foreperiods(correct_index)==1500);
 FP_short_index = find(r.Behavior.Foreperiods(correct_index)==750);
+
 spikes_trial_flattened = zeros(length(unit_of_interest),t_len*length(correct_index));
 
 for k = 1:length(correct_index)
     spikes_trial_flattened(:,t_len*(k-1)+1:t_len*k) = spikes(:,press_times(correct_index(k))+t_pre:press_times(correct_index(k))+t_post);
 end
 
-% zscore
-spikes_trial_flattened = zscore(spikes_trial_flattened,0,2);
+% normalize
+if strcmp(normalized,'zscore')
+    spikes_trial_flattened = zscore(spikes_trial_flattened,0,2);
+elseif strcmp(normalized,'minmax')
+    spikes_trial_flattened = (spikes_trial_flattened-min(spikes_trial_flattened))/(max(spikes_trial_flattened)-min(spikes_trial_flattened));
+end
 spikes_trial = reshape(spikes_trial_flattened',t_len,length(correct_index),length(unit_of_interest));
 
 % Average

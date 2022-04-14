@@ -4,8 +4,8 @@ data_path_unit = {...
     'D:\Ephys\ANMs\Eli\Sessions\r_all.mat',                     []...
     'D:\Ephys\ANMs\Urey\Sessions\r_all_20211123_20211128.mat',  []...
     };
-t_pre = -1800;
-t_post = 3000;
+t_pre = -1500;
+t_post = 2400;
 t_len = t_post-t_pre+1;
 %%
 average_spikes_long_all = [];
@@ -14,7 +14,7 @@ for data_idx = 1:2:length(data_path_unit)
 temp = load(data_path_unit{data_idx});
 unit_of_interest = data_path_unit{data_idx+1};
 if isfield(temp,'r')
-    [average_spikes_long, average_spikes_short] = get_average_spikes(temp.r, unit_of_interest,t_pre,t_post);
+    [average_spikes_long, average_spikes_short] = get_average_spikes(temp.r, unit_of_interest,t_pre,t_post,'normalized','zscore');
     average_spikes_long_all = [average_spikes_long_all;average_spikes_short];
     average_spikes_short_all = [average_spikes_short_all;average_spikes_short];
 elseif isfield(temp,'r_all')
@@ -22,8 +22,7 @@ elseif isfield(temp,'r_all')
     trial_num = zeros(length(r_all.r),1);
     unit_of_interest_all = cell(length(r_all.r),1);
     for k = 1:length(r_all.r)
-        load(['D:\Ephys\ANMs\',r_all.AnimalName,'\Sessions\',r_all.r{k}.path(end-8:end),r_all.r{k}.filename])
-        trial_num(k) = length(r.Behavior.CorrectIndex);
+        trial_num(k) = length(r_all.r{k}.Behavior.CorrectIndex);
         unit_of_interest_all{k} = [];
     end
     for k = 1:height(r_all.UnitsCombined)
@@ -32,8 +31,7 @@ elseif isfield(temp,'r_all')
         unit_of_interest_all{temp(r_idx,1)} = [unit_of_interest_all{temp(r_idx,1)}; temp(r_idx,2:3)];
     end
     for k = 1:length(r_all.r)
-        load(['D:\Ephys\ANMs\',r_all.AnimalName,'\Sessions\',r_all.r{k}.path(end-8:end),r_all.r{k}.filename])
-        [average_spikes_long, average_spikes_short] = get_average_spikes(r, unit_of_interest_all{k},t_pre,t_post);
+        [average_spikes_long, average_spikes_short] = get_average_spikes(r_all.r{k}, unit_of_interest_all{k},t_pre,t_post,'normalized','zscore');
         average_spikes_long_all = [average_spikes_long_all,average_spikes_long];
         average_spikes_short_all = [average_spikes_short_all,average_spikes_short];
     end    
@@ -45,14 +43,16 @@ end
 data_all = [average_spikes_long_all;average_spikes_short_all];
 [coeff, score, ~, ~, explained] = pca(data_all);
 
-figure;
-bar(explained)
+h_explained = figure;
+bar(h_explained,explained,'b')
 title('explained')
+saveas(h_explained,'explained.png')
 
 FP_long_index = 1:t_len;
 FP_short_index = t_len+1:2*t_len;
 %%
-figure;
+% h_PC = figure;
+figure();
 for k = 1:4
     subplot(2,2,k)
     plot(t_pre:t_post,score(FP_long_index,k),'b-','lineWidth',3)
@@ -66,24 +66,12 @@ for k = 1:4
     xlabel('time (ms)')
     ylabel(['PC',num2str(k)])
 end
+saveas(gcf,'PC.png');
 
 %%
-% figure;
-% plot3(t_pre:t_post,score(1:t_len,1),score(1:t_len,2),'b.-')
-% hold on
-% plot3(0,score(1-t_pre,1),score(1-t_pre,2),'bx','MarkerSize',10)
-% plot3(1500,score(1501-t_pre,1),score(1501-t_pre,2),'bx','MarkerSize',10)
-% 
-% plot3(t_pre:t_post,score(t_len+1:end,1),score(t_len+1:end,2),'r.-')
-% plot3(0,score(t_len+1-t_pre,1),score(t_len+1-t_pre,2),'rx','MarkerSize',10)
-% plot3(750,score(t_len+751-t_pre,1),score(t_len+751-t_pre,2),'rx','MarkerSize',10)
-% xlabel('time (ms)')
-% ylabel('PC1')
-% zlabel('PC2')
-
-f = figure;
+h = figure;
 interval = 80;
-axes1 = axes('Parent',f);
+axes1 = axes(h);
 hold(axes1,'on');
 plot3(axes1,score(1:t_len,1),score(1:t_len,2),score(1:t_len,3),'b-','lineWidth',1)
 plot3(axes1,score(1:interval:t_len,1),score(1:interval:t_len,2),score(1:interval:t_len,3),'b.','MarkerSize',8)
@@ -102,12 +90,14 @@ plot3(axes1,score(t_len+751-t_pre,1),score(t_len+751-t_pre,2),score(t_len+751-t_
 
 % view(axes1,[3.70000027033802 -16.0447472526573]);
 hold(axes1,'off');
+saveas(h,'PC_traj.png')
 
 %%
-figure;
 for k = 1:4
     subplot(4,1,k)
     histogram(coeff(:,k))
 end
+xlabel('Loadings')
+saveas(gcf,'Loadings.png');
 
-[a,ind_sort] = sort(coeff(:,1),'descend');
+% [a,ind_sort] = sort(coeff(:,1),'descend');
