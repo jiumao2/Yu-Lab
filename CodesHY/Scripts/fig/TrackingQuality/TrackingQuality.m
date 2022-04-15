@@ -5,7 +5,7 @@ global p_threshold vid_press_idx notation_left_hand color_left_hand notation_rig
 global notation_eye color_eye notation_left_ear color_left_ear
 global notation_right_ear color_right_ear notation_head_center color_head_center notation_tail color_tail
 r_path = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\RTarrayAll.mat';
-% load(r_path)
+load(r_path)
 
 save_filename_pdf = './TrackingQuality.pdf';
 save_filename_png = './TrackingQuality.png';
@@ -71,15 +71,15 @@ height_traj_top = width_traj/img_width_top*img_height_top;
 
 h = figure('Units','centimeters');
 figure_width = margin_left + margin_right + width_traj*4 + space_col*3;
-figure_height = margin_up + margin_bottom + height_traj_side*2 + space_col;
+figure_height = margin_up + margin_bottom + height_traj_side + height_traj_top + space_row;
 h.Position = [15,15,figure_width,figure_height];
 
 annotation(h,'textbox',[0.022,0.71,0.1,0.05],'FontWeight','bold','String','sideview','EdgeColor','none','FontSize',8.25,'HorizontalAlignment','center','VerticalAlignment','middle');
-annotation(h,'textbox',[0.022,0.275,0.1,0.05],'FontWeight','bold','String','topview','EdgeColor','none','FontSize',8.25,'HorizontalAlignment','center','VerticalAlignment','middle');
+annotation(h,'textbox',[0.022,0.2932,0.1,0.05],'FontWeight','bold','String','topview','EdgeColor','none','FontSize',8.25,'HorizontalAlignment','center','VerticalAlignment','middle');
 
 % traj side approach
 ax_side_approach = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
-ax_side_approach.Position = [margin_left,margin_bottom+space_row+height_traj_side,width_traj,height_traj_side];
+ax_side_approach.Position = [margin_left,margin_bottom+space_row+height_traj_top,width_traj,height_traj_side];
 ax_side_approach.XAxis.Visible = 'off';ax_side_approach.YAxis.Visible = 'off';
 title(ax_side_approach,'Approach')
 xlim(ax_side_approach,[0,img_width_side])
@@ -87,7 +87,7 @@ ylim(ax_side_approach,[0,img_height_side])
 
 % traj side lift
 ax_side_lift = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
-ax_side_lift.Position = [margin_left+width_traj+space_col,margin_bottom+space_row+height_traj_side,width_traj,height_traj_side];
+ax_side_lift.Position = [margin_left+width_traj+space_col,margin_bottom+space_row+height_traj_top,width_traj,height_traj_side];
 ax_side_lift.XAxis.Visible = 'off';ax_side_lift.YAxis.Visible = 'off';
 title(ax_side_lift,'Lift')
 xlim(ax_side_lift,[0,img_width_side])
@@ -95,7 +95,7 @@ ylim(ax_side_lift,[0,img_height_side])
 
 % traj side hold
 ax_side_hold = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
-ax_side_hold.Position = [margin_left+width_traj*2+space_col*2,margin_bottom+space_row+height_traj_side,width_traj,height_traj_side];
+ax_side_hold.Position = [margin_left+width_traj*2+space_col*2,margin_bottom+space_row+height_traj_top,width_traj,height_traj_side];
 ax_side_hold.XAxis.Visible = 'off';ax_side_hold.YAxis.Visible = 'off';
 title(ax_side_hold,'Hold')
 xlim(ax_side_hold,[0,img_width_side])
@@ -103,7 +103,7 @@ ylim(ax_side_hold,[0,img_height_side])
 
 % traj side release
 ax_side_release = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
-ax_side_release.Position = [margin_left+width_traj*3+space_col*3,margin_bottom+space_row+height_traj_side,width_traj,height_traj_side];
+ax_side_release.Position = [margin_left+width_traj*3+space_col*3,margin_bottom+space_row+height_traj_top,width_traj,height_traj_side];
 ax_side_release.XAxis.Visible = 'off';ax_side_release.YAxis.Visible = 'off';
 title(ax_side_release,'Release')
 xlim(ax_side_release,[0,img_width_side])
@@ -113,30 +113,38 @@ ylim(ax_side_release,[0,img_height_side])
 % traj top approach
 ax_top_approach = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
 ax_top_approach.Position = [margin_left,margin_bottom,width_traj,height_traj_top];
-ax_top_approach.XAxis.Visible = 'off';ax_top_approach.YAxis.Visible = 'off';
+ax_top_approach.XTick = {};
+ax_top_approach.YAxis.Visible = 'off';
 xlim(ax_top_approach,[0,img_width_top])
 ylim(ax_top_approach,[0,img_height_top])
+xlabel(ax_top_approach,['t = ',num2str(t_approach),'ms'])
 
 % traj top lift
 ax_top_lift = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
 ax_top_lift.Position = [margin_left+width_traj+space_col,margin_bottom,width_traj,height_traj_top];
-ax_top_lift.XAxis.Visible = 'off';ax_top_lift.YAxis.Visible = 'off';
+ax_top_lift.XTick = {};
+ax_top_lift.YAxis.Visible = 'off';
 xlim(ax_top_lift,[0,img_width_top])
 ylim(ax_top_lift,[0,img_height_top])
+xlabel(ax_top_lift,['t = ',num2str(t_lift),'ms'])
 
 % traj top hold
 ax_top_hold = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
 ax_top_hold.Position = [margin_left+width_traj*2+space_col*2,margin_bottom,width_traj,height_traj_top];
-ax_top_hold.XAxis.Visible = 'off';ax_top_hold.YAxis.Visible = 'off';
+ax_top_hold.XTick = {};
+ax_top_hold.YAxis.Visible = 'off';
 xlim(ax_top_hold,[0,img_width_top])
 ylim(ax_top_hold,[0,img_height_top])
+xlabel(ax_top_hold,['t = ',num2str(t_hold),'ms'])
 
 % traj top release
 ax_top_release = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
 ax_top_release.Position = [margin_left+width_traj*3+space_col*3,margin_bottom,width_traj,height_traj_top];
-ax_top_release.XAxis.Visible = 'off';ax_top_release.YAxis.Visible = 'off';
+ax_top_release.XTick = {};
+ax_top_release.YAxis.Visible = 'off';
 xlim(ax_top_release,[0,img_width_top])
 ylim(ax_top_release,[0,img_height_top])
+xlabel(ax_top_release,['t = ',num2str(t_release),'ms'])
 
 %% Plotting
 n_frame_approach = round((t_approach-r.VideoInfos_side(1).t_pre)/10+1);
