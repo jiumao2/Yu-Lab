@@ -1,45 +1,35 @@
-function PlotWaveClusSorting(chname, varargin)
-% e.g., PlotWaveClusSorting('5', 'trange', [123 130], 'spkrange', [-800 500], 'lfprange', [-500 500])
-% 8/28/2021 modified by HY
-trange = [123 130];
-vrange1 = [-800 500];
-vrange2 = [-500,500];
+data_path = 'D:\Ephys\ANMs\Russo\Sessions\20210821\';
+trange = [220 230];
+vrange1 = [-1800 500];
+vrange2 = [-800 500];
+chname = '4';
 name=[];
-for i =1:2:nargin-1
-    switch varargin{i}
-        case 'trange'
-            trange = varargin{i+1};
-        case 'spkrange'
-            vrange1 = varargin{i+1};
-        case 'lfprange'
-            vrange2 = varargin{i+1};
-        case 'name'
-            name = varargin{i+1};
-    end
-end
-%%
-% raw data
-tic
-rawchname =  ['chdat' chname '.mat'];
 
-if length(dir(rawchname)) ==0
-    rawchname = ['chdat_meansub' chname '.mat'];
+save_filename_pdf = './fig.pdf';
+save_filename_png = './fig.png';
+save_filename_eps = 'c:/Users/jiumao/Desktop/WaveClusSorting.eps';
+save_resolution = 1200;
+
+% raw data
+rawchname =  [data_path,'chdat' chname '.mat'];
+
+if isempty(dir(rawchname))
+    rawchname = [data_path,'chdat_meansub' chname '.mat'];
 end
 
 raw = load(rawchname); % if chname is 2, then load('chdat2.mat')
-toc
 Fs=30000;
 tall =  length(raw.index)/30000; % in seconds. 
 % spike detection
 
-x=dir(['chdat' chname '_spikes.mat']);
-if length(x)==0
-    x=dir(['chdat_meansub' chname '_spikes.mat']);
-    spkall = load(x.name);
-    spksort = load(['times_chdat_meansub' chname '.mat']);
+x=dir([data_path,'chdat' chname '_spikes.mat']);
+if isempty(x)
+    x=dir([data_path,'chdat_meansub' chname '_spikes.mat']);
+    spkall = load([data_path,x.name]);
+    spksort = load([data_path,'times_chdat_meansub' chname '.mat']);
 else
-    spkall = load(['chdat' chname '_spikes.mat']); % load spike times from detection, including all that pass thredhold
-    spksort = load(['times_chdat' chname '.mat']);
+    spkall = load([data_path,'chdat' chname '_spikes.mat']); % load spike times from detection, including all that pass thredhold
+    spksort = load([data_path,'times_chdat' chname '.mat']);
 end
 
 spkall.index = spkall.index;
@@ -52,7 +42,7 @@ set(gcf, 'unit', 'centimeters', 'position',[2 2 15.5 10.5], 'paperpositionmode',
 
 % plot sorted spikes
 clusters = unique(spksort.cluster_class(:, 1));
-nclusters = length(clusters);
+nclusters = length(clusters)-1;
 
 allcolors = varycolor(nclusters*2);
 allcolors = allcolors(1:2:2*nclusters-1, :);
@@ -168,13 +158,8 @@ line([0 0], [vrange2(1) vrange2(1)+100], 'color', 'k', 'linewidth', 2)
 linkaxes([ha1, ha1s, ha4], 'x')
 
 
-thisFolder = fullfile(pwd, 'Fig');
-if ~exist(thisFolder, 'dir')
-    mkdir(thisFolder)
-end
-
-tosavename= fullfile(thisFolder, ['waveclus_chdat' chname name]);
-
-print (gcf,'-dpng', tosavename)
-
- 
+%% Save Figure
+% print(h,save_filename_bmp,'-dbmp',['-r',num2str(save_resolution)])
+print(gcf,save_filename_png,'-dpng',['-r',num2str(save_resolution)])
+print(gcf,save_filename_pdf,'-dpdf',['-r',num2str(save_resolution)])
+print(gcf,save_filename_eps,'-depsc2',['-r',num2str(save_resolution)]) 

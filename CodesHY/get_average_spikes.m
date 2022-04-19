@@ -88,9 +88,7 @@ for k = 1:length(t_event)
 end
 
 % normalize
-if strcmp(normalized,'zscore')
-    spikes_trial_flattened = zscore(spikes_trial_flattened,0,2);
-end
+
 spikes_trial = reshape(spikes_trial_flattened',t_len,length(t_event),length(unit_of_interest));
 
 % Average
@@ -101,4 +99,10 @@ else
     average_spikes_long = reshape(mean(spikes_trial,2),t_len,[]);
     average_spikes_short = [];
 end
+
+if strcmp(normalized,'zscore')
+    average_spikes_long = zscore(average_spikes_long,0,1);
+    average_spikes_short = zscore(average_spikes_short,0,1);
+end
+
 end

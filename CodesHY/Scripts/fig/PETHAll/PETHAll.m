@@ -39,11 +39,13 @@ ax_press_1 = axes(h,'Units','centimeters','NextPlot','add');
 ax_press_1.Position = [margin_left,margin_bottom+space_row+height_PSTH,width_PSTH,height_PSTH];
 ax_press_1.XAxis.Visible = 'off';
 title(ax_press_1,'FP = 750ms')
+ylabel(ax_press_1,'Neurons')
 
 ax_press_2 = axes(h,'Units','centimeters','NextPlot','add');
 ax_press_2.Position = [margin_left,margin_bottom,width_PSTH,height_PSTH];
 title(ax_press_2,'FP = 1500ms')
 xlabel(ax_press_2,'Time from Press (ms)')
+ylabel(ax_press_2,'Neurons')
 
 % PSTH release
 ax_release_1 = axes(h,'Units','centimeters','NextPlot','add');
@@ -120,7 +122,7 @@ for data_idx = 1:2:length(data_path_unit)
 temp = load(data_path_unit{data_idx});
 unit_of_interest = data_path_unit{data_idx+1};
 if isfield(temp,'r')
-    [average_spikes_long, average_spikes_short] = get_average_spikes(temp.r, unit_of_interest,t_pre,t_post,'gaussian_kernel',25,'event',event);
+    [average_spikes_long, average_spikes_short] = get_average_spikes(temp.r, unit_of_interest,t_pre,t_post,'gaussian_kernel',25,'event',event,'normalized','zscore');
     average_spikes_long_all = [average_spikes_long_all;average_spikes_long];
     average_spikes_short_all = [average_spikes_short_all;average_spikes_short];
 elseif isfield(temp,'r_all')
@@ -131,13 +133,16 @@ elseif isfield(temp,'r_all')
         trial_num(k) = length(r_all.r{k}.Behavior.CorrectIndex);
         unit_of_interest_all{k} = [];
     end
-    for k = 1:height(r_all.UnitsCombined)
+    if isempty(unit_of_interest)
+        unit_of_interest = 1:height(r_all.UnitsCombined);
+    end
+    for k = unit_of_interest
         temp = r_all.UnitsCombined(k,:).rIndex_RawChannel_Number{1};
         [~,r_idx] = max(trial_num(temp(:,1)));
         unit_of_interest_all{temp(r_idx,1)} = [unit_of_interest_all{temp(r_idx,1)}; temp(r_idx,2:3)];
     end
     for k = 1:length(r_all.r)
-        [average_spikes_long, average_spikes_short] = get_average_spikes(r_all.r{k}, unit_of_interest_all{k},t_pre,t_post,'gaussian_kernel',25,'event',event);
+        [average_spikes_long, average_spikes_short] = get_average_spikes(r_all.r{k}, unit_of_interest_all{k},t_pre,t_post,'gaussian_kernel',25,'event',event,'normalized','zscore');
         average_spikes_long_all = [average_spikes_long_all,average_spikes_long];
         average_spikes_short_all = [average_spikes_short_all,average_spikes_short];
     end    
@@ -147,6 +152,6 @@ end
 end
 
 % min-max normalizing
-average_spikes_long_all = (average_spikes_long_all-min(average_spikes_long_all))./(max(average_spikes_long_all)-min(average_spikes_long_all));
-average_spikes_short_all = (average_spikes_short_all-min(average_spikes_short_all))./(max(average_spikes_short_all)-min(average_spikes_short_all));
+% average_spikes_long_all = (average_spikes_long_all-min(average_spikes_long_all))./(max(average_spikes_long_all)-min(average_spikes_long_all));
+% average_spikes_short_all = (average_spikes_short_all-min(average_spikes_short_all))./(max(average_spikes_short_all)-min(average_spikes_short_all));
 end
