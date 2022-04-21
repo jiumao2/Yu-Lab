@@ -79,7 +79,9 @@ elseif strcmp(event,'release')
 elseif strcmp(event,'reward')
     t_event = t_rewards;
 end
-
+t_event = t_event(t_event+t_post<length(spikes));
+FP_long_index(FP_long_index>length(t_event)) = [];
+FP_short_index(FP_short_index>length(t_event)) = [];
 
 spikes_trial_flattened = zeros(length(unit_of_interest),t_len*length(t_event));
 
