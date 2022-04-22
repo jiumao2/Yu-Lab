@@ -31,22 +31,28 @@ FRrange = [];
 printname = [];
 printsize = [2 2 20 16];
 tosave =1;
+PressTimeDomain = [7000 2500];
+electrode_type = 'Ch';
+
 if nargin>2
     for i=1:2:size(varargin,2)
         switch varargin{i}
             case 'FRrange'
                 FRrange = varargin{i+1};
+            case 'PressTimeDomain'
+                PressTimeDomain = varargin{i+1}; % PSTH time domain
             case 'Name'
                 printname = varargin{i+1};
-            case 'size'
+            case 'Size'
                 printsize = varargin{i+1};
-            case 'tosave'
+            case 'Tosave'
                 tosave = varargin{i+1};
+            case 'Type'
+                electrode_type =  varargin{i+1};
             otherwise
                 errordlg('unknown argument')
         end
-    end
-else
+    end 
 end
 
 rb = r.Behavior;
@@ -143,6 +149,8 @@ ind_badportin = find(strcmp(rb.Labels, 'BadPokeFirstIn'));
 t_badportin = rb.EventTimings(rb.EventMarkers == ind_badportin);
 
 movetime = zeros(1, length(t_rewards));
+
+
 for i =1:length(t_rewards)
     dt = t_rewards(i)-t_correctreleases;
     dt = dt(dt>0);
@@ -155,6 +163,20 @@ t_rewards = t_rewards(movetime>0);
 movetime = movetime(movetime>0);
 [movetime, indsort] = sort(movetime);
 t_rewards = t_rewards(indsort); 
+
+
+% due to technical error, pokes that occured 200 ms after reward is not
+% real, should be corrected. 
+
+for i =1:length(t_rewards)
+    indx = find(t_portin>t_rewards(i), 1, 'first');
+    if ~isempty(indx)
+        dti = t_portin(indx) - t_rewards(i);
+        if dti < 300
+            t_portin(indx) = t_rewards(i);
+        end;
+    end;
+end;
 
 % time of premature presses
 t_prematurepresses = t_presses(rb.PrematureIndex);
@@ -256,14 +278,17 @@ plot(t_trigger_long_correct, 5.2, 'r*');
 plot(t_correctsorted{2}+1500, 5, 'r^');
 set(gca, 'ylim', [0 6])
 
-[psth_correctall, tsall] = jpsth(r.Units.SpikeTimes(ku).timings, t_correctpresses, params);
+params_press.pre            =              PressTimeDomain(1);
+params_press.post           =              PressTimeDomain(2);
+params_press.binwidth     =              20;
+[psth_correctall, tsall] = jpsth(r.Units.SpikeTimes(ku).timings, t_correctpresses, params_press);
 psth_correctall = smoothdata (psth_correctall, 'gaussian', 5);
         
-[psth_correct{1}, ts{1}, trialspxmat{1}, tspkmat{1}] = jpsth(r.Units.SpikeTimes(ku).timings,  t_correctsorted{1}, params);
+[psth_correct{1}, ts{1}, trialspxmat{1}, tspkmat{1}] = jpsth(r.Units.SpikeTimes(ku).timings,  t_correctsorted{1}, params_press);
 psth_correct{1} = smoothdata (psth_correct{1}, 'gaussian', 5);
         
 params.post = 1500+1000;
-[psth_correct{2}, ts{2}, trialspxmat{2}, tspkmat{2}] = jpsth(r.Units.SpikeTimes(ku).timings,  t_correctsorted{2}, params);
+[psth_correct{2}, ts{2}, trialspxmat{2}, tspkmat{2}] = jpsth(r.Units.SpikeTimes(ku).timings,  t_correctsorted{2}, params_press);
 psth_correct{2} = smoothdata (psth_correct{2}, 'gaussian', 5);
 
 params.pre =  2000;
@@ -279,7 +304,7 @@ params.pre = 2000;
 params.post = 2500;
 
 % premature press PSTH
-[psth_premature_press, ts_premature_press, trialspxmat_premature_press, tspkmat_premature_press] = jpsth(r.Units.SpikeTimes(ku).timings, t_prematurepresses, params);
+[psth_premature_press, ts_premature_press, trialspxmat_premature_press, tspkmat_premature_press] = jpsth(r.Units.SpikeTimes(ku).timings, t_prematurepresses, params_press);
 psth_premature_press = smoothdata (psth_premature_press, 'gaussian', 5);    
 
 % premature release PSTH
@@ -287,7 +312,7 @@ psth_premature_press = smoothdata (psth_premature_press, 'gaussian', 5);
 psth_premature_release = smoothdata (psth_premature_release, 'gaussian', 5);
      
 % late press PSTH
-[psth_late_press, ts_late_press, trialspxmat_late_press, tspkmat_late_press] = jpsth(r.Units.SpikeTimes(ku).timings, t_latepresses, params);
+[psth_late_press, ts_late_press, trialspxmat_late_press, tspkmat_late_press] = jpsth(r.Units.SpikeTimes(ku).timings, t_latepresses, params_press);
 psth_late_press = smoothdata (psth_late_press, 'gaussian', 5);
 
 % late release PSTH
@@ -342,7 +367,8 @@ hf=27;
 figure(27); clf(27)
 set(gcf, 'unit', 'centimeters', 'position', printsize, 'paperpositionmode', 'auto' ,'color', 'w')
 
-ha1 =  axes('unit', 'centimeters', 'position', [1 1 4*size(trialspxmat{1}, 1)/4000 2], 'nextplot', 'add', 'xlim', [-2000 2500]);
+ha1 =  axes('unit', 'centimeters', 'position', [1 1 6 2], 'nextplot', 'add', 'xlim', [-PressTimeDomain(1) PressTimeDomain(2)]);
+
 plot(ts{1}, psth_correct{1}, 'b', 'linewidth', 1.5); hold on
 plot(ts{2}, psth_correct{2}, 'k', 'linewidth', 1.5)
 
@@ -359,7 +385,7 @@ xlabel('Time from press (ms)')
 ylabel ('Spks per s')
 latecol =  [162 20 47]/255;
 % error trials
-ha1b =  axes('unit', 'centimeters', 'position', [1 3.5 4*size(trialspxmat{1}, 1)/4000 2], 'nextplot', 'add', 'xlim', [-2000 2500]);
+ha1b =  axes('unit', 'centimeters', 'position', [1 3.5 6 2], 'nextplot', 'add', 'xlim',  [-PressTimeDomain(1) PressTimeDomain(2)]);
 % plot premature and late as well
 if  size(trialspxmat_premature_press, 2)>5
     plot(ts_premature_press, psth_premature_press, 'color', [0.6 0.6 0.6], 'linewidth',1);
@@ -377,9 +403,9 @@ line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 % make raster plot  750 ms FP
 rasterheight = 0.04;
 ntrial1 = size(trialspxmat{1}, 2);
-ha2 =  axes('unit', 'centimeters', 'position', [1 5.5+0.5 4*size(trialspxmat{1}, 1)/4000 ntrial1*rasterheight],...
+ha2 =  axes('unit', 'centimeters', 'position', [1 5.5+0.5 6 ntrial1*rasterheight],...
     'nextplot', 'add',...
-    'xlim', [min(tspkmat{1}) max(tspkmat{1})], 'ylim', [-ntrial1 1], 'box', 'on');
+    'xlim', [-PressTimeDomain(1) PressTimeDomain(2)], 'ylim', [-ntrial1 1], 'box', 'on');
 
 apmat = trialspxmat{1};
 k =0;
@@ -398,15 +424,18 @@ for i =1:size(trialspxmat{1}, 2)
         k = k+1;
     end;
     
-    % press time
+    % port time
     itpress = t_correctsorted{1}(i);
     i_portin = t_portin-itpress;
-    i_portin = i_portin(i_portin>=-2000 & i_portin<=2500);
+    i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));
     
-    xxipin=[i_portin; i_portin];
-    if ~isempty(xxipin)
-        line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
-    end;
+    if ~isempty(i_portin)
+        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
+    end
+%     xxipin=[i_portin; i_portin];
+%     if ~isempty(xxipin)
+%         line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 2)
+%     end;
 end;
 
 line([750 750], get(gca, 'ylim'), 'color', 'm', 'linestyle', '-.', 'linewidth', 1)
@@ -414,9 +443,9 @@ line([750 750], get(gca, 'ylim'), 'color', 'm', 'linestyle', '-.', 'linewidth', 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('750 ms')
 
-% make raster plot 1500 ms FP
+%% make raster plot 1500 ms FP
 ntrial2 = size(trialspxmat{2}, 2);
-ha3 =  axes('unit', 'centimeters', 'position', [1 5.5+0.5+ntrial1*rasterheight+0.5 4*size(trialspxmat{2}, 1)/4000 ntrial2*rasterheight],...
+ha3 =  axes('unit', 'centimeters', 'position', [1 5.5+0.5+ntrial1*rasterheight+0.5 6 ntrial2*rasterheight],...
     'nextplot', 'add',  'xticklabel', [],...
     'xlim', [min(tspkmat{2}) max(tspkmat{2})], 'ylim', [-ntrial2 1], 'box', 'on');
 
@@ -438,13 +467,16 @@ for i =1:size(trialspxmat{2}, 2)
     % plot port poke time
     itpress = t_correctsorted{2}(i);
     i_portin = t_portin-itpress;
-    i_portin = i_portin(i_portin>=-2000 & i_portin<=2500);
+    i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));
     
-    xxipin=[i_portin; i_portin];
-    if ~isempty(xxipin)
-        line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
-    end;
-    
+    if ~isempty(i_portin)
+        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
+    end
+    %     xxipin=[i_portin; i_portin];
+    %     if ~isempty(xxipin)
+    %         line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 2)
+    %     end;
+
 end;
 line([1500 1500], get(gca, 'ylim'), 'color', 'm', 'linestyle', '-.', 'linewidth', 1)
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
@@ -469,7 +501,8 @@ predur_sorted = [predur_short_sorted; predur_long_sorted];
 t_prematurepresses_new = [t_prematurepresses_short(ipredur_short_sorted); t_prematurepresses_long(ipredur_long_sorted)];
 FPs_prematurepresses_sorted = FPs_prematurepresses([ind_short(ipredur_short_sorted); ind_long(ipredur_long_sorted)]);
 ntrial3premature = size(apmat_new, 2);
-ha3 =  axes('unit', 'centimeters', 'position', [1 5.5+0.5+ntrial1*rasterheight+0.5+ ntrial2*rasterheight+0.5 4*size(trialspxmat_premature_press, 1)/4000 ntrial2premature*rasterheight],...
+
+ha3 =  axes('unit', 'centimeters', 'position', [1 5.5+0.5+ntrial1*rasterheight+0.5+ ntrial2*rasterheight+0.5 6 ntrial2premature*rasterheight],...
     'nextplot', 'add',  'xticklabel', [],...
     'xlim', [min( tspkmat_premature_press) max( tspkmat_premature_press)], 'ylim', [-ntrial3premature 1], 'box', 'on');
 apmat = apmat_new;
@@ -486,23 +519,25 @@ for i =1:size(apmat, 2)
         line([xxrt xxrt], yy, 'color', 'g', 'linewidth', 1.5)
         k = k+1;
     end;
-    
+
     % plot trigger stimulus
-    itrigger = FPs_prematurepresses_sorted(i); 
+    itrigger = FPs_prematurepresses_sorted(i);
     xtrigger = [itrigger; itrigger];
     yytrigger = [0 1]-k;
     line([xtrigger xtrigger], yytrigger, 'color', 'm', 'linewidth', 1)
     % plot port poke time
     i_portin = t_portin-t_prematurepresses_new(i);
-    i_portin = i_portin(i_portin>=-2000 & i_portin<=2500);
-    
-    xxipin=[i_portin; i_portin];
-    if ~isempty(xxipin)
-        line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
-    end;
-    
+    i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));
+    if ~isempty(i_portin)
+        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
+    end
+    %     xxipin=[i_portin; i_portin];
+    %     if ~isempty(xxipin)
+    %         line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
+    %     end;
+
 end;
- line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
+line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Premature presses')
 
 %%  late press raster
@@ -530,7 +565,7 @@ t_latepresses_new = [t_latepresses_short(ilatedur_short_sorted); t_latepresses_l
 FPs_latepresses_sorted = FPs_latepresses([ind_short(ilatedur_short_sorted); ind_long(ilatedur_long_sorted)]);
 
 yshift = 5.5+0.5+ntrial1*rasterheight+0.5+ ntrial2*rasterheight+0.5+ntrial2premature*rasterheight+0.5;
-ha3 =  axes('unit', 'centimeters', 'position', [1 yshift 4*size(trialspxmat_premature_press, 1)/4000  ntrial2late*rasterheight],...
+ha3 =  axes('unit', 'centimeters', 'position', [1 yshift 6  ntrial2late*rasterheight],...
     'nextplot', 'add',  'xticklabel', [],...
     'xlim', [min( tspkmat_late_press) max( tspkmat_late_press)], 'ylim', [-ntrial2late 1], 'box', 'on');
 
@@ -554,15 +589,21 @@ for i =1:size(apmat, 2)
     xtrigger = [itrigger; itrigger];
     yytrigger = [0 1]-k;
     line([xtrigger xtrigger], yytrigger, 'color', 'm', 'linewidth', 1);
-    
+
     % plot port poke time
     i_portin = t_portin-t_latepresses_new(i);
-    i_portin = i_portin(i_portin>=-2000 & i_portin<=2500);
-    
-    xxipin=[i_portin; i_portin];
-    if ~isempty(xxipin)
-        line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
-    end;
+
+    i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));
+    if ~isempty(i_portin)
+        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
+    end
+
+%     i_portin = i_portin(i_portin>=-2000 & i_portin<=2500);
+%     
+%     xxipin=[i_portin; i_portin];
+%     if ~isempty(xxipin)
+%         line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
+%     end;
     
 end;
  line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
@@ -572,7 +613,7 @@ title('Late presses')
 yfirstcolumn = [1 yshift+ntrial2late*rasterheight+1];
 
 %% release PSTHs
-ha4 =  axes('unit', 'centimeters', 'position', [7 1 4*size(trialspxmat_release{2}, 1)/4000 2], 'nextplot', 'add', 'xlim', [-2000 2500]);
+ha4 =  axes('unit', 'centimeters', 'position', [8 1 4*size(trialspxmat_release{2}, 1)/4000 2], 'nextplot', 'add', 'xlim', [-2000 2500]);
 plot(ts_release{1}, psth_release_correct{1}, 'b', 'linewidth', 1.5); hold on
 plot(ts_release{2}, psth_release_correct{2}, 'k', 'linewidth', 1.5)
 xlabel('Time from release (ms)')
@@ -584,7 +625,7 @@ if ~isempty(FRrange)
 end
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 
-ha4b =  axes('unit', 'centimeters', 'position', [7 3.5 4*size(trialspxmat_release{2}, 1)/4000 2], 'nextplot', 'add', 'xlim', [-2000 2500]);
+ha4b =  axes('unit', 'centimeters', 'position', [8 3.5 4*size(trialspxmat_release{2}, 1)/4000 2], 'nextplot', 'add', 'xlim', [-2000 2500]);
 
 if  size(trialspxmat_premature_release, 2)>5
     plot(ts_premature_release, psth_premature_release, 'color', [0.6 0.6 0.6], 'linewidth', 1)
@@ -604,7 +645,7 @@ line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 % make raster plot  750 ms FP
 ntrial1 = size(trialspxmat_release{1}, 2)
 yshift = 5.5+0.5;
-ha5 =  axes('unit', 'centimeters', 'position', [7 yshift 4*size(trialspxmat_release{1}, 1)/4000 ntrial1*rasterheight],...
+ha5 =  axes('unit', 'centimeters', 'position', [8 yshift 4*size(trialspxmat_release{1}, 1)/4000 ntrial1*rasterheight],...
     'nextplot', 'add',...
     'xlim', [min(tspkmat_release{1}) max(tspkmat_release{1})], 'ylim', [-ntrial1 1], 'box', 'on');
 
@@ -628,20 +669,22 @@ for i =1:size(trialspxmat_release{1}, 2)
     itpress =trelease_correctsorted{1}(i);
     i_portin = t_portin-itpress;
     i_portin = i_portin(i_portin>=-2000 & i_portin<=2500);
-    
-    xxipin=[i_portin; i_portin];
-    if ~isempty(xxipin)
-        line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
-    end;
-    
+    if ~isempty(i_portin)
+        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
+    end
+    %     xxipin=[i_portin; i_portin];
+    %     if ~isempty(xxipin)
+    %         line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
+    %     end;
+
 end;
 title('750 ms')
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 
-% make raster plot  1500 ms FP
+%% make raster plot  1500 ms FP
 ntrial2 = size(trialspxmat_release{2}, 2)
 yshift = yshift + ntrial1*rasterheight + 0.5;
-ha3 =  axes('unit', 'centimeters', 'position', [7 yshift 4*size(trialspxmat_release{2}, 1)/4000 ntrial2*rasterheight],...
+ha3 =  axes('unit', 'centimeters', 'position', [8 yshift 4*size(trialspxmat_release{2}, 1)/4000 ntrial2*rasterheight],...
     'nextplot', 'add', 'xticklabel', [],...
     'xlim', [min(tspkmat_release{2}) max(tspkmat_release{2})], 'ylim', [-ntrial2 1], 'box', 'on');
 
@@ -665,12 +708,14 @@ for i =1:size(trialspxmat_release{2}, 2)
     itpress =trelease_correctsorted{2}(i);
     i_portin = t_portin-itpress;
     i_portin = i_portin(i_portin>=-2000 & i_portin<=2500);
-    
-    xxipin=[i_portin; i_portin];
-    if ~isempty(xxipin)
-        line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
-    end;
-    
+    if ~isempty(i_portin)
+        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
+    end
+    %     xxipin=[i_portin; i_portin];
+    %     if ~isempty(xxipin)
+    %         line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
+    %     end;
+    %
 end;
 title('1500 ms')
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
@@ -700,7 +745,7 @@ FPs_prematurepresses_sorted = FPs_prematurepresses([ind_short(ipredur_short_sort
 
 yshift = yshift + ntrial2*rasterheight +0.5;
 
-ha6 =  axes('unit', 'centimeters', 'position',  [7 yshift 4*size(trialspxmat_premature_release, 1)/4000 ntrial2premature*rasterheight],...
+ha6 =  axes('unit', 'centimeters', 'position',  [8 yshift 4*size(trialspxmat_premature_release, 1)/4000 ntrial2premature*rasterheight],...
     'nextplot', 'add', 'xticklabel', [], 'xlim', [min(tspkmat_premature_release) max(tspkmat_premature_release)], 'ylim', [-ntrial3premature 1], 'box', 'on');
 apmat = apmat_new;
 k =0;
@@ -722,16 +767,18 @@ for i =1:size(apmat, 2)
     xtrigger = [itrigger; itrigger]-ipredur;
     yytrigger = [0 1]-k;
     line([xtrigger xtrigger], yytrigger, 'color', 'm', 'linewidth', 1);
-    
+
     % plot port poke time
     i_portin = t_portin-t_prematurereleases_new(i);
     i_portin = i_portin(i_portin>=-2000 & i_portin<=2500);
-    
-    xxipin=[i_portin; i_portin];
-    if ~isempty(xxipin)
-        line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
-    end;
-    
+    if ~isempty(i_portin)
+        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
+    end
+    %     xxipin=[i_portin; i_portin];
+    %     if ~isempty(xxipin)
+    %         line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
+    %     end;
+    %
 end;
  line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Premature releases')
@@ -752,12 +799,12 @@ apmat_long = apmat(:, ind_long);
 
 apmat_new = [apmat_short(:, ilatedur_short_sorted) apmat_long(:, ilatedur_long_sorted)];
 latedur_sorted = [latedur_short_sorted; latedur_long_sorted];
-t_latepresses_new = [t_latereleases_short(ilatedur_short_sorted); t_latereleases_long(ilatedur_long_sorted)];
 t_latereleases_new = [t_latereleases_short(ilatedur_short_sorted); t_latereleases_long(ilatedur_long_sorted)];
 % FPs_latereleases_sorted = FPs_latereleases([ind_short(ilatedur_short_sorted); ind_long(ilatedur_long_sorted)]);
 
+% 4*size(trialspxmat_release{2}, 1)/4000
 yshift = yshift+ntrial2premature*rasterheight+0.5;
-ha3c =  axes('unit', 'centimeters', 'position', [7 yshift 4*size(trialspxmat_premature_press, 1)/4000  ntrial2late*rasterheight],...
+ha3c =  axes('unit', 'centimeters', 'position', [8 yshift 4*size(trialspxmat_late_release, 1)/4000  ntrial2late*rasterheight],...
     'nextplot', 'add',  'xticklabel', [],...
     'xlim', [min( tspkmat_late_release) max( tspkmat_late_release)], 'ylim', [-ntrial2late 1], 'box', 'on');
 
@@ -765,7 +812,7 @@ apmat = apmat_new;
 k =0;
 for i =1:size(apmat, 2)
     ilatedur = latedur_sorted(i);
-    xx =  tspkmat_late_press(find(apmat(:, i)));
+    xx =  tspkmat_late_release(find(apmat(:, i)));
     yy = [0 0.8]-k;
     xxrt = -[ilatedur; ilatedur];
     if  isempty(find(isnan(apmat(:, i))))
@@ -781,23 +828,25 @@ for i =1:size(apmat, 2)
     xtrigger = -[itrigger; itrigger]+ilatedur;
     yytrigger = [0 1]-k;
     line([xtrigger xtrigger], yytrigger, 'color', 'm', 'linewidth', 1);
-    
+
     % plot port poke time
     i_portin = t_portin-t_latereleases_new(i);
     i_portin = i_portin(i_portin>=-2000 & i_portin<=2500);
-    
-    xxipin=[i_portin; i_portin];
-    if ~isempty(xxipin)
-        line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
-    end;
-    
+    if ~isempty(i_portin)
+        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
+    end
+    %     xxipin=[i_portin; i_portin];
+    %     if ~isempty(xxipin)
+    %         line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
+    %     end;
+    %
 end;
  line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Late releases')
 
 ycolumn2 = [7 ntrial2late*rasterheight+yshift+1];
 %% reward
-ha7 =  axes('unit', 'centimeters', 'position', [13 1 6 2], 'nextplot', 'add', 'xlim', [-2000 5000]);
+ha7 =  axes('unit', 'centimeters', 'position', [13.5 1 6 2], 'nextplot', 'add', 'xlim', [-2000 5000]);
 plot(ts_rew, psth_rew, 'k', 'linewidth', 1); 
 xlabel('Time from reward delivery (ms)')
 ylabel ('Spks per s')
@@ -820,36 +869,44 @@ else
 end;
 
 ntrial4 = size(trialspxmat_rew_plot, 2);
-ha8 =  axes('unit', 'centimeters', 'position', [13 3+0.5 6 ntrial4*rasterheight],...
+ha8 =  axes('unit', 'centimeters', 'position', [13.5 3+0.5 6 ntrial4*rasterheight],...
     'nextplot', 'add', 'xlim', [min(tspkmat_rew) max(tspkmat_rew)], 'ylim', [-ntrial4 1], 'box', 'on');
  
 k =0;
- 
+
 movetime_plot = movetime(plot_ind);
 t_rewards_plot = t_rewards(plot_ind);
 
 for i =1:size(trialspxmat_rew_plot, 2)
-    xx =  tspkmat_rew(find(trialspxmat_rew_plot(:, i)));
-    yy = [0 1]-k;
-    imov = -movetime_plot(i);
-    
-    if ~isempty(xx)
-        line([xx; xx], yy, 'color', 'k', 'linewidth', 1)
+    if isempty(find(isnan(trialspxmat_rew_plot(:, i))))
+        xx =  tspkmat_rew(find(trialspxmat_rew_plot(:, i)));
+
+
+        yy = [0 1]-k;
+        imov = -movetime_plot(i);
+
+        if ~isempty(xx)
+            line([xx; xx], yy, 'color', 'k', 'linewidth', 1)
+        end;
+
+        line([imov; imov], yy, 'color', 'g', 'linewidth', 1)
+        k = k+1;
+
+        % plot port poke time
+        itreward =t_rewards_plot(i);
+        i_portin = t_portin-itreward;
+        i_portin = i_portin(i_portin>=-2000 & i_portin<=5000);
+
+        if ~isempty(i_portin)
+            plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
+        end
+        %         xxipin=[i_portin; i_portin];
+        %
+        %         if ~isempty(xxipin)
+        %             line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
+        %         end;
     end;
-    
-    line([imov; imov], yy, 'color', 'g', 'linewidth', 1)
-    k = k+1; 
-    
-    % plot port poke time
-    itreward =t_rewards_plot(i);
-    i_portin = t_portin-itreward;
-    i_portin = i_portin(i_portin>=-2000 & i_portin<=5000);
-    xxipin=[i_portin; i_portin];
-    
-    if ~isempty(xxipin)
-        line([xxipin xxipin], yy, 'color', 'r', 'linewidth', 1.5)
-    end;
-    
+
 end;
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 
@@ -857,7 +914,7 @@ line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 %% plot poke after bad release
 
 yshift = 3.5+0.5 + ntrial4*rasterheight + 0.5;
-ha7 =  axes('unit', 'centimeters', 'position', [13 yshift 6 2], 'nextplot', 'add', 'xlim', [-2000 5000]);
+ha7 =  axes('unit', 'centimeters', 'position', [13.5 yshift 6 2], 'nextplot', 'add', 'xlim', [-2000 5000]);
 
 plot(ts_badpoke, psth_badpoke, 'color', [0.6 0.6 0.6], 'linewidth', 1); 
 xlabel('Time from bad poke (ms)')
@@ -872,7 +929,7 @@ line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 % make raster plot bad poke
 yshift = yshift + 2 + 0.5;
 ntrial5 = size(trialspxmat_badpoke, 2);
-ha8 =  axes('unit', 'centimeters', 'position', [13 yshift 6 ntrial5*rasterheight],...
+ha8 =  axes('unit', 'centimeters', 'position', [13.5 yshift 6 ntrial5*rasterheight],...
     'nextplot', 'add', 'xlim', [min(tspkmat_rew) max(tspkmat_rew)], 'ylim', [-ntrial5 1], 'box', 'on');
 
 apmat = trialspxmat_badpoke;
@@ -918,7 +975,7 @@ line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 %% plot trigger-related activity
 
 yshift = yshift + ntrial5*rasterheight+1.5;
-ha7 =  axes('unit', 'centimeters', 'position', [13 yshift 6 2.5], 'nextplot', 'add', 'xlim', [-500 1500]);
+ha7 =  axes('unit', 'centimeters', 'position', [13.5 yshift 6 2.5], 'nextplot', 'add', 'xlim', [-500 1500]);
 
 plot(ts_shorttrigger, psth_shorttrigger, 'color', 'b', 'linewidth', 1.5); 
 plot(ts_longtrigger, psth_longtrigger, 'color', 'k', 'linewidth', 1.5); 
@@ -948,11 +1005,12 @@ line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 
 % plot spike waveform
 thiscolor = [0 0 0];
-ha0=axes('unit', 'centimeters', 'position', [yfirstcolumn 2 1.5], 'nextplot', 'add', 'xlim', [0 64])
-set(ha0, 'nextplot', 'add')
+Lspk = size(r.Units.SpikeTimes(ku).wave, 2);
+ha0=axes('unit', 'centimeters', 'position', [yfirstcolumn 3 1.5], 'nextplot', 'add', 'xlim', [0 Lspk])
 
+set(ha0, 'nextplot', 'add')
 allwaves = r.Units.SpikeTimes(ku).wave;
-allwaves= allwaves(:, [1:64]);
+% allwaves= allwaves(:, [1:64]);
 
 if size(allwaves, 1)>100
     nplot = randperm(size(allwaves, 1), 100);
@@ -962,11 +1020,11 @@ end;
 
 wave2plot = allwaves(nplot, :);
 
-plot([1:64], wave2plot, 'color', [0.8 .8 0.8]);
-plot([1:64], mean(allwaves, 1), 'color', thiscolor, 'linewidth', 2)
+plot([1:Lspk], wave2plot, 'color', [0.8 .8 0.8]);
+plot([1:Lspk], mean(allwaves, 1), 'color', thiscolor, 'linewidth', 2)
 
-axis([0 65 min(wave2plot(:)) max(wave2plot(:))])
-set (gca, 'ylim', [-800 400])
+axis([0 Lspk min(wave2plot(:)) max(wave2plot(:))])
+set (gca, 'ylim', [min(mean(allwaves, 1))*1.5 max(mean(allwaves, 1))*1.5])
 axis tight
 
 line([30 60], min(get(gca, 'ylim')), 'color', 'k', 'linewidth', 2.5)
@@ -974,9 +1032,9 @@ axis off
 
 switch r.Units.SpikeNotes(ku, 3)
     case 1
-        title(['#' num2str(ku) '(Ch' num2str(r.Units.SpikeNotes(ku, 1)) ')unit' num2str(r.Units.SpikeNotes(ku, 2))  '/SU']);
+        title(['#' num2str(ku) '(' electrode_type num2str(r.Units.SpikeNotes(ku, 1)) ')unit' num2str(r.Units.SpikeNotes(ku, 2))  '/SU']);
     case 2
-        title(['#' num2str(ku) '(Ch' num2str(r.Units.SpikeNotes(ku, 1))  ')unit' num2str(r.Units.SpikeNotes(ku, 2))  '/MU']);
+        title(['#' num2str(ku) '(' electrode_type num2str(r.Units.SpikeNotes(ku, 1))  ')unit' num2str(r.Units.SpikeNotes(ku, 2))  '/MU']);
     otherwise
 end
 
@@ -990,7 +1048,7 @@ kutime2(kutime)=1;
 c(lags==0)=0;
 
 
-ha00= axes('unit', 'centimeters', 'position', [yfirstcolumn(1)+3 yfirstcolumn(2) 2 1.5], 'nextplot', 'add', 'xlim', [-25 25])
+ha00= axes('unit', 'centimeters', 'position', [yfirstcolumn(1)+3.5 yfirstcolumn(2) 2 1.5], 'nextplot', 'add', 'xlim', [-25 25])
 if median(c)>1
     set(ha00, 'nextplot', 'add', 'xtick', [-50:10:50], 'ytick', [0 median(c)])
 else
@@ -1009,7 +1067,7 @@ uicontrol('style', 'text', 'units', 'centimeters', 'position', [ycolumn2(1) ycol
     'string', ([r.Meta(1).Subject ' ' r.Meta(1).DateTime(1:11)]), 'BackgroundColor','w', 'fontsize', 10, 'fontweight','bold')
 
 uicontrol('style', 'text', 'units', 'centimeters', 'position', [ycolumn2(1) ycolumn2(2) 4 0.5],...
-    'string', (['Unit#' num2str(ind) '(Ch' num2str(ch) ')']), 'BackgroundColor','w', 'fontsize', 10, 'fontweight','bold')
+    'string', (['Unit#' num2str(ind) '(' electrode_type num2str(ch) ')']), 'BackgroundColor','w', 'fontsize', 10, 'fontweight','bold')
 %  
 
 % change the height of the figure
@@ -1029,14 +1087,13 @@ try
     tic
     
     
-%     thisFolder = fullfile(findonedrive, '\Work\Physiology\UnitsCollection', anm_name, session);
-    thisFolder = fullfile('A:\Ephys\UnitsCollection', anm_name, session);
+    thisFolder = fullfile(findonedrive, '\Work\Physiology\UnitsCollection', anm_name, session);
     if ~exist(thisFolder, 'dir')
         mkdir(thisFolder)
     end
     
     
-    tosavename= fullfile(thisFolder, ['Ch' num2str(ch) '_Unit' num2str(unit_no)  printname]);
+    tosavename= fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no)  printname]);
     
     %  print (gcf,'-dpdf', tosavename)
     print (gcf,'-dpng', tosavename)
@@ -1049,9 +1106,9 @@ if ~exist(thisFolder, 'dir')
     mkdir(thisFolder)
 end
 
-tosavename2= fullfile(thisFolder, ['Ch' num2str(ch) '_Unit' num2str(unit_no)  printname]);
+tosavename2= fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no)  printname]);
 
-% print (gcf,'-dpdf', tosavename2) 
+print (gcf,'-dpdf', tosavename2)
 print (gcf,'-dpng', tosavename2)
 
 % copyfile([tosavename, '.pdf'], [tosavename2, '.pdf'])

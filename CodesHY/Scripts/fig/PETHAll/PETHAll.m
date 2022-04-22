@@ -110,7 +110,6 @@ xlim(ax_reward,[t_pre_reward,t_post_reward]);
 
 % colorbar
 colorbar('Units','centimeters','Position',[margin_left+width_PSTH*3+space_col*2+0.5,margin_bottom,width_colorbar,height_colorbar]);
-
 %% Save Figure
 print(h,save_filename_png,'-dpng',['-r',num2str(save_resolution)])
 print(h,save_filename_pdf,'-dpdf',['-r',num2str(save_resolution)])
