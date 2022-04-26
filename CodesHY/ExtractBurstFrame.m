@@ -1,7 +1,7 @@
 function ExtractBurstFrame(r,unit_num,varargin)
 % eg. ExtractBurstFrame(r,unit_num,'view','side');
-FrameNum = 500;
-FrameRate = 20;
+FrameNum = 500; 
+FrameRate = 20; % Output video
 view = 'side';
 correct_only = true;
 plot_longer_clip = false;
@@ -83,8 +83,9 @@ for k = 1:length(r.VideoInfos)
                 temp_frame = vid_this.read(j);
                 temp_frame = insertText(temp_frame,[10,10],['Time: ',num2str(round(r.VideoInfos(k).VideoFrameTime(j))),' ms'],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
                 temp_frame = insertText(temp_frame,[10,50],['Firing Rate: ',num2str(firing_rate(k,j)/(firing_rate_t_post-firing_rate_t_pre)*1000),' Hz'],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
+                temp_frame = insertText(temp_frame,[10,90],['Press Index: ',num2str(r.VideoInfos(k).Index)],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
                 if isfield(r,'VideoInfos_top') && isfield(r.VideoInfos_top(correct_index(k)),'Trajectory') && ~isempty(r.VideoInfos_top(correct_index(k)).Trajectory)
-                    temp_frame = insertText(temp_frame,[10,90],['Trajectory: No.',num2str(r.VideoInfos_top(correct_index(k)).Trajectory)],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
+                    temp_frame = insertText(temp_frame,[10,130],['Trajectory: No.',num2str(r.VideoInfos_top(correct_index(k)).Trajectory)],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
                 end
 
                 vid_out.writeVideo(temp_frame);
@@ -178,10 +179,11 @@ for k = 1:length(r.VideoInfos)
                 
                 for i = j_start:j_end
                     temp_frame = vid_this.read(i);
-                    temp_frame = insertText(temp_frame,[10,10],['Time: ',num2str(round(r.VideoInfos(k).VideoFrameTime(i))),' ms'],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
-                    temp_frame = insertText(temp_frame,[10,50],['Firing Rate: ',num2str(firing_rate(k,i)/(firing_rate_t_post-firing_rate_t_pre)*1000),' Hz'],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
+                    temp_frame = insertText(temp_frame,[10,10],['Time: ',num2str(round(r.VideoInfos(k).VideoFrameTime(j))),' ms'],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
+                    temp_frame = insertText(temp_frame,[10,50],['Firing Rate: ',num2str(firing_rate(k,j)/(firing_rate_t_post-firing_rate_t_pre)*1000),' Hz'],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
+                    temp_frame = insertText(temp_frame,[10,90],['Press Index: ',num2str(r.VideoInfos(k).Index)],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
                     if isfield(r,'VideoInfos_top') && isfield(r.VideoInfos_top(correct_index(k)),'Trajectory') && ~isempty(r.VideoInfos_top(correct_index(k)).Trajectory)
-                        temp_frame = insertText(temp_frame,[10,90],['Trajectory: No.',num2str(r.VideoInfos_top(correct_index(k)).Trajectory)],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
+                        temp_frame = insertText(temp_frame,[10,130],['Trajectory: No.',num2str(r.VideoInfos_top(correct_index(k)).Trajectory)],'FontSize',24,'TextColor','yellow','BoxOpacity', 0);
                     end
                     
                     % add raster plot
