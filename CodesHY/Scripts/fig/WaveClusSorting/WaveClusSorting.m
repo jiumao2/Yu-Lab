@@ -6,9 +6,9 @@ vrange2 = [-200 300];
 chname = '4';
 name=[];
 
-save_filename_pdf = './fig.pdf';
-save_filename_png = './fig.png';
-save_filename_eps = 'c:/Users/jiumao/Desktop/WaveClusSorting.eps';
+save_filename_pdf = './WaveClusSorting.pdf';
+save_filename_png = './WaveClusSorting.png';
+% save_filename_eps = 'c:/Users/jiumao/Desktop/WaveClusSorting.eps';
 save_resolution = 1200;
 
 rand('seed',25);
@@ -95,7 +95,6 @@ ax_channel = axes('unit', 'centimeters',...
     'ytick', vrange1(1)/4:200:vrange1(2)/4,...
     'xlim', trange,...
     'xtick', []); 
-% title(ax_channel, [name  ' Ch' chname], 'fontsize', 12)
 axis(ax_channel,'off')
 line(ax_channel,[trange(1) trange(1)+1], [vrange1(1)/4 vrange1(1)/4], 'linewidth', 2, 'color', 'k')
 text(ax_channel,trange(1)+0.03*diff(trange), vrange1(1)/4-0.07*diff(vrange1)/4, '1s', 'fontsize', 10);
@@ -122,6 +121,12 @@ ax_LFP.XAxis.Visible = 'off';
 axis(ax_LFP,'off');
 % line(ax_LFP,[0 0], [vrange2(1) vrange2(1)+100], 'color', 'k', 'linewidth', 2)
 
+%% Plotting
+tnew = (1:length(raw.index))*1000/30000;
+tbeg=trange(1);
+tend = trange(2);
+index_raw=find(tnew>=tbeg*1000 & tnew<=tend*1000);
+
 % plot sorted spikes
 for k =1:nclusters-1
     if size(spksort.spikes(spksort.cluster_class(:, 1)== k, :), 1)>20
@@ -133,16 +138,6 @@ for k =1:nclusters-1
         
     end
 end
-
-
-
-tnew = (1:length(raw.index))*1000/30000;
-
-
-tbeg=trange(1);
-tend = trange(2);
-
-index_raw=find(tnew>=tbeg*1000 & tnew<=tend*1000);
 
 [b_detect,a_detect] = ellip(4,0.1,40,[250 10000]*2/30000);  % high pass
 data_plot_hp = filtfilt(b_detect, a_detect, raw.data(index_raw));   % high-pass filter data
@@ -200,4 +195,4 @@ linkaxes([ax_channel, ax_raster, ax_LFP], 'x')
 %% Save Figure
 print(h,save_filename_png,'-dpng',['-r',num2str(save_resolution)])
 print(h,save_filename_pdf,'-dpdf',['-r',num2str(save_resolution)])
-print(h,save_filename_eps,'-depsc2',['-r',num2str(save_resolution)]) 
+% print(h,save_filename_eps,'-depsc2',['-r',num2str(save_resolution)]) 

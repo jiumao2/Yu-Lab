@@ -139,7 +139,7 @@ while run
     screensize = get(0, 'ScreenSize'); 
     
     figure(1); clf; 
-    set(gcf, 'renderer', 'opengl');
+    set(gcf, 'renderer', 'opengl')
     set(gcf, 'unit', 'pixels', 'position',[100 100 screensize(3)*0.8 screensize(4)*0.8], 'paperpositionmode', 'auto' )
 
     hold on; grid off;
