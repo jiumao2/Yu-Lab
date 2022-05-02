@@ -22,17 +22,21 @@ ntrial_raster = 40;
 t_pre = -2000;
 t_post = 2000;
 binwidth_PSTH = 20;
+
+colors = colororder;
 colors_name = {'red','blue'};
 linewidth_PSTH  = 1;
+linewidth_event = 1;
 
-color_lift = 'g';
-color_press = 'k';
-color_release = 'c';
+color_lift = colors(3,:);
+color_press = colors(4,:);
+color_trigger = colors(5,:);
+color_release = colors(6,:);
 
 rand('seed',123);
 %% Figure Configuration
 margin_left = 1;
-margin_right = 0.5;
+margin_right = 0.5+2;
 margin_up = 0.5;
 margin_bottom = 1;
 space_row = 0.7;
@@ -55,6 +59,7 @@ ax_raster_lift1.YLim = [0.5,ntrial_raster+0.5];
 ax_raster_lift1.XAxis.Visible = 'off';
 xlim(ax_raster_lift1,[t_pre,t_post])
 ylabel(ax_raster_lift1,'Trials');
+title(ax_raster_lift1,'A','FontSize',10)
 
 ax_raster_lift2 = axes(h,'Units','centimeters','NextPlot','add');
 ax_raster_lift2.Position = [margin_left,margin_bottom+space_row+height_PSTH,width_raster,height_raster];
@@ -71,6 +76,7 @@ ax_raster_press1.YLim = [0.5,ntrial_raster+0.5];
 ax_raster_press1.XAxis.Visible = 'off';
 ax_raster_press1.YAxis.Visible = 'off';
 xlim(ax_raster_press1,[t_pre,t_post])
+title(ax_raster_press1,'B','FontSize',10)
 
 ax_raster_press2 = axes(h,'Units','centimeters','NextPlot','add');
 ax_raster_press2.Position = [margin_left+space_col+width_raster,margin_bottom+space_row+height_PSTH,width_raster,height_raster];
@@ -87,6 +93,7 @@ ax_raster_holding1.YLim = [0.5,ntrial_raster+0.5];
 ax_raster_holding1.XAxis.Visible = 'off';
 ax_raster_holding1.YAxis.Visible = 'off';
 xlim(ax_raster_holding1,[t_pre,t_post]);
+title(ax_raster_holding1,'C','FontSize',10)
 
 ax_raster_holding2 = axes(h,'Units','centimeters','NextPlot','add');
 ax_raster_holding2.Position = [margin_left+space_col*2+width_raster*2,margin_bottom+space_row+height_PSTH,width_raster,height_raster];
@@ -103,6 +110,7 @@ ax_raster_release1.YLim = [0.5,ntrial_raster+0.5];
 ax_raster_release1.XAxis.Visible = 'off';
 ax_raster_release1.YAxis.Visible = 'off';
 xlim(ax_raster_release1,[t_pre,t_post]);
+title(ax_raster_release1,'D','FontSize',10)
 
 ax_raster_release2 = axes(h,'Units','centimeters','NextPlot','add');
 ax_raster_release2.Position = [margin_left+space_col*3+width_raster*3,margin_bottom+space_row+height_PSTH,width_raster,height_raster];
@@ -165,9 +173,10 @@ for k = 1:length(rnd)
     ind_this = t_lift_long_idx(rnd(k));
     t_press_this = r.VideoInfos_side(ind_this).Time-r.VideoInfos_side(ind_this).LiftStartTime;
     t_release_this = t_press_this + r.VideoInfos_side(ind_this).Foreperiod + r.VideoInfos_side(ind_this).ReactTime;
-    plot(ax_raster_lift1,[t_press_this,t_press_this],[-0.5+k,0.5+k],'-','Color','k');
-    plot(ax_raster_lift1,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color','c');
-    plot(ax_raster_lift1,[t_press_this+1500,t_press_this+1500],[-0.5+k,0.5+k],'-','Color','m');
+    plot(ax_raster_lift1,[0,0],[-0.5+k,0.5+k],'-','Color',color_lift,'LineWidth',linewidth_event);
+    plot(ax_raster_lift1,[t_press_this,t_press_this],[-0.5+k,0.5+k],'-','Color',color_press,'LineWidth',linewidth_event);
+    plot(ax_raster_lift1,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color',color_release,'LineWidth',linewidth_event);
+    plot(ax_raster_lift1,[t_press_this+1500,t_press_this+1500],[-0.5+k,0.5+k],'-','Color',color_trigger,'LineWidth',linewidth_event);
 end
 
 rnd = randperm(length(t_lift_short),ntrial_raster);
@@ -193,9 +202,10 @@ for k = 1:length(rnd)
     ind_this = t_lift_short_idx(rnd(k));
     t_press_this = r.VideoInfos_side(ind_this).Time-r.VideoInfos_side(ind_this).LiftStartTime;
     t_release_this = t_press_this + r.VideoInfos_side(ind_this).Foreperiod + r.VideoInfos_side(ind_this).ReactTime;
-    plot(ax_raster_lift2,[t_press_this,t_press_this],[-0.5+k,0.5+k],'-','Color','k');
-    plot(ax_raster_lift2,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color','c');
-    plot(ax_raster_lift2,[t_press_this+750,t_press_this+750],[-0.5+k,0.5+k],'-','Color','m');
+    plot(ax_raster_lift2,[0,0],[-0.5+k,0.5+k],'-','Color',color_lift,'LineWidth',linewidth_event);
+    plot(ax_raster_lift2,[t_press_this,t_press_this],[-0.5+k,0.5+k],'-','Color',color_press,'LineWidth',linewidth_event);
+    plot(ax_raster_lift2,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color',color_release,'LineWidth',linewidth_event);
+    plot(ax_raster_lift2,[t_press_this+750,t_press_this+750],[-0.5+k,0.5+k],'-','Color',color_trigger,'LineWidth',linewidth_event);
 end
 params.pre = -t_pre;
 params.post = t_post;
@@ -245,9 +255,10 @@ for k = 1:length(rnd)
     ind_this = t_lift_long_idx(rnd(k));
     t_lift_this = -r.VideoInfos_side(ind_this).Time+r.VideoInfos_side(ind_this).LiftStartTime;
     t_release_this = r.VideoInfos_side(ind_this).Foreperiod+r.VideoInfos_side(ind_this).ReactTime;
-    plot(ax_raster_press1,[t_lift_this,t_lift_this],[-0.5+k,0.5+k],'-','Color','g');
-    plot(ax_raster_press1,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color','c');
-    plot(ax_raster_press1,[1500,1500],[-0.5+k,0.5+k],'-','Color','m');
+    plot(ax_raster_press1,[0,0],[-0.5+k,0.5+k],'-','Color',color_press,'LineWidth',linewidth_event);
+    plot(ax_raster_press1,[t_lift_this,t_lift_this],[-0.5+k,0.5+k],'-','Color',color_lift,'LineWidth',linewidth_event);
+    plot(ax_raster_press1,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color',color_release,'LineWidth',linewidth_event);
+    plot(ax_raster_press1,[1500,1500],[-0.5+k,0.5+k],'-','Color',color_trigger,'LineWidth',linewidth_event);
 end
 
 rnd = randperm(length(t_press_short),ntrial_raster);
@@ -274,9 +285,10 @@ for k = 1:length(rnd)
     ind_this = t_lift_short_idx(rnd(k));
     t_lift_this =  -r.VideoInfos_side(ind_this).Time+r.VideoInfos_side(ind_this).LiftStartTime;
     t_release_this = r.VideoInfos_side(ind_this).Foreperiod+r.VideoInfos_side(ind_this).ReactTime;
-    plot(ax_raster_press2,[t_lift_this,t_lift_this],[-0.5+k,0.5+k],'-','Color','g');
-    plot(ax_raster_press2,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color','c');
-    plot(ax_raster_press2,[750,750],[-0.5+k,0.5+k],'-','Color','m');
+    plot(ax_raster_press2,[0,0],[-0.5+k,0.5+k],'-','Color',color_press,'LineWidth',linewidth_event);
+    plot(ax_raster_press2,[t_lift_this,t_lift_this],[-0.5+k,0.5+k],'-','Color',color_lift,'LineWidth',linewidth_event);
+    plot(ax_raster_press2,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color',color_release,'LineWidth',linewidth_event);
+    plot(ax_raster_press2,[750,750],[-0.5+k,0.5+k],'-','Color',color_trigger,'LineWidth',linewidth_event);
 end
 params.pre = -t_pre;
 params.post = t_post;
@@ -326,9 +338,10 @@ for k = 1:length(rnd)
     ind_this = t_lift_long_idx(rnd(k));
     t_lift_this = -r.VideoInfos_side(ind_this).Time+r.VideoInfos_side(ind_this).LiftStartTime;
     t_release_this = r.VideoInfos_side(ind_this).Foreperiod+r.VideoInfos_side(ind_this).ReactTime;
-    plot(ax_raster_holding1,[t_lift_this,t_lift_this],[-0.5+k,0.5+k],'-','Color','g');
-    plot(ax_raster_holding1,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color','c');
-    plot(ax_raster_holding1,[1500,1500],[-0.5+k,0.5+k],'-','Color','m');
+    plot(ax_raster_holding1,[0,0],[-0.5+k,0.5+k],'-','Color',color_press,'LineWidth',linewidth_event);
+    plot(ax_raster_holding1,[t_lift_this,t_lift_this],[-0.5+k,0.5+k],'-','Color',color_lift,'LineWidth',linewidth_event);
+    plot(ax_raster_holding1,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color',color_release,'LineWidth',linewidth_event);
+    plot(ax_raster_holding1,[1500,1500],[-0.5+k,0.5+k],'-','Color',color_trigger,'LineWidth',linewidth_event);
 end
 
 rnd = randperm(length(t_press_short),ntrial_raster);
@@ -355,9 +368,10 @@ for k = 1:length(rnd)
     ind_this = t_lift_short_idx(rnd(k));
     t_lift_this =  -r.VideoInfos_side(ind_this).Time+r.VideoInfos_side(ind_this).LiftStartTime;
     t_release_this = r.VideoInfos_side(ind_this).Foreperiod+r.VideoInfos_side(ind_this).ReactTime;
-    plot(ax_raster_holding2,[t_lift_this,t_lift_this],[-0.5+k,0.5+k],'-','Color','g');
-    plot(ax_raster_holding2,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color','c');
-    plot(ax_raster_holding2,[750,750],[-0.5+k,0.5+k],'-','Color','m');
+    plot(ax_raster_holding2,[0,0],[-0.5+k,0.5+k],'-','Color',color_press,'LineWidth',linewidth_event);
+    plot(ax_raster_holding2,[t_lift_this,t_lift_this],[-0.5+k,0.5+k],'-','Color',color_lift,'LineWidth',linewidth_event);
+    plot(ax_raster_holding2,[t_release_this,t_release_this],[-0.5+k,0.5+k],'-','Color',color_release,'LineWidth',linewidth_event);
+    plot(ax_raster_holding2,[750,750],[-0.5+k,0.5+k],'-','Color',color_trigger,'LineWidth',linewidth_event);
 end
 params.pre = -t_pre;
 params.post = t_post;
@@ -373,47 +387,6 @@ plot(ax_PETH_holding,tpsth2,psth2,'Color',colors_name{2},'LineWidth',linewidth_P
 % release
 load(data_path_release{1})
 unit_num = data_path_release{2};
-plot_raster_PETH(r,unit_num,ax_raster_release1,ax_raster_release2,ax_PETH_release,t_pre,t_post,'release',linewidth_PSTH,ntrial_raster,binwidth_PSTH)
-
-% annotation
-h_annotation1 = annotation(h,'textbox',...
-    [0.5,0.5,0.5,0.5],...
-    'EdgeColor','none',...
-    'Units','centimeters',...
-    'VerticalAlignment','middle',...
-    'String',{'FP = 1500ms'},...
-    'FontWeight','bold',...
-    'HorizontalAlignment','center',...
-    'FitBoxToText','off');
-set(h_annotation1,'Position',[7,11.45,3,0.5]);
-
-h_annotation2 = annotation(h,'textbox',...
-    [0.5,0.5,0.5,0.5],...
-    'EdgeColor','none',...
-    'Units','centimeters',...
-    'VerticalAlignment','middle',...
-    'String',{'FP = 750ms'},...
-    'FontWeight','bold',...
-    'HorizontalAlignment','center',...
-    'FitBoxToText','off');
-set(h_annotation2,'Position',[7,7.75,3,0.5]);
-
-h_annotation3 = annotation(h,'textbox',...
-    [0.5,0.5,0.5,0.5],...
-    'EdgeColor','none',...
-    'Units','centimeters',...
-    'VerticalAlignment','middle',...
-    'String',{'PETH'},...
-    'FontWeight','bold',...
-    'HorizontalAlignment','center',...
-    'FitBoxToText','off');
-set(h_annotation3,'Position',[7,4.05,3,0.5]);
-%% Save Figure
-print(h,save_filename_png,'-dpng',['-r',num2str(save_resolution)])
-print(h,save_filename_pdf,'-dpdf',['-r',num2str(save_resolution)])
-
-%%
-function plot_raster_PETH(r,unit_num,ax_raster1,ax_raster2,ax_PETH,t_pre,t_post,event,linewidth_PSTH,ntrial_raster,binwidth_PSTH)
 FPs = r.Behavior.Foreperiods;
 correct_index = r.Behavior.CorrectIndex;
 
@@ -449,11 +422,12 @@ for k = 1:length(rnd)
         xx(1:3:3*numspikes)=spk_time;
         xx(2:3:3*numspikes)=spk_time;     
         
-        plot(ax_raster1,xx,yy,'-','Color','r');  
+        plot(ax_raster_release1,xx,yy,'-','Color',colors_name{1});  
     end
     t_press_this = t_press_long(rnd(k))-t_release_long(rnd(k));
-    plot(ax_raster1,[t_press_this,t_press_this],[-0.5+k,0.5+k],'-','Color','green');
-    plot(ax_raster1,[t_press_this+1500,t_press_this+1500],[-0.5+k,0.5+k],'-','Color','m');
+    plot(ax_raster_release1,[0,0],[-0.5+k,0.5+k],'-','Color',color_release,'LineWidth',linewidth_event);
+    plot(ax_raster_release1,[t_press_this,t_press_this],[-0.5+k,0.5+k],'-','Color',color_press,'LineWidth',linewidth_event);
+    plot(ax_raster_release1,[t_press_this+1500,t_press_this+1500],[-0.5+k,0.5+k],'-','Color',color_trigger,'LineWidth',linewidth_event);
 end
 
 rnd = randperm(length(t_release_short),ntrial_raster);
@@ -474,11 +448,12 @@ for k = 1:length(rnd)
         xx(1:3:3*numspikes)=spk_time;
         xx(2:3:3*numspikes)=spk_time;     
         
-        plot(ax_raster2,xx,yy,'-','Color','b');  
+        plot(ax_raster_release2,xx,yy,'-','Color',colors_name{2});  
     end
     t_press_this = t_press_short(rnd(k))-t_release_short(rnd(k));
-    plot(ax_raster2,[t_press_this,t_press_this],[-0.5+k,0.5+k],'-','Color','green');
-    plot(ax_raster2,[t_press_this+750,t_press_this+750],[-0.5+k,0.5+k],'-','Color','m');
+    plot(ax_raster_release2,[0,0],[-0.5+k,0.5+k],'-','Color',color_release,'LineWidth',linewidth_event);
+    plot(ax_raster_release2,[t_press_this,t_press_this],[-0.5+k,0.5+k],'-','Color',color_press,'LineWidth',linewidth_event);
+    plot(ax_raster_release2,[t_press_this+750,t_press_this+750],[-0.5+k,0.5+k],'-','Color',color_trigger,'LineWidth',linewidth_event);
 end
 params.pre = -t_pre;
 params.post = t_post;
@@ -488,6 +463,100 @@ params.binwidth = binwidth_PSTH;
 psth1 = smoothdata (psth1, 'gaussian', 5);
 psth2 = smoothdata (psth2, 'gaussian', 5);
 
-plot(ax_PETH,tpsth1,psth1,'Color','r','LineWidth',linewidth_PSTH)
-plot(ax_PETH,tpsth2,psth2,'Color','b','LineWidth',linewidth_PSTH)
-end
+plot(ax_PETH_release,tpsth1,psth1,'Color',colors_name{1},'LineWidth',linewidth_PSTH)
+plot(ax_PETH_release,tpsth2,psth2,'Color',colors_name{2},'LineWidth',linewidth_PSTH)
+
+% annotation
+h_annotation1 = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'FP = 1500ms'},...
+    'FontWeight','bold',...
+    'HorizontalAlignment','center',...
+    'FitBoxToText','off');
+set(h_annotation1,'Position',[7,11.45,3,0.5]);
+
+h_annotation2 = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'FP = 750ms'},...
+    'FontWeight','bold',...
+    'HorizontalAlignment','center',...
+    'FitBoxToText','off');
+set(h_annotation2,'Position',[7,7.75,3,0.5]);
+
+h_annotation3 = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'PETH'},...
+    'FontWeight','bold',...
+    'HorizontalAlignment','center',...
+    'FitBoxToText','off');
+set(h_annotation3,'Position',[7,4.05,3,0.5]);
+%%
+space_annotation = 0.6;
+
+h_annotation_lift = annotation(h,'line',[0.5,1],[0.5,1],'units','centimeters','linewidth',3,'Color',color_lift);
+set(h_annotation_lift,'X',[16.5,17],'Y',[11,11]);
+
+h_annotation_press = annotation(h,'line',[0.5,0.5],[0.5,0.5],'units','centimeters','linewidth',3,'Color',color_press);
+set(h_annotation_press,'X',[16.5,17],'Y',[11-space_annotation,11-space_annotation]);
+
+h_annotation_trigger = annotation(h,'line',[0.5,0.5],[0.5,0.5],'units','centimeters','linewidth',3,'Color',color_trigger);
+set(h_annotation_trigger,'X',[16.5,17],'Y',[11-space_annotation*2,11-space_annotation*2]);
+
+h_annotation_release = annotation(h,'line',[0.5,0.5],[0.5,0.5],'units','centimeters','linewidth',3,'Color',color_release);
+set(h_annotation_release,'X',[16.5,17],'Y',[11-space_annotation*3,11-space_annotation*3]);
+
+h_annotation_lift_text = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'Lift'},...
+    'FontWeight','bold',...
+    'HorizontalAlignment','left',...
+    'FitBoxToText','off');
+set(h_annotation_lift_text,'Position',[17,10.5,1,1]);
+
+h_annotation_press_text = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'Press'},...
+    'FontWeight','bold',...
+    'HorizontalAlignment','left',...
+    'FitBoxToText','off');
+set(h_annotation_press_text,'Position',[17,10.5-space_annotation*1,1,1]);
+
+h_annotation_trigger_text = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'Trigger'},...
+    'FontWeight','bold',...
+    'HorizontalAlignment','left',...
+    'FitBoxToText','off');
+set(h_annotation_trigger_text,'Position',[17,10.5-space_annotation*2,1,1]);
+
+h_annotation_release_text = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'Lift'},...
+    'FontWeight','bold',...
+    'HorizontalAlignment','left',...
+    'FitBoxToText','off');
+set(h_annotation_release_text,'Position',[17,10.5-space_annotation*3,1,1]);
+%% Save Figure
+print(h,save_filename_png,'-dpng',['-r',num2str(save_resolution)])
+print(h,save_filename_pdf,'-dpdf',['-r',num2str(save_resolution)])
