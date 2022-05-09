@@ -90,7 +90,7 @@ for i=1:features.Nclusters
             
             % plot options
             
-            optlabels={'move cluster to noise', '[add P_{in cluster} feature]', 'add regression feature','merge with cluster'};
+            optlabels={'move cluster to noise', '[add P_{in cluster} feature]', 'add regression feature','merge with cluster','kick outliers'};
             for j=1:numel(optlabels)
                 text(labelpos(2,j)+xo+1.03,labelpos(1,j)+yo+.15,optlabels{j},'color',[0 0 0],'BackgroundColor',[.9 .9 .9]);
                 %just click on nearest, not pretty but easy
@@ -201,7 +201,25 @@ for i=1:features.Nclusters
                     end;
                     
                 end;
-                
+
+
+                %in sc_parse_clickonwaveforms.m
+                if m==5 % automatic kick out outliers, based on std, BO 20220509
+                    outliers=zeros(1,length(features.clusters));
+                    for index=1:numel(mua.ts_spike)
+                        t=find(features.clusters==i);
+                        tt=mua.waveforms(t,index)';
+                        if std(tt)>90 %mostly it's due to noise<mean(tt)
+                            t=t(tt>3*std(tt)+mean(tt) | tt<-2*std(tt)+mean(tt));
+                        else
+                            t=t(tt>3*std(tt)+mean(tt) | tt<-3*std(tt)+mean(tt));
+                        end
+                        outliers(t)=1;
+                    end
+                    features.clusters_undo=features.clusters;
+                    features.clusters(logical(outliers))=1;
+                    features=sc_updateclusterimages(features,mua,s_opt);
+                end
 
                 
                 
