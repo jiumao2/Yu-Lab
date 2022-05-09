@@ -38,7 +38,7 @@ mua.sourcechannel = chname;
 
 save(['mua_' chname], 'mua')
 
-jsimpleclust
+% jsimpleclust
 
 %           Nspikes: 10000
 %         waveforms: [10000×64 double]
