@@ -3,7 +3,7 @@ function PlotComparingTrajPSTHAll(r_path,r_all,num_unit,varargin)
 event = 'Press';
 t_pre = r.VideoInfos(1).t_pre;
 t_post = r.VideoInfos(1).t_post;
-binwidth = 50;
+binwidth = 20;
 
 if nargin>=3
     for i=1:2:size(varargin,2)
@@ -122,6 +122,8 @@ for k = 1:num_traj+1
     ax = ax_group{2*(num_traj+1)+1};
     hold on
     [psth_long, tpsth_long] = jpsth(r.Units.SpikeTimes(num_unit).timings, trigtimes_long', params_long);
+    psth_long = smoothdata(psth_long,'gaussian',5);
+    
     plot(ax,tpsth_long,psth_long,'LineWidth',line_width,'Color',colors(k,:))
     xlabel(ax,['Time relative to ',event,' (ms)'])
     ylabel(ax,'Firing Rate (Hz)')
@@ -137,6 +139,8 @@ for k = 1:num_traj+1
     ax =ax_group{2*(num_traj+1)+2};
     hold on
     [psth_short, tpsth_short] = jpsth(r.Units.SpikeTimes(num_unit).timings, trigtimes_short', params_short);
+    psth_short = smoothdata(psth_short,'gaussian',5);
+    
     plot(ax,tpsth_short,psth_short,'LineWidth',line_width,'Color',colors(k,:))
     xlabel(ax,['Time relative to ',event,' (ms)'])
     title(ax,'PSTH')

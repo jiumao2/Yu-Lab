@@ -15,8 +15,8 @@ t_pre = -1000;
 t_post = 2000;
 t_len = t_post-t_pre+1;
 
-save_filename_pdf = './PrincipleAnalysis.pdf';
-save_filename_png = './PrincipleAnalysis.png';
+save_filename_pdf = './PrincipleAnalysis_v2.pdf';
+save_filename_png = './PrincipleAnalysis_v2.png';
 save_resolution = 1200;
 %%
 average_spikes_long_all = [];
@@ -83,11 +83,17 @@ width_PC = 4;
 height_PC = 4;
 width_traj = 6;
 height_traj = 6;
+width_loading = 4;
+height_loading = 4;
 
 h = figure('Units','centimeters');
-figure_width = margin_left + margin_right + width_PC + space_col + width_traj;
+figure_width = margin_left + margin_right + width_PC + space_col*2 + width_traj + width_loading;
 figure_height = margin_up + margin_bottom + height_PC*num_PC + space_row*(num_PC-1);
 h.Position = [10,10,figure_width,figure_height];
+
+line_width_PC = 2;
+line_width_traj = 2;
+
 
 
 % ax_PC = zeros(num_PC,1);
@@ -95,31 +101,43 @@ h.Position = [10,10,figure_width,figure_height];
 for k = 1:num_PC
     ax_PC(k) = axes(h,'Units','centimeters','NextPlot','add',...
         'Position',[margin_left,margin_bottom+(space_row+height_PC)*(num_PC-k),width_PC,height_PC]);
-%     ax_PC(k).Xaxis.Visible = 'off';
-    ax_PC(k).XTick
     if k ~= num_PC
         ax_PC(k).XTick = [];
     else
         xlabel(ax_PC(k),'Time from Press (ms)');
     end
     ylabel(ax_PC(k),'Coefficient');
-    title(ax_PC(k),['PC',num2str(k)]);
+    title(ax_PC(k),['PC',num2str(k)],'Position',[-700,8-(k-1)*3.6],'FontSize',10);
+end
+
+for k = 1:num_PC
+    ax_loading(k) = axes(h,'Units','centimeters','NextPlot','add',...
+        'Position',[margin_left+space_col+width_PC,margin_bottom+(space_row+height_PC)*(num_PC-k),width_loading,height_loading]);
+%     ax_PC(k).Xaxis.Visible = 'off';
+    if k ~= num_PC
+        ax_loading(k).XTick = [];
+    end
+    xlabel(ax_loading(k),['Loading on PC',num2str(k)]);
+    ylabel(ax_loading(k),'Neurons');
 end
 
 ax_traj = axes(h,'Units','centimeters','NextPlot','add',...
-        'Position',[margin_left+width_PC+space_col,margin_bottom+0.5*(space_row*(num_PC-1)+height_PC*num_PC-height_traj),width_traj,height_traj]);
+        'Position',[margin_left+width_PC+space_col*2+width_loading,margin_bottom,width_traj,height_traj]);
+%         'Position',[margin_left+width_PC+space_col*2+width_loading,margin_bottom+0.5*(space_row*(num_PC-1)+height_PC*num_PC-height_traj),width_traj,height_traj]);
+
 ax_traj.XTick = [];
 ax_traj.YTick = [];
 ax_traj.ZTick = [];
-title(ax_traj,'Neural Trajectory');
+title(ax_traj,'Neural Trajectory','FontSize',10);
 xlabel(ax_traj,'PC1');
 ylabel(ax_traj,'PC2');
 zlabel(ax_traj,'PC3');
+
 % Plotting
 for k = 1:num_PC
-    plot(ax_PC(k),t_pre:t_post,score(FP_long_index,k),'b-','lineWidth',3)
+    plot(ax_PC(k),t_pre:t_post,score(FP_long_index,k),'b-','lineWidth',line_width_PC)
     hold on
-    plot(ax_PC(k),t_pre:t_post,score(FP_short_index,k),'r-','lineWidth',3)
+    plot(ax_PC(k),t_pre:t_post,score(FP_short_index,k),'r-','lineWidth',line_width_PC)
 %     legend('FP=1500ms','FP=750ms')
     hold on
     xline(ax_PC(k),0,'k--','HandleVisibility','off')
@@ -127,91 +145,90 @@ for k = 1:num_PC
     xline(ax_PC(k),750,'r--','HandleVisibility','off')
 end
 
+for k = 1:num_PC
+    histogram(ax_loading(k),coeff(:,k),'BinWidth',0.1);
+    xlim(ax_loading(k),[-0.45,0.45]);
+    ylim(ax_loading(k),[0,20]);
+end
+
 interval = 80;
-plot3(ax_traj,score(1:t_len,1),score(1:t_len,2),score(1:t_len,3),'b-','lineWidth',1)
-plot3(ax_traj,score(1:interval:t_len,1),score(1:interval:t_len,2),score(1:interval:t_len,3),'b.','MarkerSize',8)
-plot3(ax_traj,score(1-t_pre,1),score(1-t_pre,2),score(1-t_pre,3),'b+','MarkerSize',10)
+plot3(ax_traj,score(1:t_len,1),score(1:t_len,2),score(1:t_len,3),'b-','lineWidth',line_width_traj)
+plot3(ax_traj,score(1:interval:t_len,1),score(1:interval:t_len,2),score(1:interval:t_len,3),'b.','MarkerSize',10)
+plot3(ax_traj,score(1-t_pre,1),score(1-t_pre,2),score(1-t_pre,3),'bx','MarkerSize',10)
 
 plot3(ax_traj,score(1501-t_pre,1),score(1501-t_pre,2),score(1501-t_pre,3),'bo','MarkerSize',10)
-plot3(ax_traj,score(t_len+1:end-750,1),score(t_len+1:end-750,2),score(t_len+1:end-750,3),'r-','lineWidth',1)
-plot3(ax_traj,score(t_len+1:interval:end-750,1),score(t_len+1:interval:end-750,2),score(t_len+1:interval:end-750,3),'r.','MarkerSize',8)
+plot3(ax_traj,score(t_len+1:end-750,1),score(t_len+1:end-750,2),score(t_len+1:end-750,3),'r-','lineWidth',line_width_traj)
+plot3(ax_traj,score(t_len+1:interval:end-750,1),score(t_len+1:interval:end-750,2),score(t_len+1:interval:end-750,3),'r.','MarkerSize',10)
 
-plot3(ax_traj,score(t_len+1-t_pre,1),score(t_len+1-t_pre,2),score(t_len+1-t_pre,3),'r+','MarkerSize',10)
+plot3(ax_traj,score(t_len+1-t_pre,1),score(t_len+1-t_pre,2),score(t_len+1-t_pre,3),'rx','MarkerSize',10)
 plot3(ax_traj,score(t_len+751-t_pre,1),score(t_len+751-t_pre,2),score(t_len+751-t_pre,3),'ro','MarkerSize',10)
+xlim(ax_traj,[-7,9]);
+ylim(ax_traj,[-8,7]);
 
 %%
-% figure();
-% for k = 1:4
-%     subplot(2,2,k)
-%     plot(t_pre:t_post,score(FP_long_index,k),'b-','lineWidth',3)
-%     hold on
-%     plot(t_pre:t_post,score(FP_short_index,k),'r-','lineWidth',3)
-%     legend('FP=1500ms','FP=750ms')
-%     hold on
-%     xline(0,'k--','HandleVisibility','off')
-%     xline(1500,'b--','HandleVisibility','off')
-%     xline(750,'r--','HandleVisibility','off')
-%     xlabel('time (ms)')
-%     ylabel(['PC',num2str(k)])
-% end
-% saveas(gcf,'PC.png');
-% 
-% %%
-% h_traj = figure('Units','centimeters','NextPlot','add');
-% h_traj.Position = [10,10,6,6];
-% interval = 80;
-% axes1 = axes(h_traj);
-% hold(axes1,'on');
-% plot3(axes1,score(1:t_len,1),score(1:t_len,2),score(1:t_len,3),'b-','lineWidth',1)
-% plot3(axes1,score(1:interval:t_len,1),score(1:interval:t_len,2),score(1:interval:t_len,3),'b.','MarkerSize',8)
-% hold on
-% plot3(axes1,score(1-t_pre,1),score(1-t_pre,2),score(1-t_pre,3),'b+','MarkerSize',10)
-% plot3(axes1,score(1501-t_pre,1),score(1501-t_pre,2),score(1501-t_pre,3),'bo','MarkerSize',10)
-% xlabel('PC1')
-% ylabel('PC2')
-% zlabel('PC3')
-% 
-% plot3(axes1,score(t_len+1:end-750,1),score(t_len+1:end-750,2),score(t_len+1:end-750,3),'r-','lineWidth',1)
-% plot3(axes1,score(t_len+1:interval:end-750,1),score(t_len+1:interval:end-750,2),score(t_len+1:interval:end-750,3),'r.','MarkerSize',8)
-% 
-% plot3(axes1,score(t_len+1-t_pre,1),score(t_len+1-t_pre,2),score(t_len+1-t_pre,3),'r+','MarkerSize',10)
-% plot3(axes1,score(t_len+751-t_pre,1),score(t_len+751-t_pre,2),score(t_len+751-t_pre,3),'ro','MarkerSize',10)
-% 
-% hold(axes1,'off');
-% axes1.XAxis.Visible = 'off';
-% axes1.YAxis.Visible = 'off';
-% 
-% % Create textbox
-% annotation(h_traj,'textbox',...
-%     [0.400656631701956 0.00200328315850978 0.200328315850978 0.100164157925489],...
-%     'EdgeColor','none',...
-%     'Units','centimeters',...
-%     'VerticalAlignment','middle',...
-%     'String',{'PC1'},...
-%     'HorizontalAlignment','center',...
-%     'FitBoxToText','off');
-% 
-% % Create textbox
-% annotation(h_traj,'textbox',...
-%     [0.0100164157925489 0.400656631701956 0.100164157925489 0.200328315850978],...
-%     'EdgeColor','none',...
-%     'Units','centimeters',...
-%     'VerticalAlignment','middle',...
-%     'String',{'PC2'},...
-%     'HorizontalAlignment','center',...
-%     'FitBoxToText','off');
-% print(h_traj,'PC_traj.png','-dpng','-r1200')
-%%
-% figure(3);
-% for k = 1:3
-%     subplot(3,1,k)
-%     histogram(coeff(:,k),'BinWidth',0.1)
-%     xlim([-0.45,0.45]);
-%     ylim([0,20]);
-% end
-% xlabel('Loadings')
-% saveas(gcf,'Loadings.png');
+space_annotation = 0.5;
+h_annotation_fp1 = annotation(h,'line',[0.5,1],[0.5,1],'units','centimeters','linewidth',3,'Color','red');
+set(h_annotation_fp1,'X',[11,11.5],'Y',[9.5,9.5]);
+
+h_annotation_fp2 = annotation(h,'line',[0.5,0.5],[0.5,0.5],'units','centimeters','linewidth',3,'Color','blue');
+set(h_annotation_fp2,'X',[11,11.5],'Y',[9.5-space_annotation,9.5-space_annotation]);
+
+h_annotation_fp1_text = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'FP = 750ms'},...
+    'FontWeight','bold',...
+    'HorizontalAlignment','left',...
+    'FitBoxToText','off');
+set(h_annotation_fp1_text,'Position',[11.5,8.97,3,1]);
+
+h_annotation_fp2_text = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'FP = 1500ms'},...
+    'FontWeight','bold',...
+    'HorizontalAlignment','left',...
+    'FitBoxToText','off');
+set(h_annotation_fp2_text,'Position',[11.5,8.97-space_annotation,3,1]);
+
+h_annotation_A = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'A'},...
+    'FontWeight','bold',...
+    'FontSize',12,...
+    'HorizontalAlignment','left',...
+    'FitBoxToText','off');
+set(h_annotation_A,'Position',[0,9.5,0.5,0.5]);
+h_annotation_B = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'B'},...
+    'FontWeight','bold',...
+    'FontSize',12,...
+    'HorizontalAlignment','left',...
+    'FitBoxToText','off');
+set(h_annotation_B,'Position',[5,9.5,0.5,0.5]);
+h_annotation_C = annotation(h,'textbox',...
+    [0.5,0.5,0.5,0.5],...
+    'EdgeColor','none',...
+    'Units','centimeters',...
+    'VerticalAlignment','middle',...
+    'String',{'C'},...
+    'FontWeight','bold',...
+    'FontSize',12,...
+    'HorizontalAlignment','left',...
+    'FitBoxToText','off');
+set(h_annotation_C,'Position',[10.4,7,0.5,0.5]);
 %% Save Figure
 % print(h,save_filename_bmp,'-dbmp',['-r',num2str(save_resolution)])
-% print(h,save_filename_png,'-dpng',['-r',num2str(save_resolution)])
-% print(h,save_filename_pdf,'-dpdf',['-r',num2str(save_resolution)])
+print(h,save_filename_png,'-dpng',['-r',num2str(save_resolution)])
+print(h,save_filename_pdf,'-dpdf',['-r',num2str(save_resolution)])

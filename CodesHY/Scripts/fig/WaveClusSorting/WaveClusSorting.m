@@ -1,3 +1,4 @@
+clear;
 data_path = 'D:\Ephys\ANMs\Russo\Sessions\20210821\';
 trange = 1447;
 trange(2) = trange(1)+10;
