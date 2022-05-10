@@ -2,8 +2,9 @@ function mua2wave_clust(chid)
 % update waveclust result based on the output from simple clust
 
 % load culstering result 
+ 
 load(['ch' chid '_clustered']);
-spksimplesort = spikes;
+spksimplesort = spikes; 
 
 simplecluster_ids = spksimplesort.cluster_is;
 % (0: not clustered, 1-N: clusters)
