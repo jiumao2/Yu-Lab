@@ -141,12 +141,7 @@ while run
     figure(1); clf; 
     set(gcf, 'renderer', 'opengl')
     set(gcf, 'unit', 'pixels', 'position',[100 100 screensize(3)*0.8 screensize(4)*0.8], 'paperpositionmode', 'auto' )
-<<<<<<< Updated upstream:CodesJY/EphysCodes-main/jsimpleclust.m
-
-=======
-    set(gcf,'Renderer','opengl')
-    
->>>>>>> Stashed changes:CodesHY/CodeJYModified/simpleclust/jsimpleclust.m
+   
     hold on; grid off;
     fill([-2 -2 5 5],[-2 2 2 -2],'k','FaceColor',[.92 .92 .92]);
     set(gca, 'position', [0 0 1 1]);
