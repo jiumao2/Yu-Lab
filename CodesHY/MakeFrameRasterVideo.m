@@ -12,8 +12,8 @@ frame_width = size(img_seq{1},2);
 % Raster parameters
 unit_num = length(spiketime_seq);
 colors = uint8(varycolor(unit_num+1)*255);
-spike_height = 10;
-spike_width = 1;
+spike_height = 20;
+spike_width = 3;
 line_width = 1;
 line_color = uint8([0,0,0]);
 raster_space_top = 5;
@@ -24,10 +24,10 @@ raster_height = spike_height*unit_num+raster_space_top+raster_space_bottom;
 raster_width = frame_width;
 
 % Notation parameters
-note_height = 100;
+space_note = 50;
+note_height = 50 + length(notes)*space_note;
 note_width = frame_width;
 text_pos = [5,5];
-text_pos_notes = [5,55];
 text_size = 24;
 text_color = 'yellow';
 
@@ -61,8 +61,10 @@ for i_Frame=1:length(img_seq)
     blk_note = uint8(zeros(note_height,note_width,3));
     blk_note = insertText(blk_note,text_pos,['Time: ',num2str(round(t_seq(i_Frame))),'ms'],...
         'FontSize',text_size,'TextColor',text_color,'BoxOpacity', 0);
-    blk_note = insertText(blk_note,text_pos_notes,notes,...
-        'FontSize',text_size,'TextColor',text_color,'BoxOpacity', 0);
+    for k = 1:length(notes)
+        blk_note = insertText(blk_note,text_pos + [0,space_note]*k,notes{k},...
+            'FontSize',text_size,'TextColor',text_color,'BoxOpacity', 0);
+    end
     
     % Frame block
     blk_frame = img_seq{i_Frame};

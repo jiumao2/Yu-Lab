@@ -13,11 +13,13 @@ end
 
 for i = 1:length(VideoInfos_this)
     idx = VideoInfos_this(i).Index;
-    
-    notes = ['Performance: ',VideoInfos_this(i).Performance,...
+
+    date_this = [num2str(r.Meta(1).DateTimeRaw(1),'%04d'),num2str(r.Meta(1).DateTimeRaw(2),'%02d'),num2str(r.Meta(1).DateTimeRaw(2),'%02d')];
+    notes = {[r.Meta(1).Subject,' ',date_this,' Trail No.',num2str(idx)],...
+        ['Performance: ',VideoInfos_this(i).Performance,...
         '; FP=',num2str(VideoInfos_this(i).Foreperiod),...
         'ms; RT=',num2str(VideoInfos_this(i).ReactTime),...
-        'ms;'];
+        'ms;']};
     
     % Trajectory
     if isfield(VideoInfos_this(i),'Trajectory')

@@ -75,7 +75,7 @@ h.Position = [2,2,margin_left+margin_right+width_spike+width_ac+space_col*2+widt
 haspkwaveover = axes(h,'unit', 'centimeters', 'position', [margin_left+space_col+width_channel, margin_bottom, width_spike,height_spike], 'nextplot', 'add', 'ylim', vrange1);
 axis(haspkwaveover,'off')
 line(haspkwaveover,[0 30], [vrange1(end) vrange1(end)], 'linewidth', 2, 'color', 'k')
-text(haspkwaveover,7, vrange1(2)+0.13*diff(vrange1), '1ms', 'fontsize', 10);
+text(haspkwaveover,7, vrange1(2)+0.13*diff(vrange1), '1 ms', 'fontsize', 10);
 
 haspkwave = zeros(nclusters-1,1);
 for k =1:nclusters-1
@@ -110,7 +110,7 @@ for k =1:nclusters-1
     set(ax_ac(k), 'nextplot', 'add', 'xtick', [], 'ytick', [0 max(c)]) 
     ylim(ax_ac(k),[0,max(c)+10])
     if k == 1
-        xlabel(ax_ac(k),'Lag(ms)');
+        xlabel(ax_ac(k),'Lag (ms)');
         ylim(ax_ac(k),[0,max(c)+1])
         set(ax_ac(k),'xtick', [-50:10:50]) 
     end
@@ -127,9 +127,9 @@ ax_channel = axes('unit', 'centimeters',...
     'xtick', []); 
 axis(ax_channel,'off')
 line(ax_channel,[trange(1) trange(1)+1], [vrange1(1)/4 vrange1(1)/4], 'linewidth', 2, 'color', 'k')
-text(ax_channel,trange(1)+0.03*diff(trange), vrange1(1)/4-0.07*diff(vrange1)/4, '1s', 'fontsize', 10);
+text(ax_channel,trange(1)+0.02*diff(trange), vrange1(1)/4-0.07*diff(vrange1)/4, '1 s', 'fontsize', 10);
 line(ax_channel,[trange(1) trange(1)], [vrange1(1)/4 vrange1(1)/4+200], 'linewidth', 2, 'color', 'k')
-text(ax_channel,trange(1)-0.04*diff(trange), vrange1(1)/4+0.00*diff(vrange1)/4, '200\muV', 'fontsize', 10,'Rotation',90);
+text(ax_channel,trange(1)-0.04*diff(trange), vrange1(1)/4+0.00*diff(vrange1)/4, '200 \muV', 'fontsize', 10,'Rotation',90);
 plot(ax_channel,trange(1),vrange1(1)/4,'.k')
 
 ax_raster = axes(h,'unit', 'centimeters',...

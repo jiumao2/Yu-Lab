@@ -3,8 +3,8 @@ r_path = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\RTarrayAll.mat';
 load(r_path)
 
 % save_filename_bmp = './fig.bmp';
-save_filename_pdf = './fig.pdf';
-save_filename_png = './fig.png';
+save_filename_pdf = './GestureAnalysis.pdf';
+save_filename_png = './GestureAnalysis.png';
 save_resolution = 1200;
 
 vid_top = VideoReader('D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_top\RawVideo\Press007.avi');
@@ -75,13 +75,13 @@ ax_topview = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
 ax_topview.Position = [margin_left,margin_bottom+space_row_raster+space_raster_yt+height_yt+space_raster_traj+height_raster+height_PSTH,width_traj,height_traj];
 image(ax_topview,bg_top);
 ax_topview.XAxis.Visible = 'off';ax_topview.YAxis.Visible = 'off';
-title(ax_topview,'topview');
+title(ax_topview,'Topview');
 
 % traj sideview1
 ax_sideview1 = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
 ax_sideview1.Position = [margin_left+width_traj*1+space_col_traj*1,margin_bottom+space_row_raster+space_raster_yt+height_yt+space_raster_traj+height_raster+height_PSTH,width_traj,height_traj];
 ax_sideview1.XAxis.Visible = 'off';ax_sideview1.YAxis.Visible = 'off';
-title(ax_sideview1,'sideview');
+title(ax_sideview1,'Sideview');
 image(ax_sideview1,bg_side_traj1);
 xlim(ax_sideview1,[0,size(bg_side_traj1,2)])
 ylim(ax_sideview1,[0,size(bg_side_traj1,2)])
@@ -90,7 +90,7 @@ ylim(ax_sideview1,[0,size(bg_side_traj1,2)])
 ax_sideview2 = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
 ax_sideview2.Position = [margin_left+width_traj*2+space_col_traj*2,margin_bottom+space_row_raster+space_raster_yt+height_yt+space_raster_traj+height_raster+height_PSTH,width_traj,height_traj];
 ax_sideview2.XAxis.Visible = 'off';ax_sideview2.YAxis.Visible = 'off';
-title(ax_sideview2,'sideview');
+title(ax_sideview2,'Sideview');
 image(ax_sideview2,bg_side_traj2);
 xlim(ax_sideview2,[0,size(bg_side_traj2,2)])
 ylim(ax_sideview2,[0,size(bg_side_traj2,2)])
@@ -99,14 +99,18 @@ ylim(ax_sideview2,[0,size(bg_side_traj2,2)])
 ax_yt1 = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
 ax_yt1.Position = [(figure_width-space_col_raster)/2-width_raster,margin_bottom+space_row_raster+space_raster_yt+height_raster+height_PSTH,width_yt,height_yt];
 ylabel(ax_yt1,'y (pixel)')
-xlim(ax_yt1,[-1000,0])
+xlim(ax_yt1,[t_pre,t_post])
 ylim(ax_yt1,[200,900])
+ax_yt1.XAxis.Visible = 'off';
+xline(ax_yt1,0,'-k','LineWidth',1);
 
 ax_yt2 = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
 ax_yt2.Position = [(figure_width+space_col_raster)/2,margin_bottom+space_row_raster+space_raster_yt+height_raster+height_PSTH,width_yt,height_yt];
 ax_yt2.YAxis.Visible = 'off';
-xlim(ax_yt2,[-1000,0])
+xlim(ax_yt1,[t_pre,t_post])
 ylim(ax_yt2,[200,900])
+ax_yt2.XAxis.Visible = 'off';
+xline(ax_yt2,0,'-k','LineWidth',1);
 
 % raster1
 ax_raster1 = axes(h,'Units','centimeters','NextPlot','add');
@@ -115,6 +119,7 @@ ax_raster1.YTick = [1,ntrial_raster];
 ax_raster1.YLim = [0.5,ntrial_raster+0.5];
 ax_raster1.XAxis.Visible = 'off';
 ylabel(ax_raster1,'Trials');
+xline(ax_raster1,0,'-k','LineWidth',1);
 
 % raster2
 ax_raster2 = axes(h,'Units','centimeters','NextPlot','add');
@@ -122,18 +127,21 @@ ax_raster2.Position = [(figure_width+space_col_raster)/2,margin_bottom+space_row
 ax_raster2.YTick = [1,ntrial_raster];
 ax_raster2.YLim = [0.5,ntrial_raster+0.5];
 ax_raster2.XAxis.Visible = 'off';ax_raster2.YAxis.Visible = 'off';
+xline(ax_raster2,0,'-k','LineWidth',1);
 
 % PSTH1
 ax_PSTH1 = axes(h,'Units','centimeters','NextPlot','add');
 ax_PSTH1.Position = [(figure_width-space_col_raster)/2-width_raster,margin_bottom,width_PSTH,height_PSTH];
-ylabel(ax_PSTH1,'Firing Rate (Hz)');
+ylabel(ax_PSTH1,'Firing rate (Hz)');
+xline(ax_PSTH1,0,'-k','LineWidth',1);
 
-annotation(h,'textbox',[0.3,0,.4,.05],'String','Time from Press (ms)','EdgeColor','none','FontSize',8.25,'HorizontalAlignment','center','VerticalAlignment','middle');
+annotation(h,'textbox',[0.3,0,.4,.05],'String','Time from press (ms)','EdgeColor','none','FontSize',8.25,'HorizontalAlignment','center','VerticalAlignment','middle');
 
 % PSTH2
 ax_PSTH2 = axes(h,'Units','centimeters','NextPlot','add');
 ax_PSTH2.Position = [(figure_width+space_col_raster)/2,margin_bottom,width_PSTH,height_PSTH];
 ax_PSTH2.YAxis.Visible = 'off';
+xline(ax_PSTH2,0,'-k','LineWidth',1);
 %% Plotting
 ind_bodypart_top = find(strcmp(r.VideoInfos_top(1).Tracking.BodyParts, bodypart_top));
 ind_bodypart_side = find(strcmp(r.VideoInfos_side(1).Tracking.BodyParts, bodypart_side));
@@ -173,7 +181,7 @@ for k = 1:length(index_cat2)
 end
 
 % sideview
-frame_num_press = -r.VideoInfos_side(1).t_pre/10;
+frame_num_press = (t_post-r.VideoInfos_side(1).t_pre)/10+1;
 interval_side = 1;
 
 for k = 1:length(index_cat1)

@@ -23,13 +23,13 @@ nbpod = length(release_time_bpod);
 % nbpod must be larger than nblackrock
 figure;
 
-ha1=subplot(4, 1, 1)
-plot(release_time_blackrock, 0.5, 'ko')
-hold on
-plot(release_time_bpod, 1.1, 'bo')
-set(gca, 'ylim', [0.5 2])
-plot(badpokein_time_bpod, 1.3, 'k*', 'linewidth', 1.5)
-plot(badpokeout_time_bpod, 1.3, 'k^', 'linewidth', 1.5)
+% ha1=subplot(4, 1, 1)
+% plot(release_time_blackrock, 0.5, 'ko')
+% hold on
+% plot(release_time_bpod, 1.1, 'bo')
+% set(gca, 'ylim', [0.5 2])
+% plot(badpokein_time_bpod, 1.3, 'k*', 'linewidth', 1.5)
+% plot(badpokeout_time_bpod, 1.3, 'k^', 'linewidth', 1.5)
 
 dt = [];
 release_time_blackrock2 = release_time_blackrock-release_time_blackrock(1);
@@ -40,7 +40,7 @@ for i=1:1:nbpod-nblackrock
     dt(i) = toaligh (release_time_blackrock2, ireleasebpod);
 end;
 
-ha2=subplot(4, 1, 2)
+ha2=subplot(4, 1, 2);
 plot(dt, 'ko'); hold on
 [maxdt, indmax] = max(dt);
 plot(indmax, maxdt, 'ro', 'markerfacecolor', 'r', 'markersize', 6)
@@ -53,7 +53,7 @@ dt_bpod_blackrock = release_time_bpod(indmax) - release_time_blackrock(1);
 % new release time from bpod
 bpod_new_release_time = release_time_bpod-dt_bpod_blackrock;
 
-ha3=subplot(4, 1, 3)
+ha3=subplot(4, 1, 3);
 plot(release_time_blackrock, 0.5, 'ko')
 text(release_time_blackrock(end), 0.7, 'blackrock response', 'color', 'k')
 hold on
@@ -85,11 +85,11 @@ plot(bpod_adjusted_release-ephys_matching_bpod, 'ko-')
 timerange_bpod_old = [release_time_bpod(ind_bpod_new(1)) release_time_bpod(ind_bpod_new(end))];
 badpokeintime = badpokein_time_bpod(badpokein_time_bpod>=timerange_bpod_old(1)-100 & badpokein_time_bpod<=timerange_bpod_old(2)+200);
 badpokeouttime = badpokeout_time_bpod(badpokein_time_bpod>=timerange_bpod_old(1)-100  & badpokein_time_bpod<=timerange_bpod_old(2)+200);
-axes(ha1)
-if ~isempty(badpokeintime)
-plot(badpokeintime, 1.25, 'm*')
-plot(badpokeouttime, 1.25, 'm*')
-end
+% axes(ha1)
+% if ~isempty(badpokeintime)
+% plot(badpokeintime, 1.25, 'm*')
+% plot(badpokeouttime, 1.25, 'm*')
+% end
 badpokeintime_new = [];
 badpokeouttime_new = [];
 

@@ -1,4 +1,4 @@
-clear
+% clear
 data_path_unit = {...
     'D:\Ephys\ANMs\Russo\Sessions\20210821\RTarrayAll.mat',     [1,2,3,5,6,7,9,10,11,13,15,17]...
     'D:\Ephys\ANMs\Russo\Sessions\r_all_20210906_20210910.mat', []...
@@ -41,19 +41,20 @@ h.Position = [15,15,figure_width,figure_height];
 ax_press_1 = axes(h,'Units','centimeters','NextPlot','add');
 ax_press_1.Position = [margin_left,margin_bottom+space_row+height_PSTH,width_PSTH,height_PSTH];
 ax_press_1.XAxis.Visible = 'off';
-title(ax_press_1,'Sorted by Maximum Activity')
+title(ax_press_1,'Sorted by maximum activity')
 ylabel(ax_press_1,'Neurons')
 
 ax_press_2 = axes(h,'Units','centimeters','NextPlot','add');
 ax_press_2.Position = [margin_left,margin_bottom,width_PSTH,height_PSTH];
-title(ax_press_2,'Sorted by Minimum Activity')
-xlabel(ax_press_2,'Time from Press (ms)')
+title(ax_press_2,'Sorted by minimum activity')
+xlabel(ax_press_2,'Time from press (ms)')
 ylabel(ax_press_2,'Neurons')
 
 
 %% Plotting
 [average_spikes_long_all,average_spikes_short_all] = load_data(data_path_unit,t_pre_press,t_post_press,'press');
-average_spikes_long_all = 1./(exp(-average_spikes_long_all)+1);
+% average_spikes_long_all = 1./(exp(-average_spikes_long_all)+1);
+average_spikes_long_all = average_spikes_long_all./max(abs(average_spikes_long_all),[],1);
 %% sort by max
 [~,max_idx_long] = max(smoothdata(average_spikes_long_all,'gaussian',1));
 [~,sort_idx_long] = sort(max_idx_long,'descend');
@@ -62,6 +63,7 @@ average_spikes_long_all = 1./(exp(-average_spikes_long_all)+1);
 average_spikes_long_all_sorted = average_spikes_long_all(:,sort_idx_long)';
 % average_spikes_short_all_sorted = average_spikes_short_all(:,sort_idx_short)';
 imagesc(ax_press_1,average_spikes_long_all_sorted,'xData',t_pre_press:t_post_press,'YData',1:size(average_spikes_long_all_sorted,1));
+colormap(ax_press_1,RdBu);
 plot(ax_press_1,[0,0],[0.5,size(average_spikes_long_all_sorted,1)+0.5],'k-','LineWidth',line_width_press)
 plot(ax_press_1,[1500,1500],[0.5,size(average_spikes_long_all_sorted,1)+0.5],'m-','LineWidth',line_width_press)
 ylim(ax_press_1,[0.5,size(average_spikes_long_all_sorted,1)+0.5]);
@@ -74,6 +76,7 @@ xlim(ax_press_1,[t_pre_press,t_post_press]);
 average_spikes_long_all_sorted = average_spikes_long_all(:,sort_idx_long)';
 % average_spikes_short_all_sorted = average_spikes_short_all(:,sort_idx_short)';
 imagesc(ax_press_2,average_spikes_long_all_sorted,'xData',t_pre_press:t_post_press,'YData',1:size(average_spikes_long_all_sorted,1));
+colormap(ax_press_2,RdBu);
 plot(ax_press_2,[0,0],[0.5,size(average_spikes_long_all_sorted,1)+0.5],'k-','LineWidth',line_width_press)
 plot(ax_press_2,[1500,1500],[0.5,size(average_spikes_long_all_sorted,1)+0.5],'m-','LineWidth',line_width_press)
 ylim(ax_press_2,[0.5,size(average_spikes_long_all_sorted,1)+0.5]);
@@ -84,14 +87,14 @@ colorbar('Units','centimeters','Position',[margin_left+width_PSTH+0.5,margin_bot
 h_annotation = annotation(h,'textarrow',...
     [0.5,0.5],...
     [0.5,0.5],...
-    'String','Firing Rate (Z-scored)',...
+    'String','Firing rate (normalized)',...
     'HeadStyle', 'none',...
     'LineStyle', 'none',...
     'Units','centimeters',...
     'FontSize',8.25,...
     'color','k',...
     'TextRotation',270);
-set(h_annotation,'X',[margin_left+width_PSTH+width_colorbar+1.2,margin_left+width_PSTH+width_colorbar+1.2],'Y',[2.75, 2.75])
+set(h_annotation,'X',[margin_left+width_PSTH+width_colorbar+1.3,margin_left+width_PSTH+width_colorbar+1.3],'Y',[2.75, 2.75])
 
 h_annotation_press_text = annotation(h,'textbox',...
     [0.5,0.5,0.5,0.5],...

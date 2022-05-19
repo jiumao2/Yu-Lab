@@ -122,20 +122,20 @@ xlim(ax_raster_release2,[t_pre,t_post]);
 
 ax_PETH_lift = axes(h,'Units','centimeters','NextPlot','add');
 ax_PETH_lift.Position = [margin_left,margin_bottom,width_PSTH,height_PSTH];
-xlabel(ax_PETH_lift, 'Time from Lift (ms)')
-ylabel(ax_PETH_lift, 'Firing Rate (Hz)');
+xlabel(ax_PETH_lift, 'Time from lift (ms)')
+ylabel(ax_PETH_lift, 'Firing rate (Hz)');
 
 ax_PETH_press = axes(h,'Units','centimeters','NextPlot','add');
 ax_PETH_press.Position = [margin_left+space_col*1+width_raster*1,margin_bottom,width_PSTH,height_PSTH];
-xlabel(ax_PETH_press, 'Time from Press (ms)')
+xlabel(ax_PETH_press, 'Time from press (ms)')
 
 ax_PETH_holding = axes(h,'Units','centimeters','NextPlot','add');
 ax_PETH_holding.Position = [margin_left+space_col*2+width_raster*2,margin_bottom,width_PSTH,height_PSTH];
-xlabel(ax_PETH_holding, 'Time from Press (ms)')
+xlabel(ax_PETH_holding, 'Time from press (ms)')
 
 ax_PETH_release = axes(h,'Units','centimeters','NextPlot','add');
 ax_PETH_release.Position = [margin_left+space_col*3+width_raster*3,margin_bottom,width_PSTH,height_PSTH];
-xlabel(ax_PETH_release, 'Time from Release (ms)')
+xlabel(ax_PETH_release, 'Time from release (ms)')
 %% Plotting
 
 % lift
@@ -217,6 +217,7 @@ psth2 = smoothdata (psth2, 'gaussian', 5);
 
 plot(ax_PETH_lift,tpsth1,psth1,'Color',colors_name{1},'LineWidth',linewidth_PSTH)
 plot(ax_PETH_lift,tpsth2,psth2,'Color',colors_name{2},'LineWidth',linewidth_PSTH)
+xline(ax_PETH_lift,0,'--','LineWidth',linewidth_PSTH)
 
 % press
 load(data_path_press{1})
@@ -300,6 +301,7 @@ psth2 = smoothdata (psth2, 'gaussian', 5);
 
 plot(ax_PETH_press,tpsth1,psth1,'Color',colors_name{1},'LineWidth',linewidth_PSTH)
 plot(ax_PETH_press,tpsth2,psth2,'Color',colors_name{2},'LineWidth',linewidth_PSTH)
+xline(ax_PETH_press,0,'--','LineWidth',linewidth_PSTH)
 
 % holding
 load(data_path_holding{1})
@@ -383,6 +385,7 @@ psth2 = smoothdata (psth2, 'gaussian', 5);
 
 plot(ax_PETH_holding,tpsth1,psth1,'Color',colors_name{1},'LineWidth',linewidth_PSTH)
 plot(ax_PETH_holding,tpsth2,psth2,'Color',colors_name{2},'LineWidth',linewidth_PSTH)
+xline(ax_PETH_holding,0,'--','LineWidth',linewidth_PSTH)
 
 % release
 load(data_path_release{1})
@@ -465,6 +468,7 @@ psth2 = smoothdata (psth2, 'gaussian', 5);
 
 plot(ax_PETH_release,tpsth1,psth1,'Color',colors_name{1},'LineWidth',linewidth_PSTH)
 plot(ax_PETH_release,tpsth2,psth2,'Color',colors_name{2},'LineWidth',linewidth_PSTH)
+xline(ax_PETH_release,0,'--','LineWidth',linewidth_PSTH)
 
 % annotation
 h_annotation1 = annotation(h,'textbox',...
@@ -472,7 +476,7 @@ h_annotation1 = annotation(h,'textbox',...
     'EdgeColor','none',...
     'Units','centimeters',...
     'VerticalAlignment','middle',...
-    'String',{'FP = 1500ms'},...
+    'String',{'FP = 1500 ms'},...
     'FontWeight','bold',...
     'HorizontalAlignment','center',...
     'FitBoxToText','off');
@@ -483,7 +487,7 @@ h_annotation2 = annotation(h,'textbox',...
     'EdgeColor','none',...
     'Units','centimeters',...
     'VerticalAlignment','middle',...
-    'String',{'FP = 750ms'},...
+    'String',{'FP = 750 ms'},...
     'FontWeight','bold',...
     'HorizontalAlignment','center',...
     'FitBoxToText','off');
@@ -552,7 +556,7 @@ h_annotation_release_text = annotation(h,'textbox',...
     'EdgeColor','none',...
     'Units','centimeters',...
     'VerticalAlignment','middle',...
-    'String',{'Lift'},...
+    'String',{'Release'},...
     'FontWeight','bold',...
     'HorizontalAlignment','left',...
     'FitBoxToText','off');

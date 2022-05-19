@@ -74,8 +74,8 @@ figure_width = margin_left + margin_right + width_traj*4 + space_col*3;
 figure_height = margin_up + margin_bottom + height_traj_side + height_traj_top + space_row;
 h.Position = [15,15,figure_width,figure_height];
 
-annotation(h,'textbox',[0.022,0.71,0.1,0.05],'FontWeight','bold','String','sideview','EdgeColor','none','FontSize',8.25,'HorizontalAlignment','center','VerticalAlignment','middle');
-annotation(h,'textbox',[0.022,0.2932,0.1,0.05],'FontWeight','bold','String','topview','EdgeColor','none','FontSize',8.25,'HorizontalAlignment','center','VerticalAlignment','middle');
+annotation(h,'textbox',[0.022,0.71,0.1,0.05],'FontWeight','bold','String','Sideview','EdgeColor','none','FontSize',8.25,'HorizontalAlignment','center','VerticalAlignment','middle');
+annotation(h,'textbox',[0.022,0.2932,0.1,0.05],'FontWeight','bold','String','Topview','EdgeColor','none','FontSize',8.25,'HorizontalAlignment','center','VerticalAlignment','middle');
 
 % traj side approach
 ax_side_approach = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
@@ -117,7 +117,7 @@ ax_top_approach.XTick = {};
 ax_top_approach.YAxis.Visible = 'off';
 xlim(ax_top_approach,[0,img_width_top])
 ylim(ax_top_approach,[0,img_height_top])
-xlabel(ax_top_approach,['t = ',num2str(t_approach),'ms'])
+xlabel(ax_top_approach,['t = ',num2str(t_approach),' ms'])
 
 % traj top lift
 ax_top_lift = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
@@ -126,7 +126,7 @@ ax_top_lift.XTick = {};
 ax_top_lift.YAxis.Visible = 'off';
 xlim(ax_top_lift,[0,img_width_top])
 ylim(ax_top_lift,[0,img_height_top])
-xlabel(ax_top_lift,['t = ',num2str(t_lift),'ms'])
+xlabel(ax_top_lift,['t = ',num2str(t_lift),' ms'])
 
 % traj top hold
 ax_top_hold = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
@@ -135,7 +135,7 @@ ax_top_hold.XTick = {};
 ax_top_hold.YAxis.Visible = 'off';
 xlim(ax_top_hold,[0,img_width_top])
 ylim(ax_top_hold,[0,img_height_top])
-xlabel(ax_top_hold,['t = ',num2str(t_hold),'ms'])
+xlabel(ax_top_hold,['t = ',num2str(t_hold),' ms'])
 
 % traj top release
 ax_top_release = axes(h,'Units','centimeters','NextPlot','add','YDir','reverse');
@@ -144,7 +144,7 @@ ax_top_release.XTick = {};
 ax_top_release.YAxis.Visible = 'off';
 xlim(ax_top_release,[0,img_width_top])
 ylim(ax_top_release,[0,img_height_top])
-xlabel(ax_top_release,['t = ',num2str(t_release),'ms'])
+xlabel(ax_top_release,['t = ',num2str(t_release),' ms'])
 
 %% Plotting
 n_frame_approach = round((t_approach-r.VideoInfos_side(1).t_pre)/10+1);

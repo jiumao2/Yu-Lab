@@ -67,13 +67,13 @@ events.BadPokeIn        = events.BadPokeIn -t0;
 events.BadPokeOut     = events.BadPokeOut - t0;
 events.BadPress          = events.BadPress -t0;
 
-figure;
-plot(events.GoodRelease,1, 'go'); hold on
-plot(events.GoodPokeIn, 2, 'b*')
-plot(events.BadPokeIn, 3, 'r*')
-plot(events.BadPress, 3, 'k^')
-set(gca, 'ylim', [0 4])
-xlabel('sec')
+% figure;
+% plot(events.GoodRelease,1, 'go'); hold on
+% plot(events.GoodPokeIn, 2, 'b*')
+% plot(events.BadPokeIn, 3, 'r*')
+% plot(events.BadPress, 3, 'k^')
+% set(gca, 'ylim', [0 4])
+% xlabel('sec')
 
 
 % extract the first poke after each bad release
@@ -99,5 +99,5 @@ end;
 events.BadPokeInFirst = bad_pokein;
 events.BadPokeOutFirst = bad_pokeout;
 
-plot(events.BadPokeInFirst, 3, 'ro')
+% plot(events.BadPokeInFirst, 3, 'ro')
      
