@@ -94,18 +94,20 @@ t_trigger_long_correct =[];
 ind_badtriggers = [];
 
 figure(55); clf(55)
+hold on
 hax=axes;
 dt=[];
-
+hold on
+plot(t_correctreleases, 5, 'b*');
+plot(t_correctpresses, 4.5, 'g*');
+    
 for i = 1:length(t_triggers)
     
     it_trigger = t_triggers(i);
     [it_release, indminrelease] = min(abs(t_correctreleases-it_trigger));
     cla;
-    plot(it_trigger,5, 'ro');
+    plot(it_trigger,5.5, 'ro');
     hold on;
-    plot(t_correctreleases, 5, 'b*');
-    plot(t_correctpresses, 4.8, 'g*');
     
     set(gca, 'ylim', [2 8], 'nextplot', 'add')
     
@@ -120,11 +122,11 @@ for i = 1:length(t_triggers)
         if abs(ilapse-750)<abs(ilapse-1500)
             t_trigger_short_correct = [t_trigger_short_correct; it_trigger];
             dt=[dt min(ilapse)-750];
-            plot(it_trigger-750, 4.8, 'r^');
+            plot(it_trigger-750, 4, 'r^');
         else
             t_trigger_long_correct = [t_trigger_long_correct; it_trigger];
             dt=[dt min(ilapse)-1500];
-            plot(it_trigger-1500, 4.8, 'r^');
+            plot(it_trigger-1500, 4, 'r^');
         end;
     else
         % trigger followed by late release
