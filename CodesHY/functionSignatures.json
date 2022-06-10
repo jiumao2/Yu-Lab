@@ -1,0 +1,162 @@
+{
+    "_schemaVersion": "1.0.0",
+    "ExtractBurstFrame":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"unit_num", "kind":"required", "type":["integer", ">0"]},
+          {"name":"FrameNum", "kind":"namevalue", "type":["integer", ">0"]},
+          {"name":"plot_longer_clip", "kind":"namevalue", "type":"logical"}
+       ]
+    },
+
+    "fakeSort":
+    {
+      "inputs":
+      [
+         {"name":"x", "kind":"required", "type":"numeric"}
+      ]
+    },
+
+    "findNearestPoint":
+    {
+       "inputs":
+       [
+          {"name":"seq", "kind":"required", "type":"numeric"},
+          {"name":"p", "kind":"required", "type":["numeric","scaler"]}
+       ]
+    },
+
+    "findseqmatch":
+    {
+       "inputs":
+       [
+          {"name":"seq_mom", "kind":"required", "type":"numeric"},
+          {"name":"seq_son", "kind":"required", "type":"numeric"}
+       ]
+    },
+
+    "get_average_spikes":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"unit_of_interest", "kind":"required", "type":"numeric"},
+          {"name":"t_pre", "kind":"required", "type":"numeric"},
+          {"name":"t_post", "kind":"required", "type":"numeric"},
+          {"name":"gaussian_kernel", "kind":"namevalue", "type":"numeric"},
+          {"name":"normalized", "kind":"namevalue", "type":"choices={'None','zscore'}"},
+          {"name":"event", "kind":"namevalue", "type":"choices={'press','release','reward'}"}
+       ]
+    }, 
+    
+    "getFrameInd":
+    {
+       "inputs":
+       [
+          {"name":"t_frameon", "kind":"required", "type":"numeric"},
+          {"name":"ts", "kind":"required", "type":"numeric"}
+       ]
+    },   
+    
+    "MakeFrameRasterVideo":
+    {
+       "inputs":
+       [
+          {"name":"img_seq", "kind":"required", "type":"cell"},
+          {"name":"spiketime_seq", "kind":"required", "type":"numeric"},
+          {"name":"t_seq", "kind":"required", "type":"numeric"},
+          {"name":"moviename", "kind":"required", "type":"char"},
+          {"name":"notes", "kind":"required", "type":"cell"}
+       ]
+    },
+    
+    "r2csv":
+    {
+       "inputs":
+       [
+          {"name":"r_path", "kind":"required", "type":"char"},
+          {"name":"csv_path", "kind":"required", "type":"char"}
+       ]
+    },
+
+    "r_all2csv":
+    {
+       "inputs":
+       [
+          {"name":"r_all", "kind":"required", "type":"struct"},
+          {"name":"csv_path", "kind":"required", "type":"char"}
+       ]
+    },   
+
+    "ReadFrameNumSEQ":
+    {
+       "inputs":
+       [
+          {"name":"filename", "kind":"required", "type":"char"}
+       ]
+    },
+
+    "getIndexVideoInfos":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"Foreperiod", "kind":"namevalue", "type":"choices={'Short_Long','All','Short','Long'}"},
+          {"name":"Hand", "kind":"namevalue", "type":"choices={'All','Left','Right','Both','Right_Both','Left_Both','Left_Right'}"},
+          {"name":"Performance", "kind":"namevalue", "type":"choices={'All','Correct','Premature','Late','Others'}"},
+          {"name":"Trajectory", "kind":"namevalue", "type":"numeric"},
+          {"name":"LiftStartTimeLabeled", "kind":"namevalue", "type":"choices={'On','Off'}"}
+       ]
+    },
+    
+    "PlotComparing":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"unit_num", "kind":"required", "type":"numeric"},
+          {"name":"comparing_type_indexes", "kind":"required", "type":"cell"},
+          {"name":"comparing_type_names", "kind":"required", "type":"cell"},
+          {"name":"example_indexes", "kind":"required", "type":"numeric"},
+          {"name":"t_pre", "kind":"namevalue", "type":"numeric"},
+          {"name":"t_post", "kind":"namevalue", "type":"numeric"},
+          {"name":"binwidth_PSTH", "kind":"namevalue", "type":"numeric"},
+          {"name":"ntrial_raster", "kind":"namevalue", "type":"numeric"},
+          {"name":"save_filename_png", "kind":"namevalue", "type":"char"},
+          {"name":"save_fig", "kind":"namevalue", "type":"choices={'on','off'}"},
+          {"name":"video_path", "kind":"namevalue", "type":"char"},
+          {"name":"gaussian_kernel_width", "kind":"namevalue", "type":"numeric"}
+       ]
+    },
+    "findSeq":
+    {
+       "inputs":
+       [
+          {"name":"seqmom", "kind":"required", "type":"numeric"},
+          {"name":"seqson", "kind":"required", "type":"numeric"},
+          {"name":"type", "kind":"optional", "type":"choices={'ordered','normal'}"}
+       ]
+    },
+
+    "getFiringRate":
+    {
+       "inputs":
+       [
+          {"name":"spike_times", "kind":"required", "type":"numeric"},
+          {"name":"times", "kind":"required", "type":"numeric"},
+          {"name":"binwidth", "kind":"optional", "type":"numeric"}
+       ]
+    }, 
+
+    "getMeanTrajectory":
+    {
+       "inputs":
+       [
+          {"name":"traj_all", "kind":"required", "type":"cell"},
+          {"name":"num_points", "kind":"required", "type":"numeric"},
+          {"name":"firing_rate_all", "kind":"optional", "type":"cell"}
+       ]
+    }
+  }

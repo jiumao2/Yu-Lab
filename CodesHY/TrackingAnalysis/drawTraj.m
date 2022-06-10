@@ -1,7 +1,7 @@
 function drawTraj(r, num, bodypart)
-if nargin <= 2
-    bodypart = 'right_ear';
-end
+    if nargin <= 2
+        bodypart = 'right_ear';
+    end
 
 ind_bodypart = find(strcmp(r.VideoInfos_top(1).Tracking.BodyParts, bodypart));
 ind_correct = find(strcmp({r.VideoInfos_top.Performance},'Correct'));

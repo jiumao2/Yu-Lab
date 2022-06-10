@@ -30,7 +30,7 @@ cat(strcmp(temp,'Right')) = 2;
 cat(strcmp(temp,'Both')) = 3;
 cat = cat(ind_correct);
 
-num_traj = max(cat(:))-1;
+num_traj = max(cat(:))-1+1;
 colors = colororder;
 % colors(num_traj+1,:) = [0.5,0.5,0.5];
 
@@ -179,5 +179,5 @@ end
 h.Units = 'Centimeters';
 h.Position(3) = 2*axes_width+1;
 h.Position(4) = max(h1,h2)+0.5;
-saveas(gcf,['Fig/TrajComparing_Unit',num2str(num_unit),'_',event,'.png']);
+saveas(gcf,['Fig/HandComparing_Unit',num2str(num_unit),'_',event,'.png']);
 end

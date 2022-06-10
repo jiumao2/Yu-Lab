@@ -1,0 +1,110 @@
+{
+    "_schemaVersion": "1.0.0",
+    "drawTraj":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"num", "kind":"required", "type":["integer", ">0"]},
+          {"name":"bodypart", "kind":"ordered", "type":["char"]}
+       ]
+    },
+
+    "drawTrajAll":
+    {
+      "inputs":
+      [
+         {"name":"r_path", "kind":"required", "type":"cell"},
+         {"name":"num", "kind":"required", "type":["integer", ">0"]},
+         {"name":"bg_path", "kind":"required", "type":["char"]},
+         {"name":"bodypart", "kind":"required", "type":["char"]}
+      ]
+    },
+
+    "getPlotSpikeTime":
+    {
+       "inputs":
+       [
+          {"name":"spike_time_all", "kind":"required", "type":"numeric"},
+          {"name":"time", "kind":"required", "type":"numeric"},
+          {"name":"t_pre", "kind":"required", "type":"numeric"},
+          {"name":"t_post", "kind":"required", "type":"numeric"}
+
+       ]
+    },
+
+    "getReferenceTime":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"t0", "kind":"required", "type":"numeric"}
+       ]
+    },
+
+    "isIntersect":
+    {
+       "inputs":
+       [
+          {"name":"P1", "kind":"required", "type":"numeric"},
+          {"name":"P2", "kind":"required", "type":"numeric"},
+          {"name":"Q1", "kind":"required", "type":"numeric"},
+          {"name":"Q2", "kind":"required", "type":"numeric"}
+       ]
+    }, 
+    
+    "MergingR":
+    {
+       "inputs":
+       [
+          {"name":"r_path", "kind":"required", "type":"char"},
+          {"name":"r_all", "kind":"required", "type":"struct"},
+          {"name":"Meta", "kind":"namevalue", "type":"logical"},
+          {"name":"Behavior", "kind":"namevalue", "type":"logical"},
+          {"name":"Units", "kind":"namevalue", "type":"logical"},
+          {"name":"Wave", "kind":"namevalue", "type":"logical"},
+          {"name":"Analog", "kind":"namevalue", "type":"logical"},
+          {"name":"Video", "kind":"namevalue", "type":"logical"},
+          {"name":"VideoInfos_top", "kind":"namevalue", "type":"logical"},
+          {"name":"VideoInfos_side", "kind":"namevalue", "type":"logical"},
+          {"name":"MergeIndex", "kind":"namevalue", "type":"numeric"}
+       ]
+    },   
+    
+    "PlotComparingTrajPSTH":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"num_unit", "kind":"required", "type":"integer"},          
+          {"name":"event", "kind":"namevalue", "type":"numeric"},
+          {"name":"t_pre", "kind":"namevalue", "type":"numeric"},
+          {"name":"t_post", "kind":"namevalue", "type":"numeric"},
+          {"name":"binwidth", "kind":"namevalue", "type":"numeric"}
+       ]
+    },
+    
+    "PlotComparingTrajPSTHAll":
+    {
+       "inputs":
+       [
+         {"name":"r", "kind":"required", "type":"struct"},
+         {"name":"r_all", "kind":"required", "type":"struct"},
+         {"name":"num_unit", "kind":"required", "type":"integer"},          
+         {"name":"event", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_pre", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_post", "kind":"namevalue", "type":"numeric"},
+         {"name":"binwidth", "kind":"namevalue", "type":"numeric"}
+       ]
+    },
+
+    "trajDistance":
+    {
+       "inputs":
+       [
+          {"name":"x", "kind":"required", "type":"numeric"},
+          {"name":"y", "kind":"required", "type":"numeric"},
+          {"name":"mode", "kind":"namevalue", "type":"choices={'fast','normal'}"}
+       ]
+    }
+  }

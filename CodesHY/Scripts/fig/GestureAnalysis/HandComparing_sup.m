@@ -6,6 +6,7 @@ load(r_path)
 % save_filename_bmp = './fig.bmp';
 save_filename_pdf = './HandComparing_sup.pdf';
 save_filename_png = './HandComparing_sup.png';
+save_filename_eps = 'C:\Users\jiumao\Desktop\figuresHY\HandComparing_sup.eps';
 save_resolution = 1200;
 
 vid_side = VideoReader('D:\Ephys\ANMs\Chen\Video\20220507_video\VideoFrames_side\RawVideo\Press070.avi');
@@ -313,3 +314,4 @@ set(h_annotation_press_text,'Position',[-0.1,3.6,0.5,0.5]);
 % print(h,save_filename_bmp,'-dbmp',['-r',num2str(save_resolution)])
 print(h,save_filename_png,'-dpng',['-r',num2str(save_resolution)])
 print(h,save_filename_pdf,'-dpdf',['-r',num2str(save_resolution)])
+print(h,save_filename_eps,'-depsc',['-r',num2str(save_resolution)])

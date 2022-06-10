@@ -1,0 +1,57 @@
+{
+    "_schemaVersion": "1.0.0",
+    "SRTSpikesV5":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"unit_num", "kind":"required", "type":["numeric"]}
+       ]
+    },
+
+    "SRTSpikesV6":
+    {
+       "inputs":
+       [
+          {"name":"r_all", "kind":"required", "type":"struct"},
+          {"name":"unit_num", "kind":"required", "type":["numeric"]}
+       ]
+    },
+
+    "jpsth":
+    {
+       "inputs":
+       [
+          {"name":"spxtimes", "kind":"required", "type":"numeric"},
+          {"name":"trigtimes", "kind":"required", "type":["numeric","scaler"]},
+          {"name":"params", "kind":"required", "type":"struct"}
+       ]    
+    },
+
+    "CheckNEVSpikes":
+    {
+       "inputs":
+       [
+          {"name":"NEV", "kind":"required", "type":"struct"}
+       ]
+    },
+
+    "CheckNEVSpikes32":
+    {
+       "inputs":
+       [
+          {"name":"NEV", "kind":"required", "type":"struct"}
+       ]
+    },
+    "PlotWaveClusSorting":
+    {
+       "inputs":
+       [
+          {"name":"chname", "kind":"required", "type":"char"},
+          {"name":"trange", "kind":"namevalue", "type":"numeric"},
+          {"name":"spkrange", "kind":"namevalue", "type":"numeric"},
+          {"name":"lfprange", "kind":"namevalue", "type":"numeric"},
+          {"name":"name", "kind":"namevalue", "type":"char"}
+       ]
+    }
+  }

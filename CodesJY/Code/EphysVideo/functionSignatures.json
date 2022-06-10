@@ -1,0 +1,74 @@
+{
+    "_schemaVersion": "1.0.0",
+    "ExtractEventFrameSignalVideo":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"ts", "kind":"required", "type":"struct"},
+          {"name":"PSTHout", "kind":"ordered", "type":"struct"},
+          {"name":"unit_num", "kind":"required", "type":["numeric"]},
+          {"name":"events", "kind":"namevalue", "type":"choices={'Press','Release'}"},
+          {"name":"time_range", "kind":"namevalue", "type":"numeric"},
+          {"name":"camview", "kind":"namevalue", "type":"choices={'side','top'}"},    
+          {"name":"makemov", "kind":"namevalue", "type":"logical"}, 
+          {"name":"make_video_with_spikes", "kind":"namevalue", "type":"logical"}, 
+          {"name":"sort_by_unit", "kind":"namevalue", "type":"logical"},    
+          {"name":"frame_rate", "kind":"namevalue", "type":"numeric"},  
+          {"name":"start_trial", "kind":"namevalue", "type":"integer"}
+       ]
+    },
+
+    "ReadJpegSEQ2":
+    {
+       "inputs":
+       [
+          {"name":"fileName", "kind":"required", "type":"char"},
+          {"name":"frame", "kind":"required", "type":"integer"}
+       ]
+    },
+
+    "ReadTimestampSEQ":
+    {
+       "inputs":
+       [
+          {"name":"fileName", "kind":"required", "type":"char"},
+          {"name":"frame", "kind":"required", "type":"integer"}
+       ]
+    },
+
+    "findts":
+    {
+       "inputs":
+       [
+          {"name":"seqFileName", "kind":"required", "type":"char"}
+       ]    
+    },
+
+    "CheckNEVSpikes":
+    {
+       "inputs":
+       [
+          {"name":"NEV", "kind":"required", "type":"struct"}
+       ]
+    },
+
+    "CheckNEVSpikes32":
+    {
+       "inputs":
+       [
+          {"name":"NEV", "kind":"required", "type":"struct"}
+       ]
+    },
+    "PlotWaveClusSorting":
+    {
+       "inputs":
+       [
+          {"name":"chname", "kind":"required", "type":"char"},
+          {"name":"trange", "kind":"namevalue", "type":"numeric"},
+          {"name":"spkrange", "kind":"namevalue", "type":"numeric"},
+          {"name":"lfprange", "kind":"namevalue", "type":"numeric"},
+          {"name":"name", "kind":"namevalue", "type":"char"}
+       ]
+    }
+  }

@@ -1,6 +1,7 @@
 clear
 save_filename_pdf = './ExamplePETH_trigger.pdf';
 save_filename_png = './ExamplePETH_trigger.png';
+save_filename_eps = 'C:\Users\jiumao\Desktop\figuresHY\ExamplePETH_trigger.eps';
 save_resolution = 1200;
 global colors_name color_press color_release color_trigger linewidth_event linewidth_PSTH t_pre t_post binwidth_PSTH ntrial_raster
 

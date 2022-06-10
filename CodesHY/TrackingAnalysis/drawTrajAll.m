@@ -1,7 +1,7 @@
 function drawTrajAll(r_path, num, bg_path, bodypart)
-if nargin <= 3
-    bodypart = 'right_ear';
-end
+    if nargin <= 3
+        bodypart = 'right_ear';
+    end
 figure;
 bg = imread(bg_path);
 imshow(bg)

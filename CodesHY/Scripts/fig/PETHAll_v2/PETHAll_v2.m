@@ -16,6 +16,7 @@ t_post_press = 3500;
 
 save_filename_pdf = './PSTHAll_v2.pdf';
 save_filename_png = './PSTHAll_v2.png';
+save_filename_eps = 'C:\Users\jiumao\Desktop\figuresHY\PSTHAll_v2.eps';
 save_resolution = 1200;
 %% Figure Configuration
 margin_left = 1;
@@ -120,6 +121,7 @@ set(h_annotation_press_text,'Position',[-0.1,4,0.5,0.5]);
 %% Save Figure
 print(h,save_filename_png,'-dpng',['-r',num2str(save_resolution)])
 print(h,save_filename_pdf,'-dpdf',['-r',num2str(save_resolution)])
+% print(h,save_filename_eps,'-depsc',['-r',num2str(save_resolution)])
 %%
 function [average_spikes_long_all,average_spikes_short_all] = load_data(data_path_unit,t_pre,t_post,event)
 average_spikes_long_all = [];
