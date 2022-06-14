@@ -5,7 +5,7 @@ function PlotComparing(r, unit_num, comparing_type_indexes, comparing_type_names
     t_post = 500;
     binwidth_PSTH = 20;
     gaussian_kernel_width = 25;   
-    ntrial_raster = 15; 
+    ntrial_raster = NaN; 
     video_path = '.\VideoFrames_side\RawVideo\';
     save_fig = 'on';
     if nargin>=6
@@ -31,6 +31,13 @@ function PlotComparing(r, unit_num, comparing_type_indexes, comparing_type_names
                     errordlg('unknown argument')
             end
         end
+    end
+    if isnan(ntrial_raster)
+        type_length = zeros(1,length(comparing_type_indexes));
+        for k = 1:length(comparing_type_indexes)
+            type_length(k) = length(comparing_type_indexes{k});
+        end
+        ntrial_raster = min(type_length);
     end
 
     if isempty(example_indexes)

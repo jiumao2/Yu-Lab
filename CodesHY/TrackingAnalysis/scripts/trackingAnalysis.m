@@ -1,6 +1,7 @@
 %% Plot all trajectories
 % set the parameters below
 load RTarrayAll.mat
+% vid=VideoReader('./VideoFrames_top/RawVideo/Press010.avi');bg = vid.read(1);imwrite(bg,'bg.png')
 analysis_mode = 'both'; % pre / post / both
 bodypart = 'right_ear';
 bg_path = 'bg.png';

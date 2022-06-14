@@ -8,5 +8,10 @@ function firing_rate = getFiringRate(spike_times, times, binwidth)
         spike_num = sum(spike_times>=times(k)-binwidth/2 & spike_times<=times(k)+binwidth/2);
         firing_rate(k) = spike_num./binwidth;
     end
+    
+    firing_rate = minmax(firing_rate);
+function out = minmax(x)
+    out = (x-min(x))./max(x);
+end
 end
 
