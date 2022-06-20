@@ -1,26 +1,25 @@
 %% Meta Info
-r_path1 = 'D:\Ephys\ANMs\Urey\Videos\20211123_video\RTarrayAll.mat';
-r_path2 = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\RTarrayAll.mat';
-r_path3 = 'D:\Ephys\ANMs\Urey\Videos\20211125_video\RTarrayAll.mat';
-load('D:\Ephys\ANMs\Urey\Sessions\r_all_20211123_20211128.mat')
-r = MergingR({r_path1,r_path2,r_path3},r_all,'MergeIndex',[1,2,3],'Wave',false);
-% r_path = 'D:\Ephys\ANMs\Russo\Sessions\20210820_video\RTarrayAll.mat';
+% r_path1 = 'D:\Ephys\ANMs\Urey\Videos\20211123_video\RTarrayAll.mat';
+% r_path2 = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\RTarrayAll.mat';
+% load('D:\Ephys\ANMs\Urey\Sessions\r_all_20211123_20211128.mat')
+% r = MergingR({r_path1,r_path2},r_all,'MergeIndex',[1,2],'Wave',false);
+% r_path = 'F:\HY\Ephys\Davis\Video\20220331_video\RTarrayAll.mat';
 % load(r_path)
 save_resolution = 1200;
 
-vid_side = VideoReader('D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_side\RawVideo\Press056.avi');
-bg_side_traj1 = vid_side.read(-r.VideoInfos_top(1).t_pre/10);
-vid_side = VideoReader('D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_side\RawVideo\Press055.avi');
-bg_side_traj2 = vid_side.read(-r.VideoInfos_top(1).t_pre/10);
-% vid_side = VideoReader('D:\Ephys\ANMs\Russo\Sessions\20210820_video\VideoFrames_side\RawVideo\Press056.avi');
+% vid_side = VideoReader('D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_side\RawVideo\Press056.avi');
 % bg_side_traj1 = vid_side.read(-r.VideoInfos_top(1).t_pre/10);
-% vid_side = VideoReader('D:\Ephys\ANMs\Russo\Sessions\20210820_video\VideoFrames_side\RawVideo\Press055.avi');
+% vid_side = VideoReader('D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_side\RawVideo\Press055.avi');
 % bg_side_traj2 = vid_side.read(-r.VideoInfos_top(1).t_pre/10);
+vid_side = VideoReader('F:\HY\Ephys\Davis\Video\20220331_video\VideoFrames_side\RawVideo\Press056.avi');
+bg_side_traj1 = vid_side.read(-r.VideoInfos_top(1).t_pre/10);
+vid_side = VideoReader('F:\HY\Ephys\Davis\Video\20220331_video\VideoFrames_side\RawVideo\Press055.avi');
+bg_side_traj2 = vid_side.read(-r.VideoInfos_top(1).t_pre/10);
 
 bodypart = 'left_paw';
 idx_bodypart = find(strcmp(r.VideoInfos_side(1).Tracking.BodyParts,bodypart));
 
-unit_num = 1; % 1,3,7
+unit_num = 5; % 1,3,7
 n_post_framenum = 0;
 n_pre_framenum = 0;
 binwidth = 1;
@@ -30,7 +29,7 @@ marker_size = 50;
 colors_num = 256;
 colors = parula(256);
 
-color_max_percentage = 0.95;
+color_max_percentage = 0.90;
 color_min_percentage = 0.00;
 %%
 h0 = figure('Renderer','opengl');
@@ -43,7 +42,7 @@ ylabel(c0,'Normalized firing rate','FontSize',10);
 ax0.XAxis.Visible = 'off';ax0.YAxis.Visible = 'off';
 
 idx_all = [r.VideoInfos_side.Index];
-press_idx = getIndexVideoInfos(r,'Hand','Left','LiftStartTimeLabeled','On','Trajectory',2);
+press_idx = getIndexVideoInfos(r,'Hand','Left','LiftStartTimeLabeled','On');
 vid_press_idx = findSeq(idx_all,press_idx);
 
 firing_rate_all_flattened = [];

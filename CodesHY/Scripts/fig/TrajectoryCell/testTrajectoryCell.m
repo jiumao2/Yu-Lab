@@ -87,6 +87,30 @@ for k = 1:length(vid_press_idx)
     alpha(s,0.5);
 end
 % plot(ax0,mean_traj(1,:),mean_traj(2,:),'r.-','MarkerSize',20)
+%% Confirming Lift-related cell
+h_lift = figure('Renderer','opengl','Units','centimeters','Position',[10,10,8,4]);
+ax_lift = axes(h_lift,'NextPlot','add','Units','centimeters','Position',[0.5,0.5,3,3]);
+ax_press = axes(h_lift,'NextPlot','add','Units','centimeters','Position',[4.5,0.5,3,3]);
+lift_times = [r.VideoInfos_side(vid_press_idx).LiftStartTime];
+press_times = [r.VideoInfos_side(vid_press_idx).Time];
+params_lift.pre = 1000;
+params_lift.post = 1000;
+params_lift.binwidth = 20;
+params_press.pre = 2000;
+params_press.post = 0;
+params_press.binwidth = 20;
+[psth_lift,t_psth_lift] = jpsth(r.Units.SpikeTimes(unit_num).timings,lift_times',params_lift);
+[psth_press,t_psth_press] = jpsth(r.Units.SpikeTimes(unit_num).timings,press_times',params_press);
+psth_lift = smoothdata(psth_lift,'gaussian',5);
+psth_press = smoothdata(psth_press,'gaussian',5);
+plot(ax_lift,t_psth_lift,psth_lift)
+title(ax_lift,'Lift')
+xlabel(ax_lift,'Time from lift (ms)')
+plot(ax_press,t_psth_press,psth_press)
+title(ax_press,'Press')
+xlabel(ax_press,'Time from press (ms)')
+ylim_max = max([ax_lift.YLim(2),ax_press.YLim(2)]);
+ylim(ax_lift,[0,ylim_max]);ylim(ax_press,[0,ylim_max]);
 %% Hypothesis 1: fire at a fixed duration from lift (same information as PETH)
 h_h1 = figure('Renderer','opengl');
 ax_h1 = axes(h_h1,'NextPlot','add','XLim',[0,size(bg_side_traj2,2)],'YLim',[0,size(bg_side_traj2,1)]);
