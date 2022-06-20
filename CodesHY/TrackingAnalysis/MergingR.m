@@ -85,6 +85,7 @@ function r_new = MergingR(r_path, r_all, varargin)
                 r_new.Meta = [r_new.Meta, r.Meta];
             end
             if isBehavior
+                max_idx_before_merging = sum(r_new.Behavior.EventMarkers==3);
                 r_new.Behavior.CorrectIndex = [r_new.Behavior.CorrectIndex;r.Behavior.CorrectIndex+sum(r_new.Behavior.EventMarkers==3)];
                 r_new.Behavior.PrematureIndex = [r_new.Behavior.PrematureIndex;r.Behavior.PrematureIndex+sum(r_new.Behavior.EventMarkers==3)];
                 r_new.Behavior.LateIndex = [r_new.Behavior.LateIndex;r.Behavior.LateIndex+sum(r_new.Behavior.EventMarkers==3)];
@@ -113,6 +114,7 @@ function r_new = MergingR(r_path, r_all, varargin)
             end
             if isVideoInfos_top
                 for k = 1:length(r.VideoInfos_top)
+                    r.VideoInfos_top(k).Index = r.VideoInfos_top(k).Index + max_idx_before_merging;
                     r.VideoInfos_top(k).Time = r.VideoInfos_top(k).Time+getReferenceTime(r, t0);
                     r.VideoInfos_top(k).VideoFrameTime = r.VideoInfos_top(k).VideoFrameTime+getReferenceTime(r, t0);
                 end
@@ -120,6 +122,7 @@ function r_new = MergingR(r_path, r_all, varargin)
             end      
             if isVideoInfos_side
                 for k = 1:length(r.VideoInfos_side)
+                    r.VideoInfos_side(k).Index = r.VideoInfos_side(k).Index + max_idx_before_merging;
                     r.VideoInfos_side(k).Time = r.VideoInfos_side(k).Time+getReferenceTime(r, t0);
                     r.VideoInfos_side(k).VideoFrameTime = r.VideoInfos_side(k).VideoFrameTime+getReferenceTime(r, t0);
                 end

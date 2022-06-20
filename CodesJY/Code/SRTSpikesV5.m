@@ -31,7 +31,7 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
     printname = [];
     printsize = [2 2 20 16];
     tosave =1;
-    PressTimeDomain = [7000 2500];
+    PressTimeDomain = [3000 2500];
     electrode_type = 'Ch';
 
     if nargin>2
@@ -1110,7 +1110,7 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
 
     tosavename2= fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no)  printname]);
 
-    print (gcf,'-dpdf', tosavename2)
+%     print (gcf,'-dpdf', tosavename2)
     print (gcf,'-dpng', tosavename2)
 
     % copyfile([tosavename, '.pdf'], [tosavename2, '.pdf'])
