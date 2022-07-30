@@ -7,7 +7,9 @@
           {"name":"r", "kind":"required", "type":"struct"},
           {"name":"unit_num", "kind":"required", "type":["integer", ">0"]},
           {"name":"FrameNum", "kind":"namevalue", "type":["integer", ">0"]},
-          {"name":"plot_longer_clip", "kind":"namevalue", "type":"logical"}
+          {"name":"plot_longer_clip", "kind":"namevalue", "type":"logical"},
+          {"name":"frame_range", "kind":"namevalue", "type":"numeric"},
+          {"name":"view", "kind":"namevalue", "type":"choices={'side','top'}"}
        ]
     },
 
@@ -166,6 +168,25 @@
           {"name":"traj_all", "kind":"required", "type":"cell"},
           {"name":"num_points", "kind":"required", "type":"numeric"},
           {"name":"firing_rate_all", "kind":"optional", "type":"cell"}
+       ]
+    },
+    
+    "TrajectoryCell":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"unit_num", "kind":"required", "type":"numeric"},
+          {"name":"press_indexes", "kind":"required", "type":"numeric"},
+          {"name":"bg", "kind":"required", "type":"logical"},
+          {"name":"save_dir", "kind":"namevalue", "type":"char"},
+          {"name":"binwidth", "kind":"namevalue", "type":"numeric"},
+          {"name":"gaussian_kernel", "kind":"namevalue", "type":"numeric"},
+          {"name":"color_max_percentage", "kind":"namevalue", "type":"numeric"},
+          {"name":"color_min_percentage", "kind":"namevalue", "type":"numeric"},
+          {"name":"n_pre_framenum", "kind":"namevalue", "type":"numeric"},
+          {"name":"n_post_framenum", "kind":"namevalue", "type":"numeric"},
+          {"name":"save_fig", "kind":"namevalue", "type":"choices={'on','off'}"}
        ]
     }
   }

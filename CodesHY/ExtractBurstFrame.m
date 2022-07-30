@@ -7,6 +7,7 @@ function ExtractBurstFrame(r,unit_num,varargin)
     plot_longer_clip = false;
     n_frame_pre = -50;
     n_frame_post = 50;
+    frame_range = [];
 
     if nargin>=3
         for i=1:2:size(varargin,2)
@@ -24,7 +25,9 @@ function ExtractBurstFrame(r,unit_num,varargin)
                 case 'n_frame_pre'
                     n_frame_pre = varargin{i+1};
                 case 'n_frame_post'
-                    n_frame_post = varargin{i+1};                
+                    n_frame_post = varargin{i+1}; 
+                case 'frame_range'
+                    frame_range = varargin{i+1};
                 otherwise
                     errordlg('unknown argument')
             end
@@ -47,12 +50,15 @@ function ExtractBurstFrame(r,unit_num,varargin)
     firing_rate_t_post = 50;
     firing_rate_t_pre = -50;
 
-    firing_rate = zeros(length(r.VideoInfos),r.VideoInfos(unit_num).total_frames);
+    firing_rate = zeros(length(r.VideoInfos),r.VideoInfos(1).total_frames);
     for k = 1:length(r.VideoInfos)
-        for j = 1:r.VideoInfos(unit_num).total_frames
+        for j = 1:r.VideoInfos(1).total_frames
             firing_rate(k,j) = sum(spk_time+firing_rate_t_post>r.VideoInfos(k).VideoFrameTime(j)...
                 & spk_time+firing_rate_t_pre<r.VideoInfos(k).VideoFrameTime(j));
         end
+    end
+    if ~isempty(frame_range)
+        firing_rate(:,(1:r.VideoInfos(1).total_frames)<frame_range(1) | (1:r.VideoInfos(1).total_frames)>frame_range(2))=0;
     end
 
     h = figure;
@@ -91,19 +97,21 @@ function ExtractBurstFrame(r,unit_num,varargin)
                     vid_out.writeVideo(temp_frame);
                 else
                     j_start = max(j+n_frame_pre,1);
-                    for i = j:r.VideoInfos(1).total_frames
-                        if i == r.VideoInfos(1).total_frames
-                            j_end = i;
-                        end
+                    
+                    i = min(r.VideoInfos(1).total_frames,round(j+firing_rate_t_post/10));
+                    while i<=r.VideoInfos(1).total_frames
                         if firing_rate(k,i) <= threshold
-                            j_end = min(r.VideoInfos(1).total_frames,i+n_frame_post);
                             break
                         end
+                        i = i+1;
                     end
+                    j_next = i;
+                    j_end = min(round(i-firing_rate_t_post/10+n_frame_post),r.VideoInfos(1).total_frames);
+                    
                     burst_zone = [max(round(j+firing_rate_t_pre/10),1),...
-                        min(round(i-1+firing_rate_t_post/10),r.VideoInfos(1).total_frames)];
+                        min(j_next,r.VideoInfos(1).total_frames)];
                     j_this = j;
-                    j = i;
+                    j = j_next;
 
                     t_start = r.VideoInfos(k).VideoFrameTime(j_start);
                     t_now = r.VideoInfos(k).VideoFrameTime(j_this);

@@ -3,17 +3,17 @@
 % r_path2 = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\RTarrayAll.mat';
 % load('D:\Ephys\ANMs\Urey\Sessions\r_all_20211123_20211128.mat')
 % r = MergingR({r_path1,r_path2},r_all,'MergeIndex',[1,2],'Wave',false);
-% r_path = 'F:\HY\Ephys\Davis\Video\20220331_video\RTarrayAll.mat';
-% load(r_path)
+r_path = 'D:\Ephys\ANMs\Davis\Video\20220331_video\RTarrayAll.mat';
+load(r_path)
 save_resolution = 1200;
 
 % vid_side = VideoReader('D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_side\RawVideo\Press056.avi');
 % bg_side_traj1 = vid_side.read(-r.VideoInfos_top(1).t_pre/10);
 % vid_side = VideoReader('D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_side\RawVideo\Press055.avi');
 % bg_side_traj2 = vid_side.read(-r.VideoInfos_top(1).t_pre/10);
-vid_side = VideoReader('F:\HY\Ephys\Davis\Video\20220331_video\VideoFrames_side\RawVideo\Press056.avi');
+vid_side = VideoReader('D:\Ephys\ANMs\Davis\Video\20220331_video\VideoFrames_side\RawVideo\Press056.avi');
 bg_side_traj1 = vid_side.read(-r.VideoInfos_top(1).t_pre/10);
-vid_side = VideoReader('F:\HY\Ephys\Davis\Video\20220331_video\VideoFrames_side\RawVideo\Press055.avi');
+vid_side = VideoReader('D:\Ephys\ANMs\Davis\Video\20220331_video\VideoFrames_side\RawVideo\Press055.avi');
 bg_side_traj2 = vid_side.read(-r.VideoInfos_top(1).t_pre/10);
 
 bodypart = 'left_paw';
@@ -29,7 +29,7 @@ marker_size = 50;
 colors_num = 256;
 colors = parula(256);
 
-color_max_percentage = 0.90;
+color_max_percentage = 0.97;
 color_min_percentage = 0.00;
 %%
 h0 = figure('Renderer','opengl');
@@ -88,11 +88,21 @@ for k = 1:length(vid_press_idx)
 end
 % plot(ax0,mean_traj(1,:),mean_traj(2,:),'r.-','MarkerSize',20)
 %% Confirming Lift-related cell
-h_lift = figure('Renderer','opengl','Units','centimeters','Position',[10,10,8,4]);
-ax_lift = axes(h_lift,'NextPlot','add','Units','centimeters','Position',[0.5,0.5,3,3]);
-ax_press = axes(h_lift,'NextPlot','add','Units','centimeters','Position',[4.5,0.5,3,3]);
+h_lift = figure('Renderer','opengl','Units','centimeters','Position',[10,10,12,4]);
+ax_lift_start = axes(h_lift,'NextPlot','add','Units','centimeters','Position',[0.5,0.5,3,3]);
+ax_lift_highest = axes(h_lift,'NextPlot','add','Units','centimeters','Position',[4.5,0.5,3,3]);
+ax_press = axes(h_lift,'NextPlot','add','Units','centimeters','Position',[8.5,0.5,3,3]);
+
 lift_times = [r.VideoInfos_side(vid_press_idx).LiftStartTime];
 press_times = [r.VideoInfos_side(vid_press_idx).Time];
+
+lift_highest_times = zeros(1,length(vid_press_idx));
+for k = 1:length(vid_press_idx)
+    frame_num_temp = r.VideoInfos_side(vid_press_idx(k)).LiftStartFrameNum:round(-r.VideoInfos_side(vid_press_idx(k)).t_pre/10);
+    [~, i_maxy] = min(r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_y{idx_bodypart}(frame_num_temp));
+    lift_highest_times(k) = r.VideoInfos_side(vid_press_idx(k)).VideoFrameTime(r.VideoInfos_side(vid_press_idx(k)).LiftStartFrameNum+i_maxy-1);
+end
+
 params_lift.pre = 1000;
 params_lift.post = 1000;
 params_lift.binwidth = 20;
@@ -100,17 +110,25 @@ params_press.pre = 2000;
 params_press.post = 0;
 params_press.binwidth = 20;
 [psth_lift,t_psth_lift] = jpsth(r.Units.SpikeTimes(unit_num).timings,lift_times',params_lift);
+[psth_lift_highest,t_psth_lift_highest] = jpsth(r.Units.SpikeTimes(unit_num).timings,lift_highest_times',params_lift);
 [psth_press,t_psth_press] = jpsth(r.Units.SpikeTimes(unit_num).timings,press_times',params_press);
 psth_lift = smoothdata(psth_lift,'gaussian',5);
+psth_lift_highest = smoothdata(psth_lift_highest,'gaussian',5);
 psth_press = smoothdata(psth_press,'gaussian',5);
-plot(ax_lift,t_psth_lift,psth_lift)
-title(ax_lift,'Lift')
-xlabel(ax_lift,'Time from lift (ms)')
+
+plot(ax_lift_start,t_psth_lift,psth_lift)
+title(ax_lift_start,'Lift')
+xlabel(ax_lift_start,'Time from lift (ms)')
+
+plot(ax_lift_highest,t_psth_lift_highest,psth_lift_highest)
+title(ax_lift_highest,'Lift highest')
+xlabel(ax_lift_highest,'Time from lift highest (ms)')
+
 plot(ax_press,t_psth_press,psth_press)
 title(ax_press,'Press')
 xlabel(ax_press,'Time from press (ms)')
-ylim_max = max([ax_lift.YLim(2),ax_press.YLim(2)]);
-ylim(ax_lift,[0,ylim_max]);ylim(ax_press,[0,ylim_max]);
+ylim_max = max([ax_lift_start.YLim(2),ax_press.YLim(2),ax_lift_highest.YLim(2)]);
+ylim(ax_lift_start,[0,ylim_max]);ylim(ax_press,[0,ylim_max]);ylim(ax_lift_highest,[0,ylim_max]);
 %% Hypothesis 1: fire at a fixed duration from lift (same information as PETH)
 h_h1 = figure('Renderer','opengl');
 ax_h1 = axes(h_h1,'NextPlot','add','XLim',[0,size(bg_side_traj2,2)],'YLim',[0,size(bg_side_traj2,1)]);
@@ -291,7 +309,7 @@ disp(['Hypothesis 3: ',num2str(max(firing_rate_all_resized_mean))]);
 %% Hypothesis 4: fire at a fixed duration from lift highest
 h_h4 = figure('Renderer','opengl');
 ax_h4 = axes(h_h4,'NextPlot','add','XLim',[0,size(bg_side_traj2,2)],'YLim',[0,size(bg_side_traj2,1)]);
-title(ax_h4,'PETH')
+title(ax_h4,'PETH (highest)')
 image(ax_h4,bg_side_traj2);
 set(ax_h4,'YDir','reverse')
 ax_h4.XAxis.Visible = 'off';ax_h4.YAxis.Visible = 'off';
@@ -321,7 +339,7 @@ end
 firing_rate_all_mat_mean2 = mean(firing_rate_all_mat2,'omitnan');
 firing_rate_all_mat_mean2 = (firing_rate_all_mat_mean2-firing_rate_min)./(firing_rate_max-firing_rate_min);
 firing_rate_all_mat_mean2(firing_rate_all_mat_mean2>1)=1;firing_rate_all_mat_mean2(firing_rate_all_mat_mean2<0)=0;
-scatter(ax_h1,mean_traj(1,:),mean_traj(2,:),marker_size/2,colors(round(firing_rate_all_mat_mean2*(colors_num-1)+1),:),'filled');
+scatter(ax_h4,mean_traj(1,:),mean_traj(2,:),marker_size/2,colors(round(firing_rate_all_mat_mean2*(colors_num-1)+1),:),'filled');
 
 disp(['Hypothesis 4: ',num2str(max(firing_rate_all_mat_mean2))]);
 %% Comparing
@@ -337,14 +355,17 @@ max_h1_points = (max_h1_points-firing_rate_min)./(firing_rate_max-firing_rate_mi
 max_h2_points = (max_h2_points-firing_rate_min)./(firing_rate_max-firing_rate_min);
 max_h3_points = (max_h3_points-firing_rate_min)./(firing_rate_max-firing_rate_min);
 max_h4_points = (max_h4_points-firing_rate_min)./(firing_rate_max-firing_rate_min);
-
+max_h1_points(max_h1_points>1)=1;
+max_h2_points(max_h2_points>1)=1;
+max_h3_points(max_h3_points>1)=1;
+max_h4_points(max_h4_points>1)=1;
 h_all = figure('Renderer','opengl','Units','centimeters','Position',[10,10,22,9]);
 ax_all_fr = axes(h_all,'NextPlot','add','Units','centimeters','Position',[1,5,3,3]);
 bar([max_h1,max_h2,max_h3,max_h4])
 title(ax_all_fr,'Max firing rate');
 ylim(ax_all_fr,[0,1]);
 ylabel(ax_all_fr,'Normalized firing rate')
-set(ax_all_fr,'XTick',[1,2,3],'XTickLabel',{'H1','H2','H3'})
+set(ax_all_fr,'XTick',[1,2,3],'XTickLabel',{'H1','H2','H3','H4'})
 
 ax_all_h1 = axes(h_all,'NextPlot','add','Units','centimeters','Position',[5,1,3,3]);
 histogram(ax_all_h1,max_h1_points,'BinWidth',0.1);
@@ -374,7 +395,7 @@ plot(10*(0:length(firing_rate_all_mat_mean)-1),firing_rate_all_mat_mean,'b-')
 title(ax_all_fr_h1,'H1');
 
 ax_all_fr_h2 = axes(h_all,'NextPlot','add','Units','centimeters','Position',[9,5,3,3]);
-plot(10*(0:length(firing_rate_pos)-1),firing_rate_pos,'b-')
+plot(10*(0:length(firing_rate_pos)-1),smoothdata(firing_rate_pos,'gaussian',5),'b-')
 title(ax_all_fr_h2,'H2');
 
 ax_all_fr_h3 = axes(h_all,'NextPlot','add','Units','centimeters','Position',[13,5,3,3]);
@@ -388,13 +409,15 @@ title(ax_all_fr_h4,'H4');
 ylim_max = max([ax_all_fr_h1.YLim(2),ax_all_fr_h2.YLim(2),ax_all_fr_h3.YLim(2),ax_all_fr_h4.YLim(2)]);
 ylim(ax_all_fr_h1,[0,ylim_max]);ylim(ax_all_fr_h2,[0,ylim_max]);ylim(ax_all_fr_h3,[0,ylim_max]);ylim(ax_all_fr_h4,[0,ylim_max]);
 %% Save Figure
-% print(h0,'traj_all','-dpng',['-r',num2str(save_resolution)])
-% print(h_h1,'time','-dpng',['-r',num2str(save_resolution)])
-% print(h_h2,'position','-dpng',['-r',num2str(save_resolution)])
-% print(h_h2_heatmap,'position_heatmap','-dpng',['-r',num2str(save_resolution)])
-% print(h_h2_2,'position_points_number','-dpng',['-r',num2str(save_resolution)])
-% print(h_h3,'warped_time','-dpng',['-r',num2str(save_resolution)])
-% print(h_h4,'comparison','-dpng',['-r',num2str(save_resolution)])
+print(h0,'traj_all','-dpng',['-r',num2str(save_resolution)])
+print(h_lift,'PETH','-dpng',['-r',num2str(save_resolution)])
+print(h_h1,'time','-dpng',['-r',num2str(save_resolution)])
+print(h_h2,'position','-dpng',['-r',num2str(save_resolution)])
+print(h_h2_heatmap,'position_heatmap','-dpng',['-r',num2str(save_resolution)])
+print(h_h2_2,'position_points_number','-dpng',['-r',num2str(save_resolution)])
+print(h_h3,'warped_time','-dpng',['-r',num2str(save_resolution)])
+print(h_h4,'time (highest)','-dpng',['-r',num2str(save_resolution)])
+print(h_all,'comparison','-dpng',['-r',num2str(save_resolution)])
 
 function firing_rate = getGraphFiringRate(x,y,traj_all,firing_rate_all,gaussian_kernel)
     traj_all_flattened = [];
