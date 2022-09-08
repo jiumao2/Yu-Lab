@@ -82,7 +82,7 @@ function TrajectoryCell(r,unit_num,press_indexes,bg,varargin)
     [spike_counts, t_spike_counts] = bin_timings(r.Units.SpikeTimes(unit_num).timings, binwidth);
     spike_counts_all = smoothdata(spike_counts,'gaussian',gaussian_kernel*5)./binwidth*1000;
     for k = 1:length(vid_press_idx)
-        frame_num_temp = r.VideoInfos_side(vid_press_idx(k)).LiftStartFrameNum-n_pre_framenum:round(-r.VideoInfos_side(vid_press_idx(k)).t_pre/10+n_post_framenum);
+        frame_num_temp = max(r.VideoInfos_side(vid_press_idx(k)).LiftStartFrameNum-n_pre_framenum,1):round(-r.VideoInfos_side(vid_press_idx(k)).t_pre/10+n_post_framenum);
         [~, i_maxy] = min(r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_y{idx_bodypart}(frame_num_temp));
         frame_num = frame_num_temp(1:i_maxy+n_post_framenum);
         frame_num_all(k) = length(frame_num);
