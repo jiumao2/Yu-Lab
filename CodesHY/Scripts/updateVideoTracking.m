@@ -1,9 +1,9 @@
 clear
 load('./RTarrayAll.mat')
 dlc_path = 'C:\Users\pku\Desktop\DLC\Urey_top_view-HY-2021-12-31';
-data_path = './VideoFrames_top/RawVideo';
-mat_path = './VideoFrames_top/MatFile';
 camview = 'top';
+data_path = ['./VideoFrames_',camview,'/RawVideo'];
+mat_path = ['./VideoFrames_',camview,'/MatFile'];
 %%
 output_csv = dir([data_path,'/*.csv']);
 filenames_csv = sort({output_csv.name});
