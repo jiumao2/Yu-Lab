@@ -1,5 +1,5 @@
-load RTarrayAll.mat
-camview = 'side';
+% load RTarrayAll.mat
+camview = 'top';
 %%
 if strcmp(camview,'side')
     VideoInfos_this = r.VideoInfos_side;

@@ -1,0 +1,4 @@
+difference in DLC of latest version and old version:
+1. CollectedData_XX.csv and CollectedData_XX.h5
+	one column is splitted to three columns
+2. latest-version DLC need latest-version CUDA

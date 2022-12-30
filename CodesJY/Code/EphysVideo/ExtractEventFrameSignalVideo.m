@@ -655,7 +655,9 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
             VideoInfo.VideoFilename = vidfile;
             VideoInfo.VideoFrameIndex = frames_to_extract + nstart;
             VideoInfo.VideoFrameTime = tframes_to_extract;
-            VideoInfo.Units.Channels = r.Units.Channels;
+            if isfield(r.Units,'Channels')
+                VideoInfo.Units.Channels = r.Units.Channels;
+            end
             VideoInfo.Units.Profile = r.Units.Profile;
             VideoInfo.Units.Definition = r.Units.Definition;
             VideoInfo.Units.SpikeNotes = r.Units.SpikeNotes;

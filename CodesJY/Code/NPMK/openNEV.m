@@ -218,7 +218,7 @@ function varargout = openNEV(varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Check for the latest version fo NPMK
-NPMKverChecker
+% NPMKverChecker
 
 %% Defining structures
 NEV = struct('MetaTags',[], 'ElectrodesInfo', [], 'Data', []);

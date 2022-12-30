@@ -100,6 +100,14 @@
        ]
     },
 
+    "getOptimalXtickInterval":
+    {
+       "inputs":
+       [
+          {"name":"interval", "kind":"required", "type":"numeric"}
+       ]
+    },
+
     "getIndexVideoInfos":
     {
        "inputs":
@@ -132,6 +140,20 @@
           {"name":"gaussian_kernel_width", "kind":"namevalue", "type":"numeric"}
        ]
     },
+
+    "PlotComparingHandPSTH":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"num_unit", "kind":"required", "type":"numeric"},
+          {"name":"event", "kind":"namevalue", "type":"char"},
+          {"name":"t_pre", "kind":"namevalue", "type":"numeric"},
+          {"name":"t_post", "kind":"namevalue", "type":"numeric"},
+          {"name":"binwidth", "kind":"namevalue", "type":"numeric"}
+       ]
+    },
+
     "findSeq":
     {
        "inputs":
@@ -188,5 +210,14 @@
           {"name":"n_post_framenum", "kind":"namevalue", "type":"numeric"},
           {"name":"save_fig", "kind":"namevalue", "type":"choices={'on','off'}"}
        ]
-    }
+    },
+
+    "getLiftStartFrameAuto":
+    {
+       "inputs":
+       [
+          {"name":"X", "kind":"required", "type":"numeric"},
+          {"name":"Y", "kind":"required", "type":"numeric"}
+       ]
+    }    
   }
