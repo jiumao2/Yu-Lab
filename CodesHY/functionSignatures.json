@@ -219,5 +219,30 @@
           {"name":"X", "kind":"required", "type":"numeric"},
           {"name":"Y", "kind":"required", "type":"numeric"}
        ]
-    }    
+    },
+
+    "getLiftEndFrameAuto":
+    {
+       "inputs":
+       [
+          {"name":"X", "kind":"required", "type":"numeric"},
+          {"name":"Y", "kind":"required", "type":"numeric"}
+       ]
+    },
+
+   "getBorderImgTwoViews":
+    {
+       "inputs":
+       [
+          {"name":"img", "kind":"required", "type":"numeric"}
+       ]
+    },
+    
+    "loadDLCcsv":
+    {
+       "inputs":
+       [
+          {"name":"filename", "kind":"required", "type":"char"}
+       ]
+    }  
   }
