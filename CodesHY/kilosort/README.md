@@ -1,0 +1,40 @@
+# Kilosort Pipeline
+
+## Installation
+### prerequesite:
+- Visual studio community 2017 with 'C++桌面开发' (compatatible to MATLAB version)
+- MATLAB 2021a or 2021b + necessory toolboxes + MEX
+- kilosort3 (place in a proper directory)
+- npy-matlab (place in a proper directory and better save it in MATLAB path)
+- Anaconda
+
+### Steps
+- New conda environment with python 3.8 `conda create -n phy python=3.8`
+- Install phy `pip install phy --pre --upgrade`
+- Deal with numpy version error `pip uninstall numpy`, `pip install numpy==1.23`
+- Install spikeinterface `pip install spikeinterface[full,widgets]`
+- Install kilosort. If visual studio is properly installed, run `mex -setup C++` in MATLAB and run the file `Kilosort\CUDA\mexGPUall.m`.
+
+## Data process pipeline
+- Move the directory with your data to SSD. (faster)
+- Move the file `kilosort.ipynb` to your data directory.
+- Open `kilosort.ipynb` in VS Code and set the kernal to `phy`. Modify the codes by following the instructions.
+- Do munual curation with Phy. Open 'Anaconda prompt'. First enter the output directory and run `phy template-gui params.py`.
+- Following the pipeline. Watch phy tutorial [here](https://www.youtube.com/watch?v=czdwIr-v5Yc). ![](phy_pipeline.png)
+- Run `BuildArrayKilosort` and save all data to `r`. (not completed yet)
+
+### About Phy output files
+| Filename | Type | Notes |
+| :------------- | :---------- | :------------ |
+|spike_clusters.npy|	nx1 vector 	                                    |Each spike's cluster (0:n_cluster-1) after manual curation |
+|spike_templates.npy| 	nx1 vector 		                                |Each spike's cluster (0:n_cluster-1) before manual curation|
+|spike_times.npy| 		nx1 vector 		                                |Unit: 1/30000 sec (1/sampling_frequency)|
+|templates.npy| 		n_clusterxlength_waveform(82)xn_channel matrix.||
+|templates_ind.npy| 	n_clusterxn_channel matrix 	                    |templates_ind(1,:) -> [0:31]|
+|amplitudes.npy| 		nx1 vector 		                                |Unit: 40*mV?|
+|channel_map.npy| 		n_channelx1 vector 	                            |0:31|
+|channel_positions.npy| n_channelx2 vector 	                            |Position of each channel. Unit: μm|
+|similar_templates.npy| n_clusterxn_cluster matrix 	                    |Similarity matrix|
+|cluster_group.tsv|		mx2 table		                                |The manually modified info about the group (good/MUA/noise)|
+|cluster_info.tsv|		n_clusterxn_property table	                    |Raw cluster info. Cluster info (cluster_idx, group) will be changed by manual curation|
+|cluster_KSLabel.tsv|	n_clusterx2 table		                        |Raw group info|

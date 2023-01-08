@@ -24,6 +24,11 @@ for n = 1:length(filenames_mat)
             VideoInfo.LiftHighestTime = NaN;
         end
     end
+    if strcmp(camview,'top')
+        if isfield(r.VideoInfos_top(n),'Trajectory')
+            VideoInfo.Trajectory = r.VideoInfos_top(n).Trajectory;
+        end
+    end
     VideoInfos(n) = VideoInfo;
 end
 if strcmp(camview,'top')
@@ -31,5 +36,6 @@ if strcmp(camview,'top')
 elseif strcmp(camview,'side')
     r.VideoInfos_side = VideoInfos;
 end
+%%
 save('./RTarrayAll.mat','r')
 

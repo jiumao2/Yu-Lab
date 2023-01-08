@@ -129,7 +129,7 @@
           {"name":"unit_num", "kind":"required", "type":"numeric"},
           {"name":"comparing_type_indexes", "kind":"required", "type":"cell"},
           {"name":"comparing_type_names", "kind":"required", "type":"cell"},
-          {"name":"example_indexes", "kind":"required", "type":"numeric"},
+          {"name":"example_indexes", "kind":"optional", "type":"numeric"},
           {"name":"t_pre", "kind":"namevalue", "type":"numeric"},
           {"name":"t_post", "kind":"namevalue", "type":"numeric"},
           {"name":"binwidth_PSTH", "kind":"namevalue", "type":"numeric"},

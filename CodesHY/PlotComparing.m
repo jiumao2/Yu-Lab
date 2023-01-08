@@ -1,4 +1,7 @@
 function PlotComparing(r, unit_num, comparing_type_indexes, comparing_type_names, example_indexes, varargin)
+% comparing_type_indexes: 1xn cell
+% comparing_type_names: 1xn cell
+% example_indexes: 1xn cell (optional)
     save_filename_png = ['Fig/HandComparing_Unit',num2str(unit_num),'.png'];
     save_resolution = 1200;
     t_pre = -1000;
