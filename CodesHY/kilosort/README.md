@@ -21,7 +21,9 @@
 - Open `kilosort.ipynb` in VS Code and set the kernal to `phy`. Modify the codes by following the instructions.
 - Do munual curation with Phy. Open 'Anaconda prompt'. First enter the output directory and run `phy template-gui params.py`.
 - Following the pipeline. Watch phy tutorial [here](https://www.youtube.com/watch?v=czdwIr-v5Yc). ![](phy_pipeline.png)
-- Run `BuildArrayKilosort` and save all data to `r`. (not completed yet)
+- Copy `BuildSpikeTable.m` to data folder, edit key parameters and run.
+- Copy `phy2times_dat.m` to data folder and run. `times_chdatx.mat` would be generated. You can run `SpikeCuration` to do further manual curation.
+- Run `BuildArrayKilosort.m`. (Not completed yet)
 
 ### About Phy output files
 | Filename | Type | Notes |
@@ -38,3 +40,7 @@
 |cluster_group.tsv|		mx2 table		                                |The manually modified info about the group (good/MUA/noise)|
 |cluster_info.tsv|		n_clusterxn_property table	                    |Raw cluster info. Cluster info (cluster_idx, group) will be changed by manual curation|
 |cluster_KSLabel.tsv|	n_clusterx2 table		                        |Raw group info|
+|chanMap.mat|           struct                                          |Information about the probe|
+|ops.mat|               struct                                          |Kilosort parameters|
+|recording.dat|         binary data                                     |Raw recording data|
+|temp_wh.dat|           binary data                                     |Filtered recording data|
