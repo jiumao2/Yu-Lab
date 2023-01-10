@@ -50,6 +50,7 @@ for k = 1:height(spikeTable)
             i = i+1;
         end
     end
+    ch_last = ch;
 
     spike_times_this = spikeTable(k,:).spike_times{1};
     waveform_this = zeros(length(spike_times_this),64);
