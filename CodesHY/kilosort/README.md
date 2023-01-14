@@ -1,11 +1,11 @@
-# Kilosort Pipeline
+# Kilosort with BlackRock Recording
 
 ## Installation
 ### prerequesite:
-- Visual studio community 2017 with 'C++桌面开发' (compatatible to MATLAB version)
+- [Visual studio community 2017](https://visualstudio.microsoft.com/zh-hans/vs/older-downloads/) with 'C++桌面开发' (compatatible to MATLAB version)
 - MATLAB 2021a or 2021b + necessory toolboxes + MEX
-- kilosort3 (place in a proper directory)
-- npy-matlab (place in a proper directory and better save it in MATLAB path)
+- [kilosort3](https://github.com/MouseLand/Kilosort) or [kilosort2_5](https://github.com/MouseLand/Kilosort/releases/tag/v2.5) (place in a proper directory)
+- [npy-matlab](https://github.com/kwikteam/npy-matlab) (place in a proper directory and better save it in MATLAB path)
 - Anaconda
 
 ### Steps
@@ -19,11 +19,11 @@
 - Move the directory with your data to SSD. (faster)
 - Move the file `kilosort.ipynb` to your data directory.
 - Open `kilosort.ipynb` in VS Code and set the kernal to `phy`. Modify the codes by following the instructions.
-- Do munual curation with Phy. Open 'Anaconda prompt'. First enter the output directory and run `phy template-gui params.py`.
+- Do munual curation with [Phy](https://phy.readthedocs.io/en/latest/clustering/). Open 'Anaconda prompt'. First enter the output directory and run `phy template-gui params.py`.
 - Following the pipeline. Watch phy tutorial [here](https://www.youtube.com/watch?v=czdwIr-v5Yc). ![](phy_pipeline.png)
-- Copy `BuildSpikeTable.m` to data folder, edit key parameters and run.
-- Copy `phy2times_dat.m` to data folder and run. `times_chdatx.mat` would be generated. You can run `SpikeCuration` to do further manual curation.
-- Run `BuildArrayKilosort.m`. (Not completed yet)
+- Copy `BuildSpikeTable.m` to data folder, edit key parameters and run. A new class object `KilosortOuput` will be generated. 
+- Run `KilosortOutput.BuildR()` to build `r`.
+
 
 ### About Phy output files
 | Filename | Type | Notes |

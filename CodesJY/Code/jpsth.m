@@ -1,4 +1,4 @@
-function [psth, tpsth, trialspxmat, tspkmat] = jpsth(spxtimes, trigtimes, params)
+function [psth, tpsth, trialspxmat, tspkmat, trigtimes] = jpsth(spxtimes, trigtimes, params)
 % JY 8.9.2020
 % spktimes in ms
 % trigtimes in ms
@@ -27,17 +27,18 @@ for i = 1:n_events
     end;
 end;
 
+
 tspkmat = [-pre:post];
 
  [~, inan]=find(isnan(trialspxmat));
 
  spkmat = trialspxmat;
  spkmat(:, inan)=[];
-
+ trialspxmat = spkmat;
+ trigtimes(inan) = [];
+ 
 [spkhistos, ts ] = spikehisto(spkmat,1000, [pre+post]/binwidth);
 ts = ts*1000 - pre;
-% 
-% figure; plot(ts, spkhistos)
-
+ 
 psth = spkhistos;
 tpsth = ts; 

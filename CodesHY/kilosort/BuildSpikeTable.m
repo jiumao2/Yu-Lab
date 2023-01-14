@@ -27,45 +27,38 @@ for k = 1:height(spikeTable)
 end
 spikeTable.spike_times = tbl_spike_times;
 
-disp(spikeTable)
 %% extract waveform from temp_wh.dat
-fid = fopen(ops.fproc, 'r');
-ch_last = 0;
 waveforms_tbl = cell(height(spikeTable),1);
+waveforms_mean_tbl = cell(height(spikeTable),1);
+ch_tbl = cell(height(spikeTable),1);
 for k = 1:height(spikeTable)
-    ch = spikeTable(k,:).ch;
-    if ch ~= ch_last
-        disp(['Channel ',num2str(ch),' start!']);
-        tic
-        dat_this = [];
-        buffsize = ops.NT+ops.ntbuff;
+    tic
+    [filepath,name,ext] = fileparts(ops.fproc);
+    gwfparams.dataDir = filepath;    % KiloSort/Phy output folder
+    gwfparams.fileName = [name, ext];         % .dat file containing the raw 
+    gwfparams.dataType = 'int16';            % Data type of .dat file (this should be BP filtered)
+    gwfparams.nCh = ops.Nchan;                      % Number of channels that were streamed to disk in .dat file
+    gwfparams.wfWin = [-31 32];              % Number of samples before and after spiketime to include in waveform
+    gwfparams.nWf = length(spikeTable(k,:).spike_times{1});                    % Number of waveforms per unit to pull out
+    gwfparams.spikeTimes =    spikeTable(k,:).spike_times{1}; % Vector of cluster spike times (in samples) same length as .spikeClusters
+    gwfparams.spikeClusters = ones(length(spikeTable(k,:).spike_times{1}),1); % Vector of cluster IDs (Phy nomenclature)   same length as .spikeTimes
 
-        i = 0;
-        fseek(fid, 0, 'bof');
-        while ~feof(fid)
-            offset = 2*ops.Nchan*buffsize*i;
-            fseek(fid, offset, 'bof');
-            dat = fread(fid, [ops.Nchan buffsize], '*int16');
-            dat_this = [dat_this, dat(ch,:)];
-            i = i+1;
-        end
-    end
-    ch_last = ch;
-
-    spike_times_this = spikeTable(k,:).spike_times{1};
-    waveform_this = zeros(length(spike_times_this),64);
-
-    for j = 1:length(spike_times_this)
-        waveform_this(j,:) = dat_this(spike_times_this(j)-31:spike_times_this(j)+32);
-    end
-    waveforms_tbl{k} = waveform_this;
+    wf = getWaveforms(gwfparams);
+    
+    amp_ch = max(squeeze(wf.waveFormsMean),[],2)-min(squeeze(wf.waveFormsMean),[],2);
+    [~, ch_amp_largest] = max(amp_ch);
+    ch_tbl{k} = ch_amp_largest;
+    
+    waveforms_tbl{k} = squeeze(wf.waveForms(:,:,ch_amp_largest,:));
+    waveforms_mean_tbl{k} = squeeze(wf.waveFormsMean);
     
     toc
-    disp(['Channel ',num2str(ch),' done!']);
 end
-fclose(fid);
 
 spikeTable.waveforms = waveforms_tbl;
+spikeTable.waveforms_mean = waveforms_mean_tbl;
+spikeTable.ch = ch_tbl;
+spikeTable = sortrows(spikeTable,{'ch','group'});
 %% Get real spike time
 % Read NS6 file.
 ns6_files = dir('*.ns6');
@@ -135,4 +128,8 @@ spikeTable.spike_times_r = spike_times_r;
 %%
 save spikeTable spikeTable
 
+%%
+chanMap = load('chanMap.mat');
+KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
+KilosortOutput.save();
 
