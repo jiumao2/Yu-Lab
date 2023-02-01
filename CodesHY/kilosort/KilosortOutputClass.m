@@ -39,20 +39,39 @@ classdef KilosortOutputClass<handle
 
         function buildR(obj, varargin)
 %             Example:
-%             KilosortOutput.BuildR(...
+%             For Kormblum: 
+%             KilosortOutput.buildR(...
 %                 'KornblumStyle', true,...
 %                 'Subject', 'West',...
 %                 'blocks', {'datafile001.nev','datafile002.nev'},...
 %                 'Version', 'Version5',...
-%                 'BpodProtocal', 'OptoRecording',...
-%                 'Experimentor', 'HY'
-%                 );
+%                 'BpodProtocol', 'OptoRecording',...
+%                 'Experimenter', 'HY');
+
+%             For 2FPs (500/1000): 
+%             KilosortOutput.buildR(...
+%                 'KornblumStyle', false,...
+%                 'Subject', 'West',...
+%                 'blocks', {'datafile001.nev','datafile002.nev'},...
+%                 'Version', 'Version5',...
+%                 'BpodProtocol', 'OptoRecording',...
+%                 'Experimenter', 'HY');
+%
+%             For 2FPs (750/1500): 
+%             KilosortOutput.buildR(...
+%                 'KornblumStyle', false,...
+%                 'Subject', 'West',...
+%                 'blocks', {'datafile001.nev','datafile002.nev'},...
+%                 'Version', 'Version4',...
+%                 'BpodProtocol', 'OptoRecording',...
+%                 'Experimenter', 'HY');
+
             KornblumStyle = true;
             Subject = 'West';
             blocks = {'datafile001.nev','datafile002.nev'};
             Version = 'Version5';
             BpodProtocol = 'OptoRecording';
-            Experimenter = 'RHK';
+            Experimenter = 'HY';
             
             if nargin>=2
                 for i=1:2:size(varargin,2)
@@ -577,7 +596,7 @@ classdef KilosortOutputClass<handle
         end
         
         function plotWaveform(obj, unit_num)
-            N = 1000;
+            N = min(1000,length(obj.SpikeTable(unit_num,:).spike_times{1}));
             ch = obj.SpikeTable(unit_num,:).ch{1};
             
             waveforms = obj.SpikeTable(unit_num,:).waveforms{1};
@@ -639,6 +658,30 @@ classdef KilosortOutputClass<handle
             xlabel('x')
             ylabel('depth (\mum)')
             ax.YDir = 'Reverse';
+        end
+        
+        function plotCorrelation(obj)
+            bin_width = 10;
+            c = zeros(height(obj.SpikeTable));
+            for k = 1:height(obj.SpikeTable)
+                for j = k:height(obj.SpikeTable)
+                    if j == k
+                        c(k,j)=1;
+                        continue;
+                    end
+                    s1 = bin_timings(obj.SpikeTable(k,:).spike_times_r{1},bin_width);
+                    s2 = bin_timings(obj.SpikeTable(j,:).spike_times_r{1},bin_width);
+                    if length(s1)>length(s2)
+                        s1 = s1(1:length(s2));
+                    else
+                        s2 = s2(1:length(s1));
+                    end
+                    c(k,j) = corr(s1',s2');
+                    c(j,k) = c(k,j);
+                end
+            end
+            figure;
+            imagesc(c)
         end
         
     end

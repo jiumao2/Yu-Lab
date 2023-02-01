@@ -7,14 +7,14 @@ function indout = findseqmatch(seq_mom,seq_son)
 indout = zeros(1,length(seq_son));
 
 % for each point in t1, find the corresponding point in t2
-j = 1;
 min_error = 1e8;
 min_k = 0;
 for k = 1:length(seq_mom)-length(seq_son)+1
     tmp_t1 = seq_son;
     tmp_sum = 0;
-    tmp_t1 = tmp_t1-tmp_t1(j)+seq_mom(k);
-
+    tmp_t1 = tmp_t1-tmp_t1(1)+seq_mom(k);
+    
+    % find nearest point in seqmom for each point in seqson
     for i = 1:length(tmp_t1)
         l = 1;
         r = length(seq_mom);
@@ -32,6 +32,7 @@ for k = 1:length(seq_mom)-length(seq_son)+1
                 end
             end
         end
+        % compute the distance between this point and the nearest point in seqmom
         tmp_sum = tmp_sum + min(abs(seq_mom(r)-tmp_t1(i)),abs(tmp_t1(i)-seq_mom(l)));
     end
 
@@ -40,8 +41,9 @@ for k = 1:length(seq_mom)-length(seq_son)+1
         min_k = k;
     end
 end
-indout(j) = min_k;
+indout(1) = min_k;
 
+% retrieve the index of full sequence
 tmp_t1 = tmp_t1-tmp_t1(1)+seq_mom(min_k);
 for i = 1:length(tmp_t1)
     l = 1;

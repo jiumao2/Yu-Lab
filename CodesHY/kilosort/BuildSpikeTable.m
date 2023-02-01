@@ -94,7 +94,7 @@ for k = 1:length(NS6all)
     if iscell(NS6.Data)
         for j =1:length(NS6.Data)
             % this is time in ms
-            index_k = [0:length(double(NS6.Data{j}(1, :)))-1]*1000/Fs+NS6.MetaTags.Timestamp(j)*1000/Fs+dBlockOnset;
+            index_k = (0:length(double(NS6.Data{j}(1, :)))-1)*1000/Fs+NS6.MetaTags.Timestamp(j)*1000/Fs+dBlockOnset;
             % skip first 102 frame (zeropad by blackrock?)
             index_k(1:102) = [];
             if k==1
@@ -106,7 +106,10 @@ for k = 1:length(NS6all)
             end
         end
     else
-        index = [index [0:length(double(NS6.Data(1, :)))-1]*1000/Fs+NS6.MetaTags.Timestamp*1000/Fs+dBlockOnset];
+        index_k = (0:length(double(NS6.Data(1, :)))-1)*1000/Fs+NS6.MetaTags.Timestamp*1000/Fs+dBlockOnset;
+        % skip first 102 frame (zeropad by blackrock?)
+        index_k(1:102) = [];        
+        index = [index index_k];
     end
 end
 

@@ -252,7 +252,7 @@ NSx.MetaTags = struct('FileTypeID',[],'SamplingLabel',[],'ChannelCount',[],'Samp
 NSx.MetaTags.openNSxver = '7.0.0.0';
                   
 %% Check for the latest version fo NPMK
-NPMKverChecker
+% NPMKverChecker
 
 % Defining constants
 ExtHeaderLength = 66;

@@ -5,7 +5,47 @@
        "inputs":
        [
           {"name":"r", "kind":"required", "type":"struct"},
-          {"name":"unit_num", "kind":"required", "type":["numeric"]}
+          {"name":"unit_num", "kind":"required", "type":"numeric"},
+          {"name":"Name", "kind":"namevalue", "type":"char"},
+          {"name":"Tosave", "kind":"namevalue", "type":"numeric"},
+          {"name":"FP_short", "kind":"namevalue", "type":"numeric"},
+          {"name":"FP_long", "kind":"namevalue", "type":"numeric"}
+       ]
+    },
+
+    "SRTSpikesV5_unsorted":
+    {
+       "inputs":
+       [
+         {"name":"r", "kind":"required", "type":"struct"},
+         {"name":"unit_num", "kind":"required", "type":"numeric"},
+         {"name":"Name", "kind":"namevalue", "type":"char"},
+         {"name":"Tosave", "kind":"namevalue", "type":"numeric"},
+         {"name":"FP_short", "kind":"namevalue", "type":"numeric"},
+         {"name":"FP_long", "kind":"namevalue", "type":"numeric"}
+      ]
+    },
+
+   "KornblumRamping":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"ind", "kind":"required", "type":"numeric"},
+          {"name":"Division", "kind":"namevalue", "type":"numeric"},
+          {"name":"Colormap", "kind":"namevalue", "type":"numeric"},
+          {"name":"PressTimeDomain", "kind":"namevalue", "type":"numeric"},
+          {"name":"Tosave", "kind":"namevalue", "type":"numeric"},
+          {"name":"Type", "kind":"namevalue", "type":"numeric"},
+          {"name":"Size", "kind":"namevalue", "type":"numeric"}
+       ]
+    },
+
+    "KornblumRampingAll":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"}
        ]
     },
 

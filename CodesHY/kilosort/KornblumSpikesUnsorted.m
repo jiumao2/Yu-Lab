@@ -1,4 +1,4 @@
-function PSTHout = KornblumSpikes(r, ind, varargin)
+function PSTHout = KornblumSpikesUnsorted(r, ind, varargin)
 % revised 2022.10.7
 
 % V3: added a few new parameters
@@ -121,8 +121,8 @@ rt_correct_cue          =        rt_correct(ind_correct_cue);
 rt_correct_uncue      =        rt_correct(ind_correct_uncue);
 
 % sorting index
-[rt_correct_cue_sorted, sortindex_cue] = sort(rt_correct_cue);
-[rt_correct_uncue_sorted, sortindex_uncue] = sort(rt_correct_uncue);
+[rt_correct_cue_sorted, sortindex_cue] = fakeSort(rt_correct_cue);
+[rt_correct_uncue_sorted, sortindex_uncue] = fakeSort(rt_correct_uncue);
 
 t_correctpresses_cue = t_correctpresses_cue(sortindex_cue);
 t_correctpresses_uncue = t_correctpresses_uncue(sortindex_uncue);
@@ -181,8 +181,8 @@ movetime = movetime(ind_movetimepos);
 movetime_cue = movetime(ind_reward_cue);
 movetime_uncue = movetime(ind_reward_uncue);
 
-[~, indmovesort_cue]            =    sort(movetime_cue);
-[~, indmovesort_uncue]        =    sort(movetime_uncue);
+[~, indmovesort_cue]            =    fakeSort(movetime_cue);
+[~, indmovesort_uncue]        =    fakeSort(movetime_uncue);
                             
 % sorted. 
 t_rewards_cue                     =        t_rewards_cue(indmovesort_cue);
@@ -197,11 +197,11 @@ t_prematurereleases_uncue = t_releases(intersect(rb.PrematureIndex, ind_uncue));
 pressdur_premature_cue              =    t_prematurereleases_cue - t_prematurepresses_cue;
 pressdur_premature_uncue          =    t_prematurereleases_uncue - t_prematurepresses_uncue;
 
-[~, ind_premature_cue] = sort(pressdur_premature_cue);
+[~, ind_premature_cue] = fakeSort(pressdur_premature_cue);
 t_prematurepresses_cue = t_prematurepresses_cue(ind_premature_cue);
 t_prematurereleases_cue = t_prematurereleases_cue(ind_premature_cue);
 
-[~, ind_premature_uncue] = sort(pressdur_premature_uncue);
+[~, ind_premature_uncue] = fakeSort(pressdur_premature_uncue);
 t_prematurepresses_uncue = t_prematurepresses_uncue(ind_premature_uncue);
 t_prematurereleases_uncue = t_prematurereleases_uncue(ind_premature_uncue);
 
@@ -215,12 +215,12 @@ t_latereleases_uncue = t_releases(intersect(rb.LateIndex, ind_uncue));
 pressdur_late_cue              =    t_latereleases_cue - t_latepresses_cue;
 pressdur_late_uncue          =    t_latereleases_uncue - t_latepresses_uncue;
 
-[~, ind_late_cue] = sort(pressdur_late_cue);
+[~, ind_late_cue] = fakeSort(pressdur_late_cue);
 
 t_latepresses_cue = t_latepresses_cue(ind_late_cue);
 t_latereleases_cue = t_latereleases_cue(ind_late_cue);
 
-[~, ind_late_uncue] = sort(pressdur_late_uncue);
+[~, ind_late_uncue] = fakeSort(pressdur_late_uncue);
 t_latepresses_uncue = t_latepresses_uncue(ind_late_uncue);
 t_latereleases_uncue = t_latereleases_uncue(ind_late_uncue);
 

@@ -169,7 +169,7 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
 
     t_rewards = t_rewards(movetime>0);
     movetime = movetime(movetime>0);
-    [movetime, indsort] = sort(movetime);
+    [movetime, indsort] = fakeSort(movetime);
     t_rewards = t_rewards(indsort); 
 
 
@@ -249,12 +249,12 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
     trelease_correctsorted{2}      =   t_correctreleases(FPs_correctpresses == FP_long);
 
     rt_correctsorted{1}     =   rt_correct(FPs_correctpresses == FP_short);
-    [rt_correctsorted{1}, indsort] =  sort(rt_correctsorted{1});
+    [rt_correctsorted{1}, indsort] =  fakeSort(rt_correctsorted{1});
     t_correctsorted{1} = t_correctsorted{1}(indsort); 
     trelease_correctsorted{1} = trelease_correctsorted{1}(indsort);
 
     rt_correctsorted{2}     =   rt_correct(FPs_correctpresses == FP_long);
-    [rt_correctsorted{2}, indsort] =  sort(rt_correctsorted{2});
+    [rt_correctsorted{2}, indsort] =  fakeSort(rt_correctsorted{2});
     t_correctsorted{2} = t_correctsorted{2}(indsort); 
     trelease_correctsorted{2} = trelease_correctsorted{2}(indsort);
 
@@ -502,8 +502,8 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
     t_prematurepresses_short = t_prematurepresses(ind_short);
     t_prematurepresses_long = t_prematurepresses(ind_long);
     % sort according to press duration at short FPs
-    [predur_short_sorted, ipredur_short_sorted] = sort(t_prematurereleases_short - t_prematurepresses_short);
-    [predur_long_sorted, ipredur_long_sorted] = sort(t_prematurereleases_long - t_prematurepresses_long);
+    [predur_short_sorted, ipredur_short_sorted] = fakeSort(t_prematurereleases_short - t_prematurepresses_short);
+    [predur_long_sorted, ipredur_long_sorted] = fakeSort(t_prematurereleases_long - t_prematurepresses_long);
     apmat_new = [apmat_short(:, ipredur_short_sorted) apmat_long(:, ipredur_long_sorted)];
     predur_sorted = [predur_short_sorted; predur_long_sorted];
     t_prematurepresses_new = [t_prematurepresses_short(ipredur_short_sorted); t_prematurepresses_long(ipredur_long_sorted)];
@@ -564,8 +564,8 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
     t_latepresses_long = t_latepresses(ind_long);
 
     % sort according to press duration at short FPs
-    [latedur_short_sorted, ilatedur_short_sorted] = sort(t_latereleases_short - t_latepresses_short);
-    [latedur_long_sorted, ilatedur_long_sorted] = sort(t_latereleases_long - t_latepresses_long);
+    [latedur_short_sorted, ilatedur_short_sorted] = fakeSort(t_latereleases_short - t_latepresses_short);
+    [latedur_long_sorted, ilatedur_long_sorted] = fakeSort(t_latereleases_long - t_latepresses_long);
 
     apmat_new = [apmat_short(:, ilatedur_short_sorted) apmat_long(:, ilatedur_long_sorted)];
     latedur_sorted = [latedur_short_sorted; latedur_long_sorted];
@@ -742,8 +742,8 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
     t_prematurepresses_short = t_prematurepresses(ind_short);
     t_prematurepresses_long = t_prematurepresses(ind_long);
     % sort according to press duration at short FPs
-    [predur_short_sorted, ipredur_short_sorted] = sort(t_prematurereleases_short - t_prematurepresses_short);
-    [predur_long_sorted, ipredur_long_sorted] = sort(t_prematurereleases_long - t_prematurepresses_long);
+    [predur_short_sorted, ipredur_short_sorted] = fakeSort(t_prematurereleases_short - t_prematurepresses_short);
+    [predur_long_sorted, ipredur_long_sorted] = fakeSort(t_prematurereleases_long - t_prematurepresses_long);
     apmat_new = [apmat_short(:, ipredur_short_sorted) apmat_long(:, ipredur_long_sorted)];
     predur_sorted = [predur_short_sorted; predur_long_sorted];
     t_prematurepresses_new = [t_prematurepresses_short(ipredur_short_sorted); t_prematurepresses_long(ipredur_long_sorted)];
@@ -802,8 +802,8 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
     apmat_long = apmat(:, ind_long);
 
     % sort according to press duration at short FPs
-    [latedur_short_sorted, ilatedur_short_sorted] = sort(t_latereleases_short - t_latepresses_short);
-    [latedur_long_sorted, ilatedur_long_sorted] = sort(t_latereleases_long - t_latepresses_long);
+    [latedur_short_sorted, ilatedur_short_sorted] = fakeSort(t_latereleases_short - t_latepresses_short);
+    [latedur_long_sorted, ilatedur_long_sorted] = fakeSort(t_latereleases_long - t_latepresses_long);
 
     apmat_new = [apmat_short(:, ilatedur_short_sorted) apmat_long(:, ilatedur_long_sorted)];
     latedur_sorted = [latedur_short_sorted; latedur_long_sorted];
@@ -869,7 +869,7 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
     % only plot 50 3/6/2021
 
     if size(trialspxmat_rew, 2)>50;
-        plot_ind = sort(randperm(size(trialspxmat_rew, 2), 50));
+        plot_ind = fakeSort(randperm(size(trialspxmat_rew, 2), 50));
         trialspxmat_rew_plot = trialspxmat_rew(:, plot_ind);
     else
         trialspxmat_rew_plot = trialspxmat_rew;
@@ -1101,7 +1101,7 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
         end
 
 
-        tosavename= fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no)  printname]);
+        tosavename= fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no) '_unsorted' printname]);
 
         %  print (gcf,'-dpdf', tosavename)
         print (gcf,'-dpng', tosavename)
@@ -1114,7 +1114,7 @@ function PSTHout = SRTSpikesV5(r, ind, varargin)
         mkdir(thisFolder)
     end
 
-    tosavename2= fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no)  printname]);
+    tosavename2= fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no) '_unsorted' printname]);
 
 %     print (gcf,'-dpdf', tosavename2)
     print (gcf,'-dpng', tosavename2)
