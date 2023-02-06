@@ -1,0 +1,16 @@
+{
+   "_schemaVersion": "1.0.0",
+   "buildR":
+   {
+      "inputs":
+      [
+         {"name":"obj", "kind":"required", "type":"object"},
+         {"name":"KornblumStyle", "kind":"namevalue", "type":"logical"},
+         {"name":"Subject", "kind":"namevalue", "type":"char"},
+         {"name":"Version", "kind":"namevalue", "type":"char"},
+         {"name":"BpodProtocol", "kind":"namevalue", "type":"char"},
+         {"name":"blocks", "kind":"namevalue", "type":"cell"},
+         {"name":"Experimenter", "kind":"namevalue", "type":"char"}
+      ]
+   }
+}

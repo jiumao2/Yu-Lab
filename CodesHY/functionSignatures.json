@@ -244,5 +244,14 @@
        [
           {"name":"filename", "kind":"required", "type":"char"}
        ]
-    }  
+    },
+
+    "swap":
+    {
+       "inputs":
+       [
+          {"name":"x", "kind":"required"},
+          {"name":"y", "kind":"required"}
+       ]
+    }    
   }

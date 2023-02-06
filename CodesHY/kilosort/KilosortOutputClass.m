@@ -37,8 +37,7 @@ classdef KilosortOutputClass<handle
             obj.ParamsKilosort = ops;
         end
 
-        function buildR(obj, varargin)
-%             Example:
+%             buildR() Example:
 %             For Kormblum: 
 %             KilosortOutput.buildR(...
 %                 'KornblumStyle', true,...
@@ -47,7 +46,7 @@ classdef KilosortOutputClass<handle
 %                 'Version', 'Version5',...
 %                 'BpodProtocol', 'OptoRecording',...
 %                 'Experimenter', 'HY');
-
+% 
 %             For 2FPs (500/1000): 
 %             KilosortOutput.buildR(...
 %                 'KornblumStyle', false,...
@@ -65,7 +64,7 @@ classdef KilosortOutputClass<handle
 %                 'Version', 'Version4',...
 %                 'BpodProtocol', 'OptoRecording',...
 %                 'Experimenter', 'HY');
-
+        function buildR(obj, varargin)
             KornblumStyle = true;
             Subject = 'West';
             blocks = {'datafile001.nev','datafile002.nev'};
@@ -93,7 +92,7 @@ classdef KilosortOutputClass<handle
                     end
                 end
             end
-            
+
             % Check spks
             units = {};
             k = 1;

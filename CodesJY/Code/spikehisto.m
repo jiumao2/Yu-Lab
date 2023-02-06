@@ -21,7 +21,7 @@ if nargin < 3, nbins = 10; end
 %    error('Input variable spikesbycycle is empty') 
 % end
 
-if ~iscell(spikesbycycle),
+if ~iscell(spikesbycycle)
    spikesbycycle = { spikesbycycle };
 end
 
@@ -33,16 +33,16 @@ ncycles	= zeros(nstimuli,1);
 periods	= zeros(nstimuli,1);
 
 for istim = 1:nstimuli
-   periods(istim) = size(spikesbycycle{istim},1);
-   ncycles(istim) = size(spikesbycycle{istim},2);   
-   allspikes = nanmean(spikesbycycle{istim}, 2);	% collapse across cycles
-	for ibin = 1:nbins
-	    from = floor((ibin-1)*periods(istim)/nbins)+1;
-	    to   = floor(   ibin *periods(istim)/nbins);
+    periods(istim) = size(spikesbycycle{istim},1);
+    ncycles(istim) = size(spikesbycycle{istim},2);   
+    allspikes = mean(spikesbycycle{istim},2,'omitnan');	% collapse across cycles
+    for ibin = 1:nbins
+        from = floor((ibin-1)*periods(istim)/nbins)+1;
+        to   = floor(   ibin *periods(istim)/nbins);
         n_nan=length(find(isnan(allspikes(from:to))));
-       histos(istim,ibin) = nansum(allspikes(from:to))/((periods(istim)/nbins-n_nan)/samplerate);
+       histos(istim,ibin) = sum(allspikes(from:to),'omitnan')/((periods(istim)/nbins-n_nan)/samplerate);
     end
     ts(istim,:) = ((1:nbins)-0.5)*periods(istim)/nbins /samplerate;
 end
 % histos = histos*samplerate*nbins/(periods(istim)*ncycles(istim));
-
+end
