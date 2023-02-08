@@ -112,23 +112,3 @@ EasyPlot.setXLabelColumn({ax_preferred,ax_nonpreferred},'Time from lift (ms)')
 EasyPlot.cropFigure(fig)
 EasyPlot.exportFigure(fig,'HandLiftPETH','type','png','dpi',1200)
 
-%%
-function [psth1,psth2,tpsth] = ExtractPETH(spike_time,event_times,params)
-    [psth1, tpsth] = jpsth(spike_time, event_times{1}', params);
-    [psth2, ~] = jpsth(spike_time, event_times{2}', params);
-
-    psth1 = smoothdata(psth1,'gaussian',50);
-    psth2 = smoothdata(psth2,'gaussian',50);    
-    if max(psth2)>max(psth1)
-        [psth1, psth2] = swap(psth1, psth2);
-    end
-
-    mean_psth = mean([psth1,psth2]);
-    std_psth = std([psth1,psth2]);
-    psth1 = (psth1-mean_psth)./std_psth;
-    psth2 = (psth2-mean_psth)./std_psth;
-end
-
-
-
-

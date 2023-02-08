@@ -1,49 +1,30 @@
-r_all = {
-    'D:\Ephys\ANMs\Urey\Videos\20211124_video\RTarrayAll.mat',... % r_path
-    'D:\Ephys\ANMs\Eli\Sessions\20210923_video\RTarrayAll.mat',...
-    'D:\Ephys\ANMs\Russo\Sessions\20210820_video\RTarrayAll.mat',...
-    'D:\Ephys\ANMs\Davis\Video\20220331_video\RTarrayAll.mat',...
-    'D:\Ephys\ANMs\Davis\Video\20220426_video\RTarrayAll.mat',...
-    'D:\Ephys\ANMs\Davis\Video\20220505_video\RTarrayAll.mat',...
-    'D:\Ephys\ANMs\Davis\Video\20220512_video\RTarrayAll.mat',...
-    'D:\Ephys\ANMs\Chen\Video\20220507_video\RTarrayAll.mat',...
-    'D:\Ephys\ANMs\Chen\Video\20220513_video\RTarrayAll.mat',...
-    'D:\Ephys\ANMs\Chen\Video\20220519_video\RTarrayAll.mat',...
-    'D:\Ephys\ANMs\Chen\Video\20220606_video\RTarrayAll.mat',...
-    'D:\Ephys\ANMs\Russo\Sessions\20210908_video\RTarrayAll.mat'
-};
-
+SetNeurons;
 %% Extract spike time
 count = 0;
 Neurons = [];
 
-for r_idx = 1:length(r_all)
-    load(r_all{r_idx})
+for r_idx = 1:3:length(r_traj_all)
+
+    if ~(r_idx>1 && strcmp(r_traj_all{r_idx},r_traj_all{r_idx-3}))
+        load(r_traj_all{r_idx})
+        disp(['Loading from file: ',r_traj_all{r_idx}]);
+    end
     
     idx = getIndexVideoInfos(r,...
         "Hand","Left",...
         "Performance","Correct",...
-        "Trajectory",'All',...
+        "Trajectory",r_traj_all{r_idx+2},...
         'LiftStartTimeLabeled','On');
-    disp(['Loading from file: ',r_all{r_idx}]);
-    disp(['Number of trials: ',num2str(length(idx))]);
-    disp(['Number of neurons: ',num2str(length(r.Units.SpikeTimes))]);
 
     idx_all = [r.VideoInfos_side.Index];
     vid_idx = findSeq(idx_all,idx);
     
     lift_time = [r.VideoInfos_side(vid_idx).LiftStartTime];
     
-    for k = 1:length(r.Units.SpikeTimes)
-        if r.Units.SpikeNotes(k,3) ~= 1
-            continue
-        end
 
-        count = count+1;
-
-        Neurons(count).spike_time = r.Units.SpikeTimes(k).timings;
-        Neurons(count).lift_times = lift_time;
-    end
+    count = count+1;
+    Neurons(count).spike_time = r.Units.SpikeTimes(r_traj_all{r_idx+1}).timings;
+    Neurons(count).lift_times = lift_time;
 end
 
 save Neurons.mat Neurons
@@ -52,7 +33,7 @@ save Neurons.mat Neurons
 clear
 load Neurons.mat
 
-t_pre = -500;
+t_pre = -1000;
 t_post = 500;
 binwidth = 1;
 
@@ -107,7 +88,7 @@ ylabel(ax_peth,'Neurons')
 xlabel(ax_peth,'Time from lift (ms)')
 
 EasyPlot.cropFigure(fig)
-EasyPlot.exportFigure(fig,'LiftPETH','type','png','dpi',1200)
+EasyPlot.exportFigure(fig,'LiftPETHTrajectoryCell','type','png','dpi',1200)
 
 
 

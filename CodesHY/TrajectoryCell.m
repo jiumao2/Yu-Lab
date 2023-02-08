@@ -82,18 +82,17 @@ function TrajectoryCell(r,unit_num,press_indexes,bg,varargin)
     spike_counts_all = smoothdata(spike_counts,'gaussian',gaussian_kernel*5)./binwidth*1000;
     for k = 1:length(vid_press_idx)
         % deal with bad tracking
-        frame_start = max(r.VideoInfos_side(vid_press_idx(k)).LiftStartFrameNum-n_pre_framenum,1);
-        while r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_p{idx_bodypart}(frame_start) < 0.8
-            frame_start = frame_start+1;
+        frame_start = r.VideoInfos_side(vid_press_idx(k)).LiftStartFrameNum;
+        while frame_start-1 >= max(r.VideoInfos_side(vid_press_idx(k)).LiftStartFrameNum-n_pre_framenum,1)...
+                && r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_p{idx_bodypart}(frame_start-1) > 0.8
+            frame_start = frame_start-1;
         end
+
         frame_end = round(-r.VideoInfos_side(vid_press_idx(k)).t_pre/10+n_post_framenum);
-        while r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_p{idx_bodypart}(frame_end) < 0.8
-            frame_end = frame_end-1;
-        end
         
         frame_num_temp = frame_start:frame_end;
         [~, i_maxy] = min(r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_y{idx_bodypart}(frame_num_temp));
-        frame_num = frame_num_temp(1:i_maxy+n_post_framenum);
+        frame_num = frame_num_temp(1:(i_maxy+n_post_framenum));
         frame_num_all(k) = length(frame_num);
 
         times_this = r.VideoInfos_side(vid_press_idx(k)).VideoFrameTime(frame_num);
