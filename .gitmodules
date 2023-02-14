@@ -2,3 +2,6 @@
 [submodule "CodesHY/EasyPlot"]
 	path = CodesHY/EasyPlot
 	url = https://github.com/jiumao2/EasyPlot
+[submodule "CodesHY/kilosort/PhyWaveformPlugin"]
+	path = CodesHY/kilosort/PhyWaveformPlugin
+	url = https://github.com/jiumao2/PhyWaveformPlugin
