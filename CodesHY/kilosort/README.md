@@ -1,5 +1,15 @@
 # Kilosort with BlackRock Recording
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+- [Kilosort with BlackRock Recording](#kilosort-with-blackrock-recording)
+  - [Installation](#installation)
+    - [prerequesite:](#prerequesite)
+    - [Steps](#steps)
+  - [Data process pipeline](#data-process-pipeline)
+    - [About Phy output files](#about-phy-output-files)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Installation
 ### prerequesite:
 - [Visual studio community 2017](https://visualstudio.microsoft.com/zh-hans/vs/older-downloads/) with 'C++桌面开发' (compatatible to MATLAB version)
@@ -9,23 +19,27 @@
 - Anaconda
 
 ### Steps
+#### Install phy
 - New conda environment with python 3.8 `conda create -n phy python=3.8`
 - Install phy `pip install phy --pre --upgrade`
 - Deal with numpy version error `pip uninstall numpy`, `pip install numpy==1.23`
+#### Install spike interface
+- New conda environment with python 3.8 `conda create -n spikeinterface python=3.8`
 - Install spikeinterface `pip install spikeinterface[full,widgets]`
+#### Install kilosort
 - Install kilosort. If visual studio is properly installed, run `mex -setup C++` in MATLAB and run the file `Kilosort\CUDA\mexGPUall.m`.
 
 ## Data process pipeline
 - Move the directory with your data to SSD. (faster)
 - Move the file `kilosort.ipynb` to your data directory.
-- Open `kilosort.ipynb` in VS Code and set the kernal to `phy`. Modify the codes by following the instructions.
+- Open `kilosort.ipynb` in VS Code and set the kernal to `spikeinterface`. Modify the codes by following the instructions.
 - Do munual curation with [Phy](https://phy.readthedocs.io/en/latest/clustering/). Open 'Anaconda prompt'. First enter the output directory and run `phy template-gui params.py`.
 - Following the pipeline. Watch phy tutorial [here](https://www.youtube.com/watch?v=czdwIr-v5Yc). ![](phy_pipeline.png)
 - Copy `BuildSpikeTable.m` to data folder, edit key parameters and run. A new class object `KilosortOuput` will be generated. 
 - Run `KilosortOutput.BuildR()` to build `r`.
 
 
-### About Phy output files
+### [About Phy output files](https://github.com/cortex-lab/phy/blob/master/docs/sorting_user_guide.md)
 | Filename | Type | Notes |
 | :------------- | :---------- | :------------ |
 |spike_clusters.npy|	nx1 vector 	                                    |Each spike's cluster (0:n_cluster-1) after manual curation |

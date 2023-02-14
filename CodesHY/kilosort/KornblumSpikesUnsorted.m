@@ -1044,7 +1044,7 @@ thisFolder = fullfile(pwd, 'Fig');
 if ~exist(thisFolder, 'dir')
     mkdir(thisFolder)
 end
-tosavename2= fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no)  printname]);
+tosavename2= fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no) '_unsorted' printname]);
 % print (gcf,'-dpdf', tosavename2)
 print (gcf,'-dpng', tosavename2)
 % save(tosavename2, 'PSTHOut')
