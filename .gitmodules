@@ -1,1 +1,4 @@
 
+[submodule "CodesHY/EasyPlot"]
+	path = CodesHY/EasyPlot
+	url = https://github.com/jiumao2/EasyPlot
