@@ -204,30 +204,42 @@ classdef KilosortOutputClass<handle
             % single unit: 1; multiunit: 2
             r=[];
 
-            for i =1 :length(EventOutAll)
-                if i ==1
-                    r.Meta(i) = EventOutAll(i).Meta;
+            dBlockOnset = 0;
+            ns6_files = cell(1,length(blocks));
+            for k = 1:length(ns6_files)
+                ns6_files{k} = [extractBefore(blocks{k},'.nev'),'.ns6'];
+            end
+            for i_file =1:length(ns6_files)
+                if i_file ==1
+                    openNSx(ns6_files{i_file}, 'read', 'report')
+                    NS6all= NS6;
                 else
-                    r.Meta(i) = EventOutAll(i).Meta;
+                    openNSx(ns6_files{i_file}, 'read', 'report')
+                    NS6all(i_file)= NS6;
                 end
             end
-
-            dBlockOnset = 0;
-
+            
+            for i =1 :length(EventOutAll)
+                r.Meta(i) = EventOutAll(i).Meta;
+                r.Meta(i).DateTime = NS6all(i).MetaTags.DateTime;
+                r.Meta(i).DateTimeRaw = NS6all(i).MetaTags.DateTimeRaw;
+                r.Meta(i).DataDurationSec = NS6all(i).MetaTags.DataDurationSec;
+            end
+            
             % calculate time difference between different blocks
             if length(blocks)>1
                 dBlockOnset = zeros(1, length(blocks)-1);
                 for i=1:length(dBlockOnset)
-                    dt_i = EventOutAll(i+1).Meta.DateTimeRaw-EventOutAll(1).Meta.DateTimeRaw;
+                    dt_i = NS6all(i+1).MetaTags.DateTimeRaw-NS6all(1).MetaTags.DateTimeRaw; % start time of this session relative to the first session
                     dBlockOnset(i)=dt_i(end)+dt_i(end-1)*1000+dt_i(end-2)*1000*60+dt_i(end-3)*1000*60*60;  % in ms
                 end
-
+                
                 dBlockOnset=[0 dBlockOnset];
             end
 
             r.Behavior.Labels={'FrameOn', 'FrameOff', 'LeverPress', 'Trigger', 'LeverRelease', 'GoodPress', 'GoodRelease',...
                 'ValveOnset', 'ValveOffset', 'PokeOnset', 'PokeOffset' , 'BadPokeFirstIn', 'BadPokeFirstOut'};
-            r.Behavior.LabelMarkers = [1:length(r.Behavior.Labels)];
+            r.Behavior.LabelMarkers = 1:length(r.Behavior.Labels);
 
             r.Behavior.CorrectIndex                 =      [];
             r.Behavior.PrematureIndex            =      [];
@@ -268,17 +280,17 @@ classdef KilosortOutputClass<handle
                 r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indeventmix];
 
                 if i==1
-                    r.Behavior.CorrectIndex         = EventOutAll(i).PerfIndex{ find(strcmp(EventOutAll(i).Performance, 'Correct'))};
-                    r.Behavior.PrematureIndex    = EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Premature'))};
-                    r.Behavior.LateIndex              = EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Late'))};
-                    r.Behavior.DarkIndex             = EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Dark'))};
-                    r.Behavior.CueIndex              =        transpose(EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Cue'))});
+                    r.Behavior.CorrectIndex         = EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Correct')};
+                    r.Behavior.PrematureIndex    = EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Premature')};
+                    r.Behavior.LateIndex              = EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Late')};
+                    r.Behavior.DarkIndex             = EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Dark')};
+                    r.Behavior.CueIndex              =        transpose(EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Cue')});
                 else
-                    r.Behavior.CorrectIndex              =   [r.Behavior.CorrectIndex; EventOutAll(i).PerfIndex{ find(strcmp(EventOutAll(i).Performance, 'Correct'))}+pressnum];
-                    r.Behavior.PrematureIndex            =   [r.Behavior.PrematureIndex; EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Premature'))}+pressnum];
-                    r.Behavior.LateIndex                     =   [r.Behavior.LateIndex;EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Late'))}+pressnum];
-                    r.Behavior.DarkIndex                     =   [r.Behavior.DarkIndex; EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Dark'))}+pressnum];
-                    r.Behavior.CueIndex              =          [ r.Behavior.CueIndex; transpose(EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Cue'))})];
+                    r.Behavior.CorrectIndex              =   [r.Behavior.CorrectIndex; EventOutAll(i).PerfIndex{ strcmp(EventOutAll(i).Performance, 'Correct')}+pressnum];
+                    r.Behavior.PrematureIndex            =   [r.Behavior.PrematureIndex; EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Premature')}+pressnum];
+                    r.Behavior.LateIndex                     =   [r.Behavior.LateIndex;EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Late')}+pressnum];
+                    r.Behavior.DarkIndex                     =   [r.Behavior.DarkIndex; EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Dark')}+pressnum];
+                    r.Behavior.CueIndex              =          [ r.Behavior.CueIndex; transpose(EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Cue')})];
                 end
 
                 r.Behavior.Foreperiods                  = [r.Behavior.Foreperiods; EventOutAll(i).FPs'];
@@ -291,7 +303,7 @@ classdef KilosortOutputClass<handle
                     eventonset = eventonset';
                 end
 
-                indevent = [ones(length(eventonset), 1)*4];
+                indevent = ones(length(eventonset), 1)*4;
                 r.Behavior.EventTimings = [r.Behavior.EventTimings; eventonset];
                 r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indevent];
 
@@ -305,7 +317,7 @@ classdef KilosortOutputClass<handle
                 indgoodrelease= find(strcmp(EventOutAll(i).EventsLabels, 'GoodRelease'));
                 eventonset = EventOutAll(i).Onset{indgoodrelease}+dBlockOnset(i);
                 eventonset_goodrelease = EventOutAll(i).Onset{indgoodrelease};
-                indevent = [ones(length(eventonset), 1)*7]; % frame onset  1; frame offset 2
+                indevent = ones(length(eventonset), 1)*7; % frame onset  1; frame offset 2
                 r.Behavior.EventTimings = [r.Behavior.EventTimings; eventonset];
                 r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indevent];
                 plot(eventonset_goodrelease, 7, 'ko')
@@ -324,7 +336,7 @@ classdef KilosortOutputClass<handle
                 end
 
                 eventonset = eventonset_goodpress+dBlockOnset(i);
-                indevent = [ones(length(eventonset), 1)*6];
+                indevent = ones(length(eventonset), 1)*6;
                 r.Behavior.EventTimings = [r.Behavior.EventTimings; eventonset];
                 r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indevent];
 
@@ -367,64 +379,12 @@ classdef KilosortOutputClass<handle
             [r.Behavior.EventTimings, index_timing] = sort(r.Behavior.EventTimings);
             r.Behavior.EventMarkers = r.Behavior.EventMarkers(index_timing);
 
-%             ind_blankpresses = [];
-%             % BlankOut bad signals
-%             if ~isempty(BlankOut)
-%                 for m = 1:size(BlankOut, 2)
-%                     % check presses
-%                     t_presses = r.Behavior.EventTimings(r.Behavior.EventMarkers == 3);
-%                     ind_blankpresses = [ind_blankpresses find(t_presses>=BlankOut(1, m)*1000 & t_presses<=BlankOut(2, m)*1000)];
-%                     ind_blank = find(r.Behavior.EventTimings>=BlankOut(1, m)*1000 & r.Behavior.EventTimings<=BlankOut(2, m)*1000);
-%                     r.Behavior.EventTimings(ind_blank) =[];
-%                     r.Behavior.EventMarkers(ind_blank) =[];
-% 
-%                 end
-%             end
-% 
-%             if ~isempty(ind_blankpresses)
-%                 PressIndexOrg = [1:length(r.Behavior.Foreperiods)];
-% 
-%                 PressIndexAfter = PressIndexOrg;
-%                 PressIndexAfter(ind_blankpresses) = [];
-% 
-%                 r.Behavior.CueIndex(ind_blankpresses, :) = [];
-%                 r.Behavior.Foreperiods(ind_blankpresses) = [];
-% 
-%                 PressIndexNew = [1:length(r.Behavior.Foreperiods)];
-% 
-%                 %  Fix these variables.
-%                 [~, indcorrectblank] = intersect(r.Behavior.CorrectIndex, ind_blankpresses);
-%                 CorrectIndex_Corrected = r.Behavior.CorrectIndex;
-%                 CorrectIndex_Corrected(indcorrectblank) = [];
-%                 [~, indcorrect_new] = intersect(PressIndexAfter, CorrectIndex_Corrected);
-%                 r.Behavior.CorrectIndex = PressIndexNew(indcorrect_new);
-% 
-%                 [~, indprematureblank] = intersect(r.Behavior.PrematureIndex, ind_blankpresses);                
-%                 PrematureIndex_Corrected = r.Behavior.PrematureIndex;
-%                 PrematureIndex_Corrected(indprematureblank) = [];
-%                 [~, indpremature_new] = intersect(PressIndexAfter, PrematureIndex_Corrected);
-%                 r.Behavior.PrematureIndex = PressIndexNew(indpremature_new);
-% 
-%                 [~, indlateblank] = intersect(r.Behavior.LateIndex, ind_blankpresses);
-%                 LateIndex_Corrected = r.Behavior.LateIndex;
-%                 LateIndex_Corrected(indlateblank) = [];
-%                 [~, indlate_new] = intersect(PressIndexAfter, LateIndex_Corrected);
-%                 r.Behavior.LateIndex = PressIndexNew(indlate_new);
-% 
-%                 [~, inddarkblank] = intersect(r.Behavior.DarkIndex, ind_blankpresses);
-%                 DarkIndex_Corrected = r.Behavior.DarkIndex;
-%                 DarkIndex_Corrected(inddarkblank) = [];
-%                 [~, inddark_new] = intersect(PressIndexAfter, DarkIndex_Corrected);
-%                 r.Behavior.DarkIndex = PressIndexNew(inddark_new);
-%             end
-
-
 %%      plot behavior data
             figure; clf
             set(gcf, 'unit', 'centimeters', 'position',[2 2 25 15], 'paperpositionmode', 'auto' )
             ha1=subplot(4, 1, [1 2]);
-            set(ha1, 'nextplot', 'add', 'xlim', [0 max(r.Behavior.EventTimings/(1000))], 'ytick', [1:length(r.Behavior.Labels)], 'yticklabel',r.Behavior.Labels, 'fontsize', 8)
-            plot([r.Behavior.EventTimings/(1000)], [r.Behavior.EventMarkers],'o', 'color', 'k','markersize', 3, 'linewidth', 1)
+            set(ha1, 'nextplot', 'add', 'xlim', [0 max(r.Behavior.EventTimings/(1000))], 'ytick', 1:length(r.Behavior.Labels), 'yticklabel',r.Behavior.Labels, 'fontsize', 8)
+            plot(r.Behavior.EventTimings/(1000), r.Behavior.EventMarkers,'o', 'color', 'k','markersize', 3, 'linewidth', 1)
             line([0 max(r.Behavior.EventTimings/(1000))], [1:length(r.Behavior.Labels); 1:length(r.Behavior.Labels)], 'color', [0.8 0.8 0.8])
 
 
@@ -434,7 +394,6 @@ classdef KilosortOutputClass<handle
             r.Units.SpikeNotes                             = [];
 
             for i                                              = 1:size(units, 1)
-                ich = units{i, 1};
                 sorting_code                             = units{i, 2};
                 for k                                              = 1:length(sorting_code)
                     switch sorting_code(k)
@@ -449,7 +408,7 @@ classdef KilosortOutputClass<handle
             spkchs = unique(r.Units.SpikeNotes(:, 1));
             allcolors                                          = varycolor(length(spkchs));
 
-            ha2                                                 = subplot(4, 1, [3:4]);
+            ha2                                                 = subplot(4, 1, 3:4);
             set(ha2, 'xlim', get(ha1, 'xlim'), 'ylim', [0 size(r.Units.SpikeNotes , 1)+1], 'nextplot', 'add', 'fontsize', 8);
             linkaxes([ha1, ha2], 'x')
 
@@ -457,16 +416,14 @@ classdef KilosortOutputClass<handle
 
             for i = 1:size(r.Units.SpikeNotes, 1)
                 channel_id                                         = r.Units.SpikeNotes(i, 1);  % channel id
-                cluster_id                                          = r.Units.SpikeNotes(i, 2);  % cluster id
                 r.Units.SpikeTimes(i)                             =   struct('timings',  [], 'wave', []);
-                DataDurationmSec                                   = ceil(r.Meta(ib).DataDurationSec*1000); % in ms
 
                 r.Units.SpikeTimes(i).timings = obj.SpikeTable(i,:).spike_times_r{1};
 
                 r.Units.SpikeTimes(i).wave = obj.SpikeTable(i,:).waveforms{1};
 
                 x_plot                                             = r.Units.SpikeTimes(i).timings;
-                x_plot                                             = [x_plot]/(1000);
+                x_plot                                             = (x_plot)/(1000);
                 y_plot                                             =  i -1 + 0.8*rand(1, length(x_plot));
 
                 if ~isempty(x_plot)

@@ -13,7 +13,7 @@
 ## Installation
 ### prerequesite:
 - [Visual studio community 2017](https://visualstudio.microsoft.com/zh-hans/vs/older-downloads/) with 'C++桌面开发' (compatatible to MATLAB version)
-- MATLAB 2021a or 2021b + necessory toolboxes + MEX
+- MATLAB 2021a-2022b + necessory toolboxes + MEX
 - [kilosort3](https://github.com/MouseLand/Kilosort) or [kilosort2_5](https://github.com/MouseLand/Kilosort/releases/tag/v2.5) (place in a proper directory)
 - [npy-matlab](https://github.com/kwikteam/npy-matlab) (place in a proper directory and better save it in MATLAB path)
 - Anaconda
@@ -28,6 +28,8 @@
 - Install spikeinterface `pip install spikeinterface[full,widgets]`
 #### Install kilosort
 - Install kilosort. If visual studio is properly installed, run `mex -setup C++` in MATLAB and run the file `Kilosort\CUDA\mexGPUall.m`.
+#### Install kilosort plugins
+- See [here](https://github.com/jiumao2/PhyWaveformPlugin)
 
 ## Data process pipeline
 - Move the directory with your data to SSD. (faster)
@@ -39,7 +41,7 @@
 - Run `KilosortOutput.BuildR()` to build `r`.
 
 
-### [About Phy output files](https://github.com/cortex-lab/phy/blob/master/docs/sorting_user_guide.md)
+### [About Phy output files](https://github.com/cortex-lab/phy/blob/master/docs/sorting_user_guide.md#datasets)
 | Filename | Type | Notes |
 | :------------- | :---------- | :------------ |
 |spike_clusters.npy|	nx1 vector 	                                    |Each spike's cluster (0:n_cluster-1) after manual curation |

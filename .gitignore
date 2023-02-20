@@ -1,4 +1,5 @@
-
+*zip
+*.npy
 *.avi
 CodesHY/Scripts/fig/PrefferedAnglePETH/Neurons_hand.mat
 CodesHY/Scripts/fig/PrefferedAnglePETH/Neurons_hand_lift.mat
@@ -8,3 +9,5 @@ CodesHY/Scripts/fig/TrajectoryCellAll/Neurons_lift_highest.mat
 CodesHY/Scripts/fig/TrajectoryCellAll/Neurons.mat
 CodesHY/Scripts/fig/PETHLift/Neurons.mat
 *.asv
+*.ai
+*.tif

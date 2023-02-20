@@ -6,20 +6,13 @@
 % Build behavior array from all blocks.
 % with Badpoke information from bpod
 
-name = 'Eva2';
-blocks                                             = { '001','002'}; % these are different sessions
+name = 'West';
+blocks                                             = {'001','002'}; % these are different sessions
 
 
 % % m: multiunits  s: single units
 units   =  {
-    1       'sssm'          [] 
-    3       'ssm'          []
-    5       'ssm'        []
-    7       's'          []
-    11       'smmm'          []
-    12       'sm'        [] 
-    13       'ssm'        []
-    14       's'         []
+    1       's'          [] 
     };
 
 MEDFile = dir('*Subject*.txt');
@@ -28,9 +21,9 @@ BpodFile = dir([name '*.mat']);
 %% Extract behavior times from MED
 % bout=track_training_progress_advanced('2020-01-23_15h58m_Subject Lucky.txt');
 
-if isempty(dir(['B_*.mat']))
+if isempty(dir('B_*.mat'))
     track_training_progress_advanced(MEDFile.name);
-end;
+end
 
 behfile= dir('B_*mat');
 load(fullfile(behfile.folder, behfile.name))
@@ -57,10 +50,10 @@ for ib=1:length(blocks)
     
     if isfield(EventOut, 'Subject')
         EventOut = rmfield(EventOut, 'Subject');
-    end;
+    end
     if isfield(EventOut, 'Experimenter')
         EventOut = rmfield(EventOut, 'Experimenter');
-    end;
+    end
     
     save EventOut EventOut
     
@@ -68,9 +61,9 @@ for ib=1:length(blocks)
         EventOutAll=EventOut;
     else
         EventOutAll(ib)=EventOut;
-    end;
+    end
     
-end;
+end
 
 EventOutCombined = EventOutAll;
 
@@ -85,31 +78,43 @@ save EventOutAll EventOutAll
 % single unit: 1; multiunit: 2
 r=[];
 
-for i =1 :length(EventOutAll)
-    if i ==1
-        r.Meta(i) = EventOutAll(i).Meta;
-    else
-        r.Meta(i) = EventOutAll(i).Meta;
-    end;
-end;
-
 dBlockOnset = 0;
+ns6_files = cell(1,length(blocks));
+for k = 1:length(ns6_files)
+    ns6_files{k} = ['datafile',blocks{k},'.ns6'];
+end
+for i_file =1:length(ns6_files)
+    if i_file ==1
+        openNSx(ns6_files{i_file}, 'read', 'report')
+        NS6all= NS6;
+    else
+        openNSx(ns6_files{i_file}, 'read', 'report')
+        NS6all(i_file)= NS6;
+    end
+end
+
+for i =1 :length(EventOutAll)
+    r.Meta(i) = EventOutAll(i).Meta;
+    r.Meta(i).DateTime = NS6all(i).MetaTags.DateTime;
+    r.Meta(i).DateTimeRaw = NS6all(i).MetaTags.DateTimeRaw;
+    r.Meta(i).DataDurationSec = NS6all(i).MetaTags.DataDurationSec;
+end
 
 % calculate time difference between different blocks
 if length(blocks)>1
     dBlockOnset = zeros(1, length(blocks)-1);
     for i=1:length(dBlockOnset)
-        dt_i = EventOutAll(i+1).Meta.DateTimeRaw-EventOutAll(1).Meta.DateTimeRaw;
+        dt_i = NS6all(i+1).MetaTags.DateTimeRaw-NS6all(1).MetaTags.DateTimeRaw; % start time of this session relative to the first session
         dBlockOnset(i)=dt_i(end)+dt_i(end-1)*1000+dt_i(end-2)*1000*60+dt_i(end-3)*1000*60*60;  % in ms
-    end;
+    end
     
     dBlockOnset=[0 dBlockOnset];
-end;
+end
 
 
 r.Behavior.Labels={'FrameOn', 'FrameOff', 'LeverPress', 'Trigger', 'LeverRelease', 'GoodPress', 'GoodRelease',...
     'ValveOnset', 'ValveOffset', 'PokeOnset', 'PokeOffset' , 'BadPokeFirstIn', 'BadPokeFirstOut'};
-r.Behavior.LabelMarkers = [1:length(r.Behavior.Labels)];
+r.Behavior.LabelMarkers = 1:length(r.Behavior.Labels);
 
 r.Behavior.CorrectIndex                 =      [];
 r.Behavior.PrematureIndex            =      [];
@@ -125,7 +130,7 @@ for i = 1:length(EventOutAll)
     
     if i>1
         pressnum = pressnum +  length(EventOutAll(i-1).Onset{strcmp(EventOutAll(i-1).EventsLabels, 'LeverPress')});
-    end;
+    end
     
     % add frame signal: 1 on, 2 off
     indframe = find(strcmp(EventOutAll(i).EventsLabels, 'Frame'));
@@ -152,16 +157,16 @@ for i = 1:length(EventOutAll)
     
     
     if i==1
-        r.Behavior.CorrectIndex         = EventOutAll(i).PerfIndex{ find(strcmp(EventOutAll(i).Performance, 'Correct'))};
-        r.Behavior.PrematureIndex    = EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Premature'))};
-        r.Behavior.LateIndex              = EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Late'))};
-        r.Behavior.DarkIndex             = EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Dark'))};
+        r.Behavior.CorrectIndex         = EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Correct')};
+        r.Behavior.PrematureIndex    = EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Premature')};
+        r.Behavior.LateIndex              = EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Late')};
+        r.Behavior.DarkIndex             = EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Dark')};
     else
-        r.Behavior.CorrectIndex              =   [r.Behavior.CorrectIndex; EventOutAll(i).PerfIndex{ find(strcmp(EventOutAll(i).Performance, 'Correct'))}+pressnum];
-        r.Behavior.PrematureIndex            =   [r.Behavior.PrematureIndex; EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Premature'))}+pressnum];
-        r.Behavior.LateIndex                     =   [r.Behavior.LateIndex;EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Late'))}+pressnum];
-        r.Behavior.DarkIndex                     =   [r.Behavior.DarkIndex; EventOutAll(i).PerfIndex{find(strcmp(EventOutAll(i).Performance, 'Dark'))}+pressnum];
-    end;
+        r.Behavior.CorrectIndex              =   [r.Behavior.CorrectIndex; EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Correct')}+pressnum];
+        r.Behavior.PrematureIndex            =   [r.Behavior.PrematureIndex; EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Premature')}+pressnum];
+        r.Behavior.LateIndex                     =   [r.Behavior.LateIndex;EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Late')}+pressnum];
+        r.Behavior.DarkIndex                     =   [r.Behavior.DarkIndex; EventOutAll(i).PerfIndex{strcmp(EventOutAll(i).Performance, 'Dark')}+pressnum];
+    end
     
     r.Behavior.Foreperiods                  = [r.Behavior.Foreperiods; EventOutAll(i).FPs'];
     
@@ -171,9 +176,9 @@ for i = 1:length(EventOutAll)
     triggeronset = EventOutAll(i).Onset{indtriggers};
     if size(eventonset, 1)<size(eventonset, 2)
         eventonset = eventonset';
-    end;
+    end
     
-    indevent = [ones(length(eventonset), 1)*4];
+    indevent = ones(length(eventonset), 1)*4;
     r.Behavior.EventTimings = [r.Behavior.EventTimings; eventonset];
     r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indevent];
     
@@ -188,7 +193,7 @@ for i = 1:length(EventOutAll)
     indgoodrelease= find(strcmp(EventOutAll(i).EventsLabels, 'GoodRelease'));
     eventonset = EventOutAll(i).Onset{indgoodrelease}+dBlockOnset(i);
     eventonset_goodrelease = EventOutAll(i).Onset{indgoodrelease};
-    indevent = [ones(length(eventonset), 1)*7]; % frame onset  1; frame offset 2
+    indevent = ones(length(eventonset), 1)*7; % frame onset  1; frame offset 2
     r.Behavior.EventTimings = [r.Behavior.EventTimings; eventonset];
     r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indevent];
     plot(eventonset_goodrelease, 7, 'ko')
@@ -204,10 +209,10 @@ for i = 1:length(EventOutAll)
         if ~isempty(ind_onset)
             eventonset_goodpress(in) = eventonset_press(ind_onset);
         end
-    end;
+    end
     
     eventonset = eventonset_goodpress+dBlockOnset(i);
-    indevent = [ones(length(eventonset), 1)*6];
+    indevent = ones(length(eventonset), 1)*6;
     r.Behavior.EventTimings = [r.Behavior.EventTimings; eventonset];
     r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indevent];
     
@@ -244,7 +249,7 @@ for i = 1:length(EventOutAll)
     r.Behavior.EventTimings = [r.Behavior.EventTimings; eventmix];
     r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indeventmix];
     
-end;
+end
 
 % sort timing
 [r.Behavior.EventTimings, index_timing] = sort(r.Behavior.EventTimings);
@@ -256,8 +261,8 @@ r.Behavior.EventMarkers = r.Behavior.EventMarkers(index_timing);
 figure; clf
 set(gcf, 'unit', 'centimeters', 'position',[2 2 25 15], 'paperpositionmode', 'auto' )
 ha1=subplot(4, 1, [1 2]);
-set(ha1, 'nextplot', 'add', 'xlim', [0 max(r.Behavior.EventTimings/(1000))], 'ytick', [1:length(r.Behavior.Labels)], 'yticklabel',r.Behavior.Labels, 'fontsize', 8)
-plot([r.Behavior.EventTimings/(1000)], [r.Behavior.EventMarkers],'o', 'color', 'k','markersize', 3, 'linewidth', 1)
+set(ha1, 'nextplot', 'add', 'xlim', [0 max(r.Behavior.EventTimings/(1000))], 'ytick', 1:length(r.Behavior.Labels), 'yticklabel',r.Behavior.Labels, 'fontsize', 8)
+plot(r.Behavior.EventTimings/(1000), r.Behavior.EventMarkers,'o', 'color', 'k','markersize', 3, 'linewidth', 1)
 line([0 max(r.Behavior.EventTimings/(1000))], [1:length(r.Behavior.Labels); 1:length(r.Behavior.Labels)], 'color', [0.8 0.8 0.8])
 
 r.Units.Channels                                = [1:16 17:32];
@@ -278,11 +283,11 @@ for i                                              = 1:size(units, 1)
                 otherwise
                     return
             end
-        end;
+        end
     else
         sorting_code                             = units{i, 2};
         thisch = units{i, 3};
-        polytrode_id = str2num(ich(10:end));
+        polytrode_id = str2double(ich(10:end));
         for k                                              = 1:length(sorting_code)
             switch sorting_code(k)
                 case 'm'
@@ -292,19 +297,19 @@ for i                                              = 1:size(units, 1)
                 otherwise
                     return
             end
-        end;
-    end;
-end;
+        end
+    end
+end
 
 spkchs = unique(r.Units.SpikeNotes(:, 1));
 allcolors                                          = varycolor(length(spkchs));
-ha2                                                 = subplot(4, 1, [3:4]);
+ha2                                                 = subplot(4, 1, 3:4);
 set(ha2, 'xlim', get(ha1, 'xlim'), 'ylim', [0 size(r.Units.SpikeNotes , 1)+1], 'nextplot', 'add', 'fontsize', 8);
 linkaxes([ha1, ha2], 'x')
 % put spikes
 
-block_num = str2double(blocks{1});
-if block_num>1
+block_num_first = str2double(blocks{1});
+if block_num_first>1
     ns6_files = dir('*.ns6');
     for i_file =1:length(ns6_files)
         if i_file ==1
@@ -315,7 +320,7 @@ if block_num>1
             NS6all(i_file)= NS6;
         end
     end
-    dt_i =NS6all(block_num).MetaTags.DateTimeRaw-NS6all(1).MetaTags.DateTimeRaw; % start time of this session relative to the first session
+    dt_i =NS6all(block_num_first).MetaTags.DateTimeRaw-NS6all(1).MetaTags.DateTimeRaw; % start time of this session relative to the first session
     dBlockOnset=dt_i(end)+dt_i(end-1)*1000+dt_i(end-2)*1000*60+dt_i(end-3)*1000*60*60;  % convert time to ms
 end
 %%
@@ -327,21 +332,21 @@ for i                                              = 1:size(r.Units.SpikeNotes, 
     DataDurationmSec                                   = ceil(r.Meta(ib).DataDurationSec*1000); % in ms
     
     raw                  = load(['chdat_meansub' num2str(channel_id) '.mat']);
-    tnew = [1:length(raw.index)]*1000/30000;
+    tnew = (1:length(raw.index))*1000/30000;
     
     % load spike time:
     if r.Units.SpikeNotes(i, 4)==0
         spk_id                                                 = load(['times_chdat_meansub' num2str(channel_id) '.mat']);
     else
         spk_id                                                 = load(['times_polytrode' num2str(r.Units.SpikeNotes(i, 4)) '.mat']);
-    end;
+    end
     
     spk_in_ms                                           = round((spk_id.cluster_class(spk_id.cluster_class(:, 1)==cluster_id, 2))); % this is not mapped to time in recording
     
     [~, spkindx]                                          =     intersect(tnew, spk_in_ms);
     spk_in_ms_new                                   =    round(raw.index(spkindx));
     
-    if block_num>1
+    if block_num_first>1
         spk_in_ms_new = spk_in_ms_new - dBlockOnset;
         id_ib = spk_in_ms_new>0;
         r.Units.SpikeTimes(i).timings = [r.Units.SpikeTimes(i).timings;  spk_in_ms_new(id_ib)]; % in ms
@@ -354,29 +359,29 @@ for i                                              = 1:size(r.Units.SpikeNotes, 
     end
     
     x_plot                                             = r.Units.SpikeTimes(i).timings;
-    x_plot                                             = [x_plot]/(1000);
+    x_plot                                             = x_plot/1000;
     y_plot                                             =  i -1 + 0.8*rand(1, length(x_plot));
     
     if ~isempty(x_plot)
         plot(ha2, x_plot, y_plot,'.', 'color', allcolors(spkchs ==channel_id, :),'markersize', 4);
-    end;
+    end
     
-end;
+end
 
 set(ha2, 'xlim', [0 max(r.Behavior.EventTimings/(1000))])
 
 cd (cfolder)
 
-print (gcf,'-dpng', ['Events_Spikes_Alignment' ])
+print (gcf,'-dpng', 'Events_Spikes_Alignment')
 % saveas(gcf, 'Events_Spikes_Alignment', 'fig')
 
 % r = AddAnalog2Rarray(r);
 
-tic
-save RTarrayAll r
-toc
+% tic
+% save RTarrayAll r
+% toc
 
 % SRTSpikesPopulation();
-for k = 1:length(r.Units.SpikeTimes)
-SRTSpikesV5(r,k);
-end
+% for k = 1:length(r.Units.SpikeTimes)
+% SRTSpikesV5_unsorted(r,k);
+% end

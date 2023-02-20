@@ -641,7 +641,7 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
             VideoInfo.SessionName = [num2str(temp_time.Year,'%04d'),num2str(temp_time.Month,'%02d'),num2str(temp_time.Day,'%02d')];
             VideoInfo.Event = events;
             VideoInfo.Index = i;
-            if isfield(r.Behavior,'CueIndex')
+            if isfield(r.Behavior,'CueIndex') && ~isempty(r.Behavior.CueIndex)
                 VideoInfo.Cue = r.Behavior.CueIndex(i);
             end
             VideoInfo.Time = t_frameon(ind_frame_postevent_all);

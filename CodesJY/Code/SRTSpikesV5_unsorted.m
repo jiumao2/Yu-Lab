@@ -1,4 +1,4 @@
-function PSTHout = SRTSpikesV5(r, ind, varargin)
+function PSTHout = SRTSpikesV5_unsorted(r, ind, varargin)
 % V3: added a few new parameters
 % V4: 2/17/2021 regular style drinking port. No IR sensor in front of the
 % port. 
