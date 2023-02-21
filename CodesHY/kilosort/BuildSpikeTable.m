@@ -73,7 +73,7 @@ if ~isempty(ns6_files)
         end
     end
 else
-    return
+    error('No .ns6 files!')
 end
 
 % Define channels
@@ -126,13 +126,59 @@ for k = 1:height(spikeTable)
 end
 
 spikeTable.spike_times_r = spike_times_r;
+disp(spikeTable)
 
-
-%%
-save spikeTable spikeTable
 
 %%
 chanMap = load('chanMap.mat');
 KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
 KilosortOutput.save();
 
+%%
+% For 2FPs (750/1500): 
+KilosortOutput.buildR(...
+    'KornblumStyle', false,...
+    'Subject', 'West',...
+    'blocks', {'datafile001.nev','datafile002.nev'},...
+    'Version', 'Version4',...
+    'BpodProtocol', 'OptoRecording',...
+    'Experimenter', 'HY');
+
+% % For 2FPs (500/1000): 
+% KilosortOutput.buildR(...
+%     'KornblumStyle', false,...
+%     'Subject', 'West',...
+%     'blocks', {'datafile001.nev','datafile002.nev'},...
+%     'Version', 'Version5',...
+%     'BpodProtocol', 'OptoRecording',...
+%     'Experimenter', 'HY');
+
+% % For Kormblum: 
+% KilosortOutput.buildR(...
+%     'KornblumStyle', true,...
+%     'Subject', 'West',...
+%     'blocks', {'datafile001.nev','datafile002.nev'},...
+%     'Version', 'Version5',...
+%     'BpodProtocol', 'OptoRecording',...
+%     'Experimenter', 'HY');
+%%
+clear
+load RTarrayAll.mat
+
+% For 2FPs (500/1000):
+for k = 1:length(r.Units.SpikeTimes)
+    SRTSpikesV5_unsorted(r,k,'FP_long',1000,'FP_short',500);
+    SRTSpikesV5(r,k,'FP_long',1000,'FP_short',500);
+end
+
+% % For 2FPs (750/1500):
+% for k = 1:length(r.Units.SpikeTimes)
+%     SRTSpikesV5_unsorted(r,k);
+%     SRTSpikesV5(r,k);
+% end
+
+% % For Kormblum: 
+% for k = 1:length(r.Units.SpikeTimes)
+%     KornblumSpikesUnsorted(r,k);
+%     KornblumSpikes(r,k);
+% end

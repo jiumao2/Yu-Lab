@@ -1,4 +1,4 @@
-function PSTHout = KornblumSpikes(r, ind, varargin)
+function KornblumSpikes(r, ind, varargin)
 % revised 2022.10.7
 
 % V3: added a few new parameters
@@ -10,6 +10,9 @@ function PSTHout = KornblumSpikes(r, ind, varargin)
 % 8.9.2020
 % sort out spikes trains according to reaction time
 
+% 2023.2.21 by HY
+% remove unused code and modify the code to run faster
+
 % 1. same foreperiod, randked by reaction time
 % 2. PSTH, two different foreperiods
 
@@ -17,10 +20,10 @@ function PSTHout = KornblumSpikes(r, ind, varargin)
 % KornblumSpikes(r, 1)
 
 
-if length(ind) ==2
+if length(ind) == 2
     ind_unit = find(r.Units.SpikeNotes(:, 1)==ind(1) & r.Units.SpikeNotes(:, 2)==ind(2));
     ind = ind_unit;
-end;
+end
     
 tic
  
@@ -29,26 +32,28 @@ printsize = [2 2 20 17];
 PressTimeDomain = [2000 2500];
 electrode_type = 'Ch';
 rasterheight = 0.02;
+tosave = true;
 if nargin>2
-    for i=1:2:size(varargin,2)
+    for i = 1:2:size(varargin,2)
         switch varargin{i}
-            case 'FRrange'
-                FRrange = varargin{i+1};
+%             case 'FRrange'
+%                 FRrange = varargin{i+1};
             case 'PressTimeDomain'
                 PressTimeDomain = varargin{i+1}; % PSTH time domain
             case 'Name'
                 printname = varargin{i+1};
             case 'Size'
                 printsize = varargin{i+1};
-            case 'Tosave'
+            case 'ToSave'
                 tosave = varargin{i+1};
             case 'Type'
                 electrode_type =  varargin{i+1};
             otherwise
-                errordlg('unknown argument')
+                error('unknown argument!')
         end
     end 
 end
+markersize_portin = 1;
 
 rb = r.Behavior;
 
@@ -63,17 +68,10 @@ t_presses = rb.EventTimings(rb.EventMarkers == ind_press);
 % press for cue and uncue trials
 t_presses_cue           =       t_presses(ind_cue);
 t_presses_uncue       =       t_presses(ind_uncue);
-t_presses_dark         =        t_presses(isnan(rb.CueIndex(:, 2)));
+% t_presses_dark         =        t_presses(isnan(rb.CueIndex(:, 2)));
 
 sprintf('There are %2.0f cued trials', length(t_presses_cue))
 sprintf('There are %2.0f uncued trials', length(t_presses_uncue))
- 
-figure(8); clf
-ha = axes('nextplot', 'add', 'xlim', [0.5 3.5], 'xtick', [1:3], 'xticklabel', {'Cued', 'Uncued', 'Dark'});
-bar(1, length(t_presses_cue), 'FaceColor', 'k')
-bar(2, length(t_presses_uncue), 'FaceColor', 'b')
-bar(3, length(t_presses_dark), 'FaceColor', [0.7 0.7 0.7])
- ylabel('Number of presses')
 
 % release
 ind_release= find(strcmp(rb.Labels, 'LeverRelease'));
@@ -81,7 +79,7 @@ t_releases = rb.EventTimings(rb.EventMarkers == ind_release);
  % press for cue and uncue trials
 t_release_cue           =       t_releases(ind_cue);
 t_release_uncue       =       t_releases(ind_uncue);
-t_release_dark         =        t_releases(isnan(rb.CueIndex(:, 2)));
+% t_release_dark         =        t_releases(isnan(rb.CueIndex(:, 2)));
 
 % time of all reward delievery
 ind_rewards = find(strcmp(rb.Labels, 'ValveOnset'));
@@ -90,7 +88,7 @@ t_rewards_cue = [];
 t_rewards_uncue = [];
 
 % check which reward is produced by cue vs uncue trials
-for i =1:length(t_rewards)
+for i = 1:length(t_rewards)
     most_recent_cue = t_release_cue(find(t_release_cue-t_rewards(i)<0, 1, 'last'));
     most_recent_uncue = t_release_uncue(find(t_release_uncue-t_rewards(i)<0, 1, 'last'));
     if ~isempty(most_recent_cue) && ~isempty(most_recent_uncue)
@@ -98,9 +96,9 @@ for i =1:length(t_rewards)
             t_rewards_cue = [t_rewards_cue t_rewards(i)];
         else
             t_rewards_uncue = [t_rewards_uncue t_rewards(i)];
-        end;
-    end;
-end;
+        end
+    end
+end
 
 % index and time of correct presses
 t_correctpresses = t_presses(rb.CorrectIndex);
@@ -139,22 +137,19 @@ ind_goodtriggers = [];
 t_triggers_late = [];
 ind_badtriggers = [];
 
-figure(55); clf(55)
-hax=axes;
-dt=[];
 for i = 1:length(t_triggers)    
     it_trigger = t_triggers(i);
     [it_release, ~] = min(abs(t_correctreleases-it_trigger));
     if it_release<2000
         % trigger followed by successful release
         t_triggers_correct = [t_triggers_correct; it_trigger];
-        ind_goodtriggers = [ ind_goodtriggers i];
+        ind_goodtriggers = [ind_goodtriggers i];
     else
         % trigger followed by late release
         t_triggers_late = [t_triggers_late; it_trigger];
         ind_badtriggers = [ind_badtriggers i];
-    end;
-end; 
+    end
+end
   
 % port access, t_portin and t_portout
 ind_portin = find(strcmp(rb.Labels, 'PokeOnset'));
@@ -167,8 +162,8 @@ for i =1:length(t_rewards)
     dt = dt(dt>0);
     if ~isempty(dt)
         movetime(i) = dt(end);
-    end;
-end;
+    end
+end
  
 % only take positive move times
 ind_movetimepos = find(movetime>0);
@@ -226,16 +221,13 @@ t_latereleases_uncue = t_latereleases_uncue(ind_late_uncue);
 
 % derive PSTH from these
 ku = ind;
-params.pre = 4000;
-params.post = 2500;
-params.binwidth = 20;
 
 if ku>length(r.Units.SpikeTimes)
-    display('##########################################')
-    display('########### That is all you have ##############')
-    display('##########################################')
+    disp('##########################################')
+    disp('########### That is all you have ##############')
+    disp('##########################################')
     return
-end;
+end
 
 params_press.pre            =              PressTimeDomain(1);
 params_press.post           =              PressTimeDomain(2);
@@ -257,7 +249,7 @@ params_trigger.binwidth     =              20;
 PSTHOut = [];
 
 % all presses
-[psth_pressall,~, trialspxmat_pressall, tspkmat_pressall, t_presses] = jpsth(r.Units.SpikeTimes(ku).timings,  t_presses, params_press);
+[~, ~, trialspxmat_pressall, tspkmat_pressall, t_presses] = jpsth(r.Units.SpikeTimes(ku).timings,  t_presses, params_press);
  
 % correct presses, 1. cue, 2, uncue
 [psth_correct{1}, ts{1}, trialspxmat{1}, tspkmat{1},  t_correctsorted{1}] = jpsth(r.Units.SpikeTimes(ku).timings, t_correctpresses_cue, params_press);
@@ -286,10 +278,10 @@ psth_release_correct{3} = smoothdata (psth_release_correct{3}, 'gaussian', 5);
 PSTHOut.CorrectRelease = {psth_release_correct, ts_release,trialspxmat_release, tspkmat_release, trelease_correctsorted};
 
 % premature press PSTH
-[psth_premature_press{1}, ts_premature_press{1}, trialspxmat_premature_press{1}, tspkmat_premature_press{1}, t_prematurepresses{1}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_prematurepresses_cue], params_press);
+[psth_premature_press{1}, ts_premature_press{1}, trialspxmat_premature_press{1}, tspkmat_premature_press{1}, t_prematurepresses{1}] = jpsth(r.Units.SpikeTimes(ku).timings, t_prematurepresses_cue, params_press);
 psth_premature_press{1} = smoothdata (psth_premature_press{1}, 'gaussian', 5);    
 
-[psth_premature_press{2}, ts_premature_press{2}, trialspxmat_premature_press{2}, tspkmat_premature_press{2}, t_prematurepresses{2}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_prematurepresses_uncue], params_press);
+[psth_premature_press{2}, ts_premature_press{2}, trialspxmat_premature_press{2}, tspkmat_premature_press{2}, t_prematurepresses{2}] = jpsth(r.Units.SpikeTimes(ku).timings, t_prematurepresses_uncue, params_press);
 psth_premature_press{2} = smoothdata (psth_premature_press{2}, 'gaussian', 5);    
 
 [psth_premature_press{3}, ts_premature_press{3}, trialspxmat_premature_press{3}, tspkmat_premature_press{3}, t_prematurepresses{3}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_prematurepresses_cue; t_prematurepresses_uncue], params_press);
@@ -299,10 +291,10 @@ PSTHOut.PrematurePress = {psth_premature_press, ts_premature_press,trialspxmat_p
     tspkmat_premature_press, t_prematurepresses};
 
 % premature release PSTH
-[psth_premature_release{1}, ts_premature_release{1}, trialspxmat_premature_release{1}, tspkmat_premature_release{1}, t_prematurerelease{1}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_prematurereleases_cue], params_release);
+[psth_premature_release{1}, ts_premature_release{1}, trialspxmat_premature_release{1}, tspkmat_premature_release{1}, t_prematurerelease{1}] = jpsth(r.Units.SpikeTimes(ku).timings, t_prematurereleases_cue, params_release);
 psth_premature_release{1} = smoothdata (psth_premature_release{1}, 'gaussian', 5);    
 
-[psth_premature_release{2}, ts_premature_release{2}, trialspxmat_premature_release{2}, tspkmat_premature_release{2}, t_prematurerelease{2}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_prematurereleases_uncue], params_release);
+[psth_premature_release{2}, ts_premature_release{2}, trialspxmat_premature_release{2}, tspkmat_premature_release{2}, t_prematurerelease{2}] = jpsth(r.Units.SpikeTimes(ku).timings, t_prematurereleases_uncue, params_release);
 psth_premature_release{2} = smoothdata (psth_premature_release{2}, 'gaussian', 5);    
 
 [psth_premature_release{3}, ts_premature_release{3}, trialspxmat_premature_release{3}, tspkmat_premature_release{3}, t_prematurerelease{3}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_prematurereleases_cue; t_prematurereleases_uncue], params_release);
@@ -312,10 +304,10 @@ PSTHOut.PrematureRelease = {psth_premature_release, ts_premature_release, trials
     tspkmat_premature_release, t_prematurerelease};
 
 % late press PSTH
-[psth_late_press{1}, ts_late_press{1}, trialspxmat_late_press{1}, tspkmat_late_press{1}, t_latepresses{1}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_latepresses_cue], params_press);
+[psth_late_press{1}, ts_late_press{1}, trialspxmat_late_press{1}, tspkmat_late_press{1}, t_latepresses{1}] = jpsth(r.Units.SpikeTimes(ku).timings, t_latepresses_cue, params_press);
 psth_late_press{1} = smoothdata (psth_late_press{1}, 'gaussian', 5);    
 
-[psth_late_press{2}, ts_late_press{2}, trialspxmat_late_press{2}, tspkmat_late_press{2}, t_latepresses{2}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_latepresses_uncue], params_press);
+[psth_late_press{2}, ts_late_press{2}, trialspxmat_late_press{2}, tspkmat_late_press{2}, t_latepresses{2}] = jpsth(r.Units.SpikeTimes(ku).timings, t_latepresses_uncue, params_press);
 psth_late_press{2} = smoothdata (psth_late_press{2}, 'gaussian', 5);  
 
 [psth_late_press{3}, ts_late_press{3}, trialspxmat_late_press{3}, tspkmat_late_press{3}, t_latepresses{3}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_latepresses_cue; t_latepresses_uncue], params_press);
@@ -325,9 +317,9 @@ PSTHOut.LatePress = {psth_late_press, ts_late_press, trialspxmat_late_press,...
     tspkmat_late_press, t_latepresses};
 
 % late release PSTH
-[psth_late_release{1}, ts_late_release{1}, trialspxmat_late_release{1}, tspkmat_late_release{1}, t_laterelease{1}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_latereleases_cue], params_release);
+[psth_late_release{1}, ts_late_release{1}, trialspxmat_late_release{1}, tspkmat_late_release{1}, t_laterelease{1}] = jpsth(r.Units.SpikeTimes(ku).timings, t_latereleases_cue, params_release);
 psth_late_release{1} = smoothdata (psth_late_release{1}, 'gaussian', 5);    
-[psth_late_release{2}, ts_late_release{2}, trialspxmat_late_release{2}, tspkmat_late_release{2}, t_laterelease{2}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_latereleases_uncue], params_release);
+[psth_late_release{2}, ts_late_release{2}, trialspxmat_late_release{2}, tspkmat_late_release{2}, t_laterelease{2}] = jpsth(r.Units.SpikeTimes(ku).timings, t_latereleases_uncue, params_release);
 psth_late_release{2} = smoothdata (psth_late_release{2}, 'gaussian', 5);    
 [psth_late_release{3}, ts_late_release{3}, trialspxmat_late_release{3}, tspkmat_late_release{3}, t_laterelease{3}] = jpsth(r.Units.SpikeTimes(ku).timings, [t_latereleases_cue; t_latereleases_uncue], params_release);
 psth_late_release{3} = smoothdata (psth_late_release{3}, 'gaussian', 5);  
@@ -362,11 +354,10 @@ close all;
 cue_linewidth           =    1.5;
 uncue_linewidth       =    1.5;
 
-if sum(ind_cue)<0.5*sum(ind_uncue)
+if length(ind_cue)<0.5*length(ind_uncue)
     cue_linewidth = 0.75;
-end;
+end
 
-hf=27;
 figure(27); clf(27)
 set(gcf, 'unit', 'centimeters', 'position', printsize, 'paperpositionmode', 'auto' ,'color', 'w')
 
@@ -390,11 +381,11 @@ ha1b =  axes('unit', 'centimeters', 'position', [1 3.5 5 2], 'nextplot', 'add', 
 
 if  size(PSTHOut.PrematurePress{3}{3}, 2)>5
     plot(PSTHOut.PrematurePress{2}{3}, PSTHOut.PrematurePress{1}{3}, 'color', [0.6 0.6 0.6], 'linewidth',1);
-end;
+end
 
 if  size(PSTHOut.LatePress{3}{3}, 2)>5
     plot(PSTHOut.LatePress{2}{3}, PSTHOut.LatePress{1}{3}, 'color', latecol, 'linewidth',1);
-end;
+end
 
 set(ha1b, 'ylim', [0 FRMax1*1.25]) 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
@@ -406,31 +397,43 @@ tSpkMat = PSTHOut.CorrectPress{4}{1};
 EvenTimes = PSTHOut.CorrectPress{5}{1};
 ntrial1 = size(SpkMat, 2);
 
-ha =  axes('unit', 'centimeters', 'position', [1 5.5+0.5 5 ntrial1*rasterheight],...
+axes('unit', 'centimeters', 'position', [1 5.5+0.5 5 ntrial1*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-PressTimeDomain(1) PressTimeDomain(2)], 'ylim', [-ntrial1 1], 'box', 'on');
-k =0;
+k = 0;
+xx_all = [];
+yy_all = [];
+xxrt_all = [];
+yyrt_all = [];
+x_portin = [];
+y_portin = [];
 for i =1:size(SpkMat, 2)    
     irt =rt_correct_cue_sorted(i);
-    xx = tSpkMat(find(SpkMat(:, i)));
+    xx = tSpkMat(SpkMat(:, i)>0);
     yy = [0 1]-k;
-    xxrt = [irt+FP_Kornblum; irt+FP_Kornblum];
-    if  isempty(find(isnan(SpkMat(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color', 'b', 'linewidth', 1)
-        end;
-        line([xxrt xxrt], yy, 'color', 'g', 'linewidth', 1.5)
+    xxrt = [irt+FP_Kornblum, irt+FP_Kornblum];
+    if ~any((isnan(SpkMat(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
+        xxrt_all = [xxrt_all, xxrt, NaN];
+        yyrt_all = [yyrt_all, yy, NaN];
         k = k+1;
-    end;
+    end
     
     % port time
     itpress = EvenTimes(i);
     i_portin = tpoke_reward-itpress;
     i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));    
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end 
-end;
+
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+
+line(xx_all, yy_all, 'color', 'b', 'linewidth', 1)
+line(xxrt_all, yyrt_all, 'color', 'g', 'linewidth', 1.5)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
 
 line([FP_Kornblum FP_Kornblum], get(gca, 'ylim'), 'color', 'm', 'linestyle', '-.', 'linewidth', 1);
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
@@ -443,34 +446,43 @@ EvenTimes = PSTHOut.CorrectPress{5}{2};
 ntrial2 = size(SpkMat, 2);
 yshift = 5.5+0.5+ntrial1*rasterheight+0.5;
 
-ha2 =  axes('unit', 'centimeters', 'position', [1 yshift 5 ntrial2*rasterheight],...
+axes('unit', 'centimeters', 'position', [1 yshift 5 ntrial2*rasterheight],...
     'nextplot', 'add',  'xticklabel', [],...
    'xlim', [-PressTimeDomain(1) PressTimeDomain(2)], 'ylim', [-ntrial2 1], 'box', 'on');
 
-k =0;
+k = 0;
+xx_all = [];
+yy_all = [];
+xxrt_all = [];
+yyrt_all = [];
+x_portin = [];
+y_portin = [];
 for i =1:size(SpkMat, 2)
-    
     irt =rt_correct_uncue_sorted(i);
-    xx = tSpkMat(find(SpkMat(:, i)));
+    xx = tSpkMat(SpkMat(:, i)>0);
     yy = [0 1]-k;
-    xxrt = [irt+FP_Kornblum; irt+FP_Kornblum];
-
-    if  isempty(find(isnan(SpkMat(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color', 'k', 'linewidth', 1)
-        end;
-        line([xxrt xxrt], yy, 'color', 'g', 'linewidth', 1.5)
+    xxrt = [irt+FP_Kornblum, irt+FP_Kornblum];
+    if ~any((isnan(SpkMat(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
+        xxrt_all = [xxrt_all, xxrt, NaN];
+        yyrt_all = [yyrt_all, yy, NaN];
         k = k+1;
-    end;
+    end
 
     % port time
     itpress = EvenTimes(i);
     i_portin = tpoke_reward-itpress;
-    i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));    
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end
-end;
+    i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));
+
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+line(xx_all, yy_all, 'color', 'k', 'linewidth', 1)
+line(xxrt_all, yyrt_all, 'color', 'g', 'linewidth', 1.5)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Uncued')
@@ -494,33 +506,45 @@ PressPremature =[PrematurePressTimes1; PrematurePressTimes2];
 PressDurPremature = [PrematureReleaseTimes1-PrematurePressTimes1; PrematureReleaseTimes2-PrematurePressTimes2];
 
 yshift = yshift + ntrial2*rasterheight +0.5;
-ha =  axes('unit', 'centimeters', 'position', [1 yshift 5 ntrial_premature*rasterheight],...
+axes('unit', 'centimeters', 'position', [1 yshift 5 ntrial_premature*rasterheight],...
     'nextplot', 'add',  'xticklabel', [],...
     'xlim',[-PressTimeDomain(1) PressTimeDomain(2)], 'ylim', [-ntrial_premature 1], 'box', 'on');
 
 line([FP_Kornblum FP_Kornblum], [-ntrial3, 1], 'color', 'm', 'linestyle', '-.', 'linewidth', 1)
 
-k =0;
+k = 0;
+xx_all = [];
+yy_all = [];
+xxrt_all = [];
+yyrt_all = [];
+x_portin = [];
+y_portin = [];
 for i =1:size(SpkMatPremature, 2)    
     iPressDur=PressDurPremature(i);
-    xx = tSpkMat(find(SpkMatPremature(:, i)));
+    xx = tSpkMat(SpkMatPremature(:, i)>0);
     yy = [0 1]-k;
-    xxrt = [iPressDur;iPressDur];
-    if  isempty(find(isnan(SpkMatPremature(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color', [0.6 0.6 0.6], 'linewidth', 1)
-        end;
-        line([xxrt xxrt], yy, 'color', 'g', 'linewidth', 1.5)
+    xxrt = [iPressDur, iPressDur];
+    if ~any((isnan(SpkMatPremature(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
+        xxrt_all = [xxrt_all, xxrt, NaN];
+        yyrt_all = [yyrt_all, yy, NaN];
         k = k+1;
-    end;
+    end
     % port time
     itpress = PressPremature(i);
     i_portin = tpoke_reward-itpress;
-    i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));    
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end
-end;
+    i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));  
+
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+
+line(xx_all, yy_all, 'color', [0.6,0.6,0.6], 'linewidth', 1)
+line(xxrt_all, yyrt_all, 'color', 'g', 'linewidth', 1.5)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Premature presses')
@@ -544,7 +568,7 @@ PressDurLate = [LateReleaseTimes1-LatePressTimes1; LateReleaseTimes2-LatePressTi
 
 yshift = yshift + ntrial_premature*rasterheight+0.5;
 
-ha =  axes('unit', 'centimeters', 'position', [1 yshift 5  ntrial_late*rasterheight],...
+axes('unit', 'centimeters', 'position', [1 yshift 5  ntrial_late*rasterheight],...
     'nextplot', 'add',  'xticklabel', [],...
      'xlim',[-PressTimeDomain(1) PressTimeDomain(2)], 'ylim', [-ntrial_late 1], 'box', 'on');
 
@@ -552,31 +576,41 @@ line([FP_Kornblum FP_Kornblum], [-ntrial5, 1], 'color', 'm', 'linestyle', '-.', 
 
 yshift = yshift + ntrial_late*rasterheight +0.5;
 
-k =0;
+k = 0;
+xx_all = [];
+yy_all = [];
+xxrt_all = [];
+yyrt_all = [];
+x_portin = [];
+y_portin = [];
 for i =1:size(SpkMatLate, 2)
-    
-    iPressDur=PressDurLate(i);
-    xx = tSpkMat(find(SpkMatLate(:, i)));
+    iPressDur = PressDurLate(i);
+    xx = tSpkMat(SpkMatLate(:, i)>0);
     yy = [0 1]-k;
-    xxrt = [iPressDur;iPressDur];
+    xxrt = [iPressDur, iPressDur];
 
-    if  isempty(find(isnan(SpkMatLate(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color', 'b', 'linewidth', 1)
-        end;
-        line([xxrt xxrt], yy, 'color', 'g', 'linewidth', 1.5)
+    if ~any((isnan(SpkMat(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
+        xxrt_all = [xxrt_all, xxrt, NaN];
+        yyrt_all = [yyrt_all, yy, NaN];
         k = k+1;
-    end;
+    end
 
     % port time
     itpress = PressLate(i);
     i_portin = tpoke_reward-itpress;
     i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));
     
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end
-end;
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+
+line(xx_all, yy_all, 'color', 'b', 'linewidth', 1)
+line(xxrt_all, yyrt_all, 'color', 'g', 'linewidth', 1.5)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Late presses')
@@ -604,11 +638,11 @@ ha4b =  axes('unit', 'centimeters', 'position', [7 3.5 5 2], 'nextplot', 'add', 
 
 if  size(PSTHOut.PrematureRelease{3}{3}, 2)>5
     plot(PSTHOut.PrematureRelease{2}{3}, PSTHOut.PrematureRelease{1}{3}, 'color', [0.6 0.6 0.6], 'linewidth',1);
-end;
+end
 
 if  size(PSTHOut.LateRelease{3}{3}, 2)>5
     plot(PSTHOut.LateRelease{2}{3}, PSTHOut.LateRelease{1}{3}, 'color', latecol, 'linewidth',1);
-end;
+end
 
 set(ha4b, 'ylim', [0 FRMax2*1.25]) 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
@@ -621,37 +655,45 @@ EvenTimes = PSTHOut.CorrectRelease{5}{1};
 ntrial1 = size(SpkMat, 2);
 yshift = 5.5+0.5;
 
-ha5 =  axes('unit', 'centimeters', 'position', [7 yshift 5 ntrial1*rasterheight],...
+axes('unit', 'centimeters', 'position', [7 yshift 5 ntrial1*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-params_release.pre params_release.post], 'ylim', [-ntrial1 1], 'box', 'on');
- k =0;
-rt_correct_cue_sorted;
+k = 0;
+xx_all = [];
+yy_all = [];
+xxrt_all = [];
+yyrt_all = [];
+x_portin = [];
+y_portin = [];
 
 for i =1:size(SpkMat, 2)
-    
     irt =rt_correct_cue_sorted(i);
-    xx = tSpkMat(find(SpkMat(:, i)));
+    xx = tSpkMat(SpkMat(:, i)>0);
     yy = [0 1]-k;
-    xxrt = [-irt;-irt];
+    xxrt = [-irt, -irt];
 
-    if  isempty(find(isnan(SpkMat(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color', 'b', 'linewidth', 1)
-        end;
-        line([xxrt xxrt], yy, 'color', 'm', 'linewidth', 1.5)
+    if ~any((isnan(SpkMat(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
+        xxrt_all = [xxrt_all, xxrt, NaN];
+        yyrt_all = [yyrt_all, yy, NaN];
         k = k+1;
-    end;
+    end
     
     % port time
     itpress = EvenTimes(i);
     i_portin = tpoke_reward-itpress;
     i_portin = i_portin(i_portin>=-params_release.pre & i_portin<=params_release.post);
     
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end
- 
-end;
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+
+line(xx_all, yy_all, 'color', 'b', 'linewidth', 1)
+line(xxrt_all, yyrt_all, 'color', 'm', 'linewidth', 1.5)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Cued')
@@ -664,29 +706,36 @@ EvenTimes = PSTHOut.CorrectRelease{5}{2};
 ntrial2= size(SpkMat, 2);
 
 yshift = yshift + ntrial1*rasterheight + 0.5;
-ha3 =  axes('unit', 'centimeters', 'position', [7 yshift 5 ntrial2*rasterheight],...
+axes('unit', 'centimeters', 'position', [7 yshift 5 ntrial2*rasterheight],...
     'nextplot', 'add', 'xticklabel', [],...
     'xlim',[-params_release.pre params_release.post], 'ylim', [-ntrial2 1], 'box', 'on');
 
 k =0;
+xx_all = [];
+yy_all = [];
+x_portin = [];
+y_portin = [];
 
 for i =1:size(SpkMat, 2)
-    xx = tSpkMat(find(SpkMat(:, i)));
+    xx = tSpkMat(SpkMat(:, i)>0);
     yy = [0 1]-k;
-    if  isempty(find(isnan(SpkMat(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color', 'k', 'linewidth', 1)
-        end;
+    if ~any((isnan(SpkMat(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
         k = k+1;
-    end;
+    end    
     % port time
     itpress = EvenTimes(i);
     i_portin = tpoke_reward-itpress;
     i_portin = i_portin(i_portin>=-params_release.pre & i_portin<=params_release.post);
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end
-end;
+
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+line(xx_all, yy_all, 'color', 'k', 'linewidth', 1)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Uncued')
@@ -698,48 +747,53 @@ SpkMat1                                =    PSTHOut.PrematureRelease{3}{1};
 tSpkMat                                 =    PSTHOut.PrematureRelease{4}{1};
 
 PrematurePressTimes1         =    PSTHOut.PrematurePress{5}{1};
-PrematureReleaseTimes1     =    PSTHOut.PrematureRelease{5}{1};
+% PrematureReleaseTimes1     =    PSTHOut.PrematureRelease{5}{1};
 ntrial3 = size(SpkMat1, 2);
 
 SpkMat2          =    PSTHOut.PrematureRelease{3}{2}; 
 
 PrematurePressTimes2         =    PSTHOut.PrematurePress{5}{2};
-PrematureReleaseTimes2     =    PSTHOut.PrematureRelease{5}{2};
+% PrematureReleaseTimes2     =    PSTHOut.PrematureRelease{5}{2};
 
 ntrial4 = size(SpkMat2, 2);
 ntrial_premature = ntrial3 + ntrial4; 
 SpkMatPremature = [SpkMat1 SpkMat2];
 PressPremature =[PrematurePressTimes1; PrematurePressTimes2];
 
-ha =  axes('unit', 'centimeters', 'position', [7 yshift 5 ntrial_premature*rasterheight],...
+axes('unit', 'centimeters', 'position', [7 yshift 5 ntrial_premature*rasterheight],...
     'nextplot', 'add',  'xticklabel', [],...
     'xlim',[-params_release.pre params_release.post], 'ylim', [-ntrial_premature 1], 'box', 'on');
 
 % line([FP_Kornblum FP_Kornblum], [-ntrial3, 1], 'color', 'm', 'linestyle', '-.', 'linewidth', 1)
 
-k =0;
+k = 0;
+xx_all = [];
+yy_all = [];
+x_portin = [];
+y_portin = [];
+
 for i =1:size(SpkMatPremature, 2)
-     
-    xx = tSpkMat(find(SpkMatPremature(:, i)));
+    xx = tSpkMat(SpkMatPremature(:, i)>0);
     yy = [0 1]-k;
- 
-    if  isempty(find(isnan(SpkMatPremature(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color', [0.6 0.6 0.6], 'linewidth', 1)
-        end;
- 
+
+    if ~any((isnan(SpkMatPremature(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
         k = k+1;
-    end;
+    end    
 
     % port time
     itpress = PressPremature(i);
     i_portin = tpoke_reward-itpress;
-    i_portin = i_portin(i_portin>=--params_release.pre & i_portin<=params_release.post);
+    i_portin = i_portin(i_portin>=-params_release.pre & i_portin<=params_release.post);
     
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end
-end;
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+line(xx_all, yy_all, 'color', [0.6 0.6 0.6], 'linewidth', 1)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Premature release')
@@ -765,32 +819,45 @@ PressDurLate = [LateReleaseTimes1-LatePressTimes1; LateReleaseTimes2-LatePressTi
 
 yshift = yshift + ntrial_premature*rasterheight+0.5;
 
-ha =  axes('unit', 'centimeters', 'position', [7 yshift 5  ntrial_late*rasterheight],...
+axes('unit', 'centimeters', 'position', [7 yshift 5  ntrial_late*rasterheight],...
     'nextplot', 'add',  'xticklabel', [],...
       'xlim',[-params_release.pre params_release.post], 'ylim', [-ntrial_late 1], 'box', 'on');
 
-k =0;
+k = 0;
+
+xx_all = [];
+yy_all = [];
+xxrt_all = [];
+yyrt_all = [];
+x_portin = [];
+y_portin = [];
 for i =1:size(SpkMatLate, 2)    
     iPressDur=PressDurLate(i);
-    xx = tSpkMat(find(SpkMatLate(:, i)));
+    xx = tSpkMat(SpkMatLate(:, i)>0);
     yy = [0 1]-k;
-    xxrt = [iPressDur;iPressDur];
-    if  isempty(find(isnan(SpkMatLate(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color', 'b', 'linewidth', 1)
-        end;
-        line([xxrt xxrt], yy, 'color', 'g', 'linewidth', 1.5)
+    xxrt = [iPressDur, iPressDur];
+    if ~any((isnan(SpkMatLate(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
+        xxrt_all = [xxrt_all, xxrt, NaN];
+        yyrt_all = [yyrt_all, yy, NaN];
         k = k+1;
-    end;
+    end
+
     % port time
     itpress = PressLate(i);
     i_portin = tpoke_reward-itpress;
     i_portin = i_portin(i_portin>=-PressTimeDomain(1) & i_portin<=PressTimeDomain(2));
     
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end
-end;
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+
+line(xx_all, yy_all, 'color', 'b', 'linewidth', 1)
+line(xxrt_all, yyrt_all, 'color', 'g', 'linewidth', 1.5)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Late presses')
@@ -818,27 +885,35 @@ EvenTimes = PSTHOut.Reward{5}{1};
 ntrial1 = size(SpkMat, 2);
 % EvenTimes = PSTHOut.CorrectRelease{5}{1};
 
-ha =  axes('unit', 'centimeters', 'position', [13.5 3.5 6 ntrial1*rasterheight],...
+axes('unit', 'centimeters', 'position', [13.5 3.5 6 ntrial1*rasterheight],...
     'nextplot', 'add',...
     'xlim',[-params_reward.pre params_reward.post], 'ylim', [-ntrial1 1], 'box', 'on');
-k =0;
+k = 0;
+
+xx_all = [];
+yy_all = [];
+x_portin = [];
+y_portin = [];
 for i =1:size(SpkMat, 2)    
-    xx = tSpkMat(find(SpkMat(:, i)));
+    xx = tSpkMat(SpkMat(:, i)>0);
     yy = [0 1]-k;
-    if  isempty(find(isnan(SpkMat(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color', 'b', 'linewidth', 1)
-        end;
+    if ~any((isnan(SpkMat(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
         k = k+1;
-    end;    
+    end 
     % port time
     itreward = EvenTimes(i);
     i_portin = tpoke_reward-itreward;
-    i_portin = i_portin(i_portin>=-params_reward.pre & i_portin<= params_reward.post);    
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end 
-end;
+    i_portin = i_portin(i_portin>=-params_reward.pre & i_portin<= params_reward.post); 
+    
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+line(xx_all, yy_all, 'color', 'b', 'linewidth', 1)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
  
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Cued')
@@ -850,27 +925,36 @@ tSpkMat = PSTHOut.Reward{4}{2};
 EvenTimes = PSTHOut.Reward{5}{2};
 ntrial2 = size(SpkMat, 2);
 
-ha =  axes('unit', 'centimeters', 'position', [13.5 yshift 6 ntrial2*rasterheight],...
+axes('unit', 'centimeters', 'position', [13.5 yshift 6 ntrial2*rasterheight],...
     'nextplot', 'add',...
     'xlim',[-params_reward.pre params_reward.post], 'xtick', [], 'ylim', [-ntrial2 1], 'box', 'on');
-k =0;
-for i =1:size(SpkMat, 2)    
-    xx = tSpkMat(find(SpkMat(:, i)));
+k = 0;
+
+xx_all = [];
+yy_all = [];
+x_portin = [];
+y_portin = [];
+for i = 1:size(SpkMat, 2)    
+    xx = tSpkMat(SpkMat(:, i)>0);
     yy = [0 1]-k;
-    if  isempty(find(isnan(SpkMat(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color',[0.6 0.6 0.6], 'linewidth', 1.5)
-        end;
+    if ~any((isnan(SpkMat(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
         k = k+1;
-    end;    
+    end 
     % port time
     itreward = EvenTimes(i);
     i_portin = tpoke_reward-itreward;
-    i_portin = i_portin(i_portin>=-params_reward.pre & i_portin<= params_reward.post);   
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end 
-end; 
+    i_portin = i_portin(i_portin>=-params_reward.pre & i_portin<= params_reward.post);
+
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+line(xx_all, yy_all, 'color', [0.6,0.6,0.6], 'linewidth', 1)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
+
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Uncued')
 %% plot trigger-related activity 
@@ -880,7 +964,7 @@ ha9 =  axes('unit', 'centimeters', 'position', [13.5 yshift 6 2], 'nextplot', 'a
 plot(PSTHOut.Trigger{2}, PSTHOut.Trigger{1}, 'k', 'linewidth', 1.5); hold on
 if length(PSTHOut.TriggerLate{5})>5
     plot(PSTHOut.TriggerLate{2}, PSTHOut.TriggerLate{1}, 'color', latecol, 'linewidth', 0.5);
-end;
+end
 xlabel('Time from trigger (ms)')
 ylabel ('Spks per s')
 
@@ -896,33 +980,40 @@ ntrial1 = size(SpkMat, 2);
 
 % EvenTimes = PSTHOut.CorrectRelease{5}{1};
 yshift = yshift + 2.2;
-ha =  axes('unit', 'centimeters', 'position', [13.5 yshift 6 ntrial1*rasterheight],...
+axes('unit', 'centimeters', 'position', [13.5 yshift 6 ntrial1*rasterheight],...
     'nextplot', 'add','xtick', [],...
     'xlim',[-params_trigger.pre params_trigger.post], 'ylim', [-ntrial1 1], 'box', 'on');
-k =0;
-for i =1:size(SpkMat, 2)
-    xx = tSpkMat(find(SpkMat(:, i)));
+k = 0;
+xx_all = [];
+yy_all = [];
+x_portin = [];
+y_portin = [];
+for i = 1:size(SpkMat, 2)
+    xx = tSpkMat(SpkMat(:, i)>0);
     yy = [0 1]-k;
-    if  isempty(find(isnan(SpkMat(:, i))))
-        if ~isempty(xx)
-            line([xx; xx], yy, 'color', 'k', 'linewidth', 1)
-        end;
+    if ~any((isnan(SpkMat(:, i))))
+        for i_xx = 1:length(xx)
+            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+            yy_all = [yy_all, yy, NaN];
+        end
         k = k+1;
-    end;
+    end
+
     % port time
     itreward = EvenTimes(i);
     i_portin = t_portin-itreward;
     i_portin = i_portin(i_portin>=-params_reward.pre & i_portin<= params_reward.post);
-    if ~isempty(i_portin)
-        plot(i_portin, 0.4-k, 'o', 'color', 'r', 'markersize', 2,'markerfacecolor', 'r', 'linewidth', 0.5)
-    end
-end;
+
+    x_portin = [x_portin, i_portin'];
+    y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+end
+line(xx_all, yy_all, 'color', 'k', 'linewidth', 1)
+plot(x_portin, y_portin, 'o', 'color', 'r', 'markersize', markersize_portin, 'markerfacecolor', 'r', 'linewidth', 0.5)
 
 line([0 0], get(gca, 'ylim'), 'color', 'c', 'linewidth', 1)
 title('Trigger')
 
 FRMax = max([FRMax1 FRMax2 FRMax3 FRMax4]);
-xlim = max(get(gca, 'xlim'));
 
 FRrange = [0 FRMax*1.25];
 set(ha1, 'ylim', FRrange);
@@ -942,7 +1033,7 @@ FPline.YData = FRrange;
 
 %% plot pre-press activity vs trial num or time
 yshift = yshift + ntrial1*rasterheight + 1.5;
-ha10=axes('unit', 'centimeters', 'position', [13.5 yshift 6 1.5], 'nextplot', 'add',  'xlim', [min(t_presses/1000) max(t_presses/1000)])
+ha10 = axes('unit', 'centimeters', 'position', [13.5 yshift 6 1.5], 'nextplot', 'add',  'xlim', [min(t_presses/1000) max(t_presses/1000)]);
 
 % [psth_pressall,~, trialspxmat_pressall, tspkmat_pressall, t_presses] = jpsth(r.Units.SpikeTimes(ku).timings,  t_presses, params_press);
  
@@ -973,13 +1064,13 @@ allwaves = r.Units.SpikeTimes(ku).wave;
 if size(allwaves, 1)>100
     nplot = randperm(size(allwaves, 1), 100);
 else
-    nplot=[1:size(allwaves, 1)];
-end;
+    nplot = 1:size(allwaves, 1);
+end
 
 wave2plot = allwaves(nplot, :);
 
-plot([1:Lspk], wave2plot, 'color', [0.8 .8 0.8]);
-plot([1:Lspk], mean(allwaves, 1), 'color', thiscolor, 'linewidth', 2)
+plot(1:Lspk, wave2plot, 'color', [0.8 .8 0.8]);
+plot(1:Lspk, mean(allwaves, 1), 'color', thiscolor, 'linewidth', 2)
 
 axis tight
 axis([0 Lspk min(mean(allwaves, 1))*2 max(mean(allwaves, 1))*2])
@@ -1004,14 +1095,14 @@ kutime2 = zeros(1, max(kutime));
 kutime2(kutime)=1;
 
 [c, lags] = xcorr(kutime2, 100); % max lag 100 ms
-c(lags==0)=0;
+c(lags==0) = 0;
 
 ha00= axes('unit', 'centimeters', 'position', [yfirstcolumn(1)+3.8 yfirstcolumn(2)+0.5 2.5 2], 'nextplot', 'add', 'xlim', [-100 100]);
 if median(c)>1
-    set(ha00, 'nextplot', 'add', 'xtick', [-100:50:100], 'ytick', [0 median(c)]);
+    set(ha00, 'nextplot', 'add', 'xtick', -100:50:100, 'ytick', [0 median(c)]);
 else
-    set(ha00, 'nextplot', 'add', 'xtick', [-100:50:100], 'ytick', [0 1], 'ylim', [0 1]);
-end;
+    set(ha00, 'nextplot', 'add', 'xtick', -100:50:100, 'ytick', [0 1], 'ylim', [0 1]);
+end
 
 hbar = bar(lags, c, 1);
 set(hbar, 'facecolor', 'k')
@@ -1029,7 +1120,6 @@ uicontrol('style', 'text', 'units', 'centimeters', 'position', [ycolumn2(1) ycol
 
 uicontrol('style', 'text', 'units', 'centimeters', 'position', [ycolumn2(1) ycolumn2(2) 4 0.5],...
     'string', (['Unit#' num2str(ind) '(' electrode_type num2str(ch) ')']), 'BackgroundColor','w', 'fontsize', 10, 'fontweight','bold')
-%  
 
 % change the height of the figure
 
@@ -1038,15 +1128,37 @@ set(27, 'position', [2 2 20 FinalHeight] )
 toc;
 
 % save to a folder
+if tosave
+    anm_name = r.Meta(1).Subject;
+    session = strrep(r.Meta(1).DateTime(1:11), '-','_');
 
-tic
-thisFolder = fullfile(pwd, 'Fig');
-if ~exist(thisFolder, 'dir')
-    mkdir(thisFolder)
+    try
+        tic
+
+        thisFolder = fullfile(findonedrive, '\Work\Physiology\UnitsCollection', anm_name, session);
+        if ~exist(thisFolder, 'dir')
+            mkdir(thisFolder)
+        end
+        tosavename = fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no)  printname]);
+
+        %  print (gcf,'-dpdf', tosavename)
+        print (gcf,'-dpng', tosavename)
+        toc
+    catch
+        disp('OneDrive is not found')
+    end
+    tic
+
+    thisFolder = fullfile(pwd, 'Fig');
+    if ~exist(thisFolder, 'dir')
+        mkdir(thisFolder)
+    end
+
+    tosavename2 = fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no)  printname]);
+
+%     print (gcf,'-dpdf', tosavename2)
+    print (gcf,'-dpng', tosavename2)
+    toc
 end
-tosavename2= fullfile(thisFolder, [electrode_type num2str(ch) '_Unit' num2str(unit_no)  printname]);
-% print (gcf,'-dpdf', tosavename2)
-print (gcf,'-dpng', tosavename2)
-% save(tosavename2, 'PSTHOut')
-%  
-toc
+
+end
