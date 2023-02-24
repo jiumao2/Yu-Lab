@@ -1,4 +1,7 @@
-function r2csv(r_path,csv_path)
+function r2csv(r_path,csv_path,region)
+    if nargin < 3
+        region = 'M1';
+    end
     load(r_path)
     rTbl = table(); 
     su_idx = find(r.Units.SpikeNotes(:,3)==1);
@@ -20,7 +23,7 @@ function r2csv(r_path,csv_path)
             r.Units.SpikeNotes(su_idx(k),1),... % Channel
             r.Units.SpikeNotes(su_idx(k),2),... % Cluster
             r_path,... % Path
-            'M1',...   % Region
+            region,...   % Region
             ['Images/',...
                 r.Meta(1).Subject,'/',...
                 datestr(date_this,'yyyymmdd'),...
