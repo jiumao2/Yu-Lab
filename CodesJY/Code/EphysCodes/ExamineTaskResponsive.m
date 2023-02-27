@@ -24,10 +24,10 @@ for i =1:size(spks_bins, 2)
     spk_bins(:, i) = sum(spkmat_i, 1)';
 end;
 
-figure;
-plot(t_bins, spk_bins, 'ko');
+% figure;
+% plot(t_bins, spk_bins, 'ko');
  
-[pval, ~, stats] = anova1(spk_bins);
+[pval, ~, stats] = anova1(spk_bins, [], 'off');
 
 [~, ind_max] = max(stats.means);
 

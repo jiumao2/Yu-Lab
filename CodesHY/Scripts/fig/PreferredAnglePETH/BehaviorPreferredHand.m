@@ -6,50 +6,50 @@ r_hand_all = {
     'D:\Ephys\ANMs\Russo\Sessions\20210908_video\RTarrayAll.mat'
 };
 
-%% Extract spike time
-count = 0;
-Neurons = [];
-
-for r_idx = 1:length(r_hand_all)
-    load(r_hand_all{r_idx})
-    
-    hand1_idx = getIndexVideoInfos(r,"Hand","Left","Performance","Correct");
-    hand2_idx = getIndexVideoInfos(r,"Hand","Right_Both","Performance","Correct");
-    disp(['Loading from file: ',r_hand_all{r_idx}]);
-    disp(['Number of trials in hand 1: ',num2str(length(hand1_idx))]);
-    disp(['Number of trials in hand 2: ',num2str(length(hand2_idx))]);
-
-    idx_all = [r.VideoInfos_side.Index];
-    hand1_vid_idx = findSeq(idx_all,hand1_idx);
-    hand2_vid_idx = findSeq(idx_all,hand2_idx);
-    
-    hand1_press_time = [r.VideoInfos_side(hand1_vid_idx).Time];
-    hand2_press_time = [r.VideoInfos_side(hand2_vid_idx).Time];
-    
-    hand1_trigger_time = hand1_press_time+[r.VideoInfos_side(hand1_vid_idx).Foreperiod];
-    hand2_trigger_time = hand2_press_time+[r.VideoInfos_side(hand2_vid_idx).Foreperiod];
-    
-    hand1_release_time = hand1_trigger_time+[r.VideoInfos_side(hand1_vid_idx).ReactTime];
-    hand2_release_time = hand2_trigger_time+[r.VideoInfos_side(hand2_vid_idx).ReactTime];
-    
-    for k = 1:length(r.Units.SpikeTimes)
-        if r.Units.SpikeNotes(k,3) ~= 1
-            continue
-        end
-
-        count = count+1;
-
-        Neurons(count).spike_time = r.Units.SpikeTimes(k).timings;
-        Neurons(count).press_times{1} = hand1_press_time;
-        Neurons(count).press_times{2} = hand2_press_time;
-        Neurons(count).trigger_times{1} = hand1_trigger_time;
-        Neurons(count).trigger_times{2} = hand2_trigger_time;
-        Neurons(count).release_times{1} = hand1_release_time;
-        Neurons(count).release_times{2} = hand2_release_time;
-    end
-end
-
-save Neurons_hand.mat Neurons
+%% Uncomment this seciton to re-extract spike time
+% count = 0;
+% Neurons = [];
+% 
+% for r_idx = 1:length(r_hand_all)
+%     load(r_hand_all{r_idx})
+%     
+%     hand1_idx = getIndexVideoInfos(r,"Hand","Left","Performance","Correct");
+%     hand2_idx = getIndexVideoInfos(r,"Hand","Right_Both","Performance","Correct");
+%     disp(['Loading from file: ',r_hand_all{r_idx}]);
+%     disp(['Number of trials in hand 1: ',num2str(length(hand1_idx))]);
+%     disp(['Number of trials in hand 2: ',num2str(length(hand2_idx))]);
+% 
+%     idx_all = [r.VideoInfos_side.Index];
+%     hand1_vid_idx = findSeq(idx_all,hand1_idx);
+%     hand2_vid_idx = findSeq(idx_all,hand2_idx);
+%     
+%     hand1_press_time = [r.VideoInfos_side(hand1_vid_idx).Time];
+%     hand2_press_time = [r.VideoInfos_side(hand2_vid_idx).Time];
+%     
+%     hand1_trigger_time = hand1_press_time+[r.VideoInfos_side(hand1_vid_idx).Foreperiod];
+%     hand2_trigger_time = hand2_press_time+[r.VideoInfos_side(hand2_vid_idx).Foreperiod];
+%     
+%     hand1_release_time = hand1_trigger_time+[r.VideoInfos_side(hand1_vid_idx).ReactTime];
+%     hand2_release_time = hand2_trigger_time+[r.VideoInfos_side(hand2_vid_idx).ReactTime];
+%     
+%     for k = 1:length(r.Units.SpikeTimes)
+%         if r.Units.SpikeNotes(k,3) ~= 1
+%             continue
+%         end
+% 
+%         count = count+1;
+% 
+%         Neurons(count).spike_time = r.Units.SpikeTimes(k).timings;
+%         Neurons(count).press_times{1} = hand1_press_time;
+%         Neurons(count).press_times{2} = hand2_press_time;
+%         Neurons(count).trigger_times{1} = hand1_trigger_time;
+%         Neurons(count).trigger_times{2} = hand2_trigger_time;
+%         Neurons(count).release_times{1} = hand1_release_time;
+%         Neurons(count).release_times{2} = hand2_release_time;
+%     end
+% end
+% 
+% save Neurons_hand.mat Neurons
 %% Extract PETH
 clear
 load Neurons_hand.mat
@@ -84,11 +84,16 @@ psthPreffered_trigger = [];
 psthNonPreffered_trigger = [];
 psthPreffered_release = [];
 psthNonPreffered_release = [];
+preference_index_press = [];
+preference_index_trigger = [];
+preference_index_release = [];
+difference_index_press = [];
+difference_index_trigger = [];
+difference_index_release = [];
 for k = 1:length(Neurons)
-    [psth1_press, psth2_press, tpsth_press] = ExtractPETH(Neurons(k).spike_time,Neurons(k).press_times,params_press);
-    [psth1_trigger, psth2_trigger,  tpsth_trigger] = ExtractPETH(Neurons(k).spike_time,Neurons(k).trigger_times,params_trigger);
-    [psth1_release, psth2_release,  tpsth_release] = ExtractPETH(Neurons(k).spike_time,Neurons(k).release_times,params_release);
-
+    [psth1_press, psth2_press, tpsth_press, pi_press, diff_press] = ExtractPETH(Neurons(k).spike_time,Neurons(k).press_times,params_press);
+    [psth1_trigger, psth2_trigger,  tpsth_trigger, pi_trigger, diff_trigger] = ExtractPETH(Neurons(k).spike_time,Neurons(k).trigger_times,params_trigger);
+    [psth1_release, psth2_release,  tpsth_release, pi_release, diff_release] = ExtractPETH(Neurons(k).spike_time,Neurons(k).release_times,params_release);
 
     psthPreffered_press = [psthPreffered_press;psth1_press];
     psthNonPreffered_press = [psthNonPreffered_press;psth2_press];
@@ -96,7 +101,12 @@ for k = 1:length(Neurons)
     psthNonPreffered_trigger = [psthNonPreffered_trigger;psth2_trigger];
     psthPreffered_release = [psthPreffered_release;psth1_release];
     psthNonPreffered_release = [psthNonPreffered_release;psth2_release];
-
+    preference_index_press = [preference_index_press, pi_press];
+    preference_index_trigger = [preference_index_trigger, pi_trigger];
+    preference_index_release = [preference_index_release, pi_release];
+    difference_index_press = [difference_index_press, diff_press];
+    difference_index_trigger = [difference_index_trigger, diff_trigger];
+    difference_index_release = [difference_index_release, diff_release];
 end
 
 % sort by max response time
@@ -104,12 +114,6 @@ end
 [~, sort_idx] = sort(max_t);
 psthPreffered_press = psthPreffered_press(sort_idx,:);
 psthNonPreffered_press = psthNonPreffered_press(sort_idx,:);
-
-% % sort by modulated level
-% sum_diff = sum(abs(psthPreffered-psthNonPreffered),2);
-% [~, sort_idx] = sort(sum_diff);
-% psthPreffered = psthPreffered(sort_idx,:);
-% psthNonPreffered = psthNonPreffered(sort_idx,:);
 
 %% Make figures press PETH
 fig = EasyPlot.figure('Width',10,'Height',10);
@@ -236,4 +240,45 @@ EasyPlot.setXLabelColumn({ax_preferred,ax_nonpreferred},'Time from release (ms)'
 
 EasyPlot.cropFigure(fig)
 EasyPlot.exportFigure(fig,'HandReleasePETH','type','png','dpi',1200)
+%% Preferrence Index Histogram
+fig = EasyPlot.figure();
+ax_press = EasyPlot.createAxesAgainstFigure(fig,"leftTop",'Height',3,'Width',3,...
+    'MarginBottom',0.8,'MarginLeft',0.8);
+histogram(ax_press,preference_index_press,'BinWidth',0.1);
+xlabel('PI of press')
 
+ax_trigger = EasyPlot.createAxesAgainstAxes(fig,ax_press,'right','Height',3,'Width',3);
+histogram(ax_trigger,preference_index_trigger,'BinWidth',0.1);
+xlabel('PI of trigger')
+
+ax_release = EasyPlot.createAxesAgainstAxes(fig,ax_trigger,'right','Height',3,'Width',3);
+histogram(ax_release,preference_index_release,'BinWidth',0.1);
+xlabel('PI of release')
+
+EasyPlot.setXTicks({ax_press,ax_trigger,ax_release},[0,0.5,1]);
+EasyPlot.setXLim({ax_press,ax_trigger,ax_release},[0,1]);
+EasyPlot.setYLim({ax_press,ax_trigger,ax_release});
+EasyPlot.setYLabelRow({ax_press,ax_trigger,ax_release},'Number of neurons')
+EasyPlot.cropFigure(fig)
+EasyPlot.exportFigure(fig,'PreferenceIndexHistogramHand','dpi',1200);
+%% Preferrence Index Histogram
+fig = EasyPlot.figure();
+ax_press = EasyPlot.createAxesAgainstFigure(fig,"leftTop",'Height',3,'Width',3,...
+    'MarginBottom',0.8,'MarginLeft',0.8);
+histogram(ax_press,difference_index_press,'BinWidth',0.1);
+xlabel('PI of press')
+
+ax_trigger = EasyPlot.createAxesAgainstAxes(fig,ax_press,'right','Height',3,'Width',3);
+histogram(ax_trigger,difference_index_trigger,'BinWidth',0.1);
+xlabel('PI of trigger')
+
+ax_release = EasyPlot.createAxesAgainstAxes(fig,ax_trigger,'right','Height',3,'Width',3);
+histogram(ax_release,difference_index_release,'BinWidth',0.1);
+xlabel('PI of release')
+
+EasyPlot.setXTicks({ax_press,ax_trigger,ax_release},[-1,-0.5,0,0.5,1]);
+EasyPlot.setXLim({ax_press,ax_trigger,ax_release},[-1,1]);
+EasyPlot.setYLim({ax_press,ax_trigger,ax_release});
+EasyPlot.setYLabelRow({ax_press,ax_trigger,ax_release},'Number of neurons')
+EasyPlot.cropFigure(fig)
+EasyPlot.exportFigure(fig,'DifferenceIndexHistogramHand','dpi',1200);

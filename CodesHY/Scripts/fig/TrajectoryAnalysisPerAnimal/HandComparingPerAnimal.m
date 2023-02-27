@@ -1,9 +1,7 @@
-%% Meta Info
-
+%% Uncommented this section to get the figure from Chen
 % r_path = 'D:\Ephys\ANMs\Chen\Video\20220507_video\RTarrayAll.mat';
 % load(r_path)
 % ind_correct = find(strcmp({r.VideoInfos_side.Performance},'Correct'));
-% 
 % cat = {r.VideoInfos_side.Hand};
 % cat = cat(ind_correct);
 % vid_left_filename = 'D:\Ephys\ANMs\Chen\Video\20220507_video\VideoFrames_side\RawVideo\Press070.avi';
@@ -14,23 +12,22 @@
 % ntrial_raster = 30;
 % index_cat1 = find(strcmp(cat,'Left'));
 % index_cat2 = find(strcmp(cat,'Right'));
-
-r_path = 'D:\Ephys\ANMs\Russo\Sessions\20210908_video\RTarrayAll.mat';
-load(r_path)
-ind_correct = find(strcmp({r.VideoInfos_side.Performance},'Correct'));
-cat1 = {r.VideoInfos_side.Hand};
-cat1 = cat1(ind_correct);
-cat2 = [r.VideoInfos_top.Trajectory];
-index_cat1 = find(strcmp(cat1,'Left') & cat2==1);
-index_cat2 = find((strcmp(cat1,'Right') | strcmp(cat1,'Both')) & cat2==1);
-vid_left_filename = 'D:\Ephys\ANMs\Russo\Sessions\20210908_video\VideoFrames_side\RawVideo\Press070.avi';
-vid_right_filename = 'D:\Ephys\ANMs\Russo\Sessions\20210908_video\VideoFrames_side\RawVideo\Press012.avi';
-animal_name = 'Russo';
-unit_num = 3;
-event = 'press';
-ntrial_raster = 20;
-
-
+%% Uncommented this section to get the figure from Russo
+% r_path = 'D:\Ephys\ANMs\Russo\Sessions\20210908_video\RTarrayAll.mat';
+% load(r_path)
+% ind_correct = find(strcmp({r.VideoInfos_side.Performance},'Correct'));
+% cat1 = {r.VideoInfos_side.Hand};
+% cat1 = cat1(ind_correct);
+% cat2 = [r.VideoInfos_top.Trajectory];
+% index_cat1 = find(strcmp(cat1,'Left') & cat2==1);
+% index_cat2 = find((strcmp(cat1,'Right') | strcmp(cat1,'Both')) & cat2==1);
+% vid_left_filename = 'D:\Ephys\ANMs\Russo\Sessions\20210908_video\VideoFrames_side\RawVideo\Press070.avi';
+% vid_right_filename = 'D:\Ephys\ANMs\Russo\Sessions\20210908_video\VideoFrames_side\RawVideo\Press012.avi';
+% animal_name = 'Russo';
+% unit_num = 3;
+% event = 'press';
+% ntrial_raster = 20;
+%% 
 save_filename_pdf = ['./HandComparing_',animal_name,'.pdf'];
 save_filename_png = ['./HandComparing_',animal_name,'.png'];
 save_filename_eps = ['./HandComparing_',animal_name,'.eps'];

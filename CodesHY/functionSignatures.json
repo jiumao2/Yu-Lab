@@ -253,5 +253,14 @@
           {"name":"x", "kind":"required"},
           {"name":"y", "kind":"required"}
        ]
-    }    
+    },
+    
+    "preferenceIndex":
+    {
+       "inputs":
+       [
+          {"name":"preferredValue", "kind":"required", "type":"numeric"},
+          {"name":"nonpreferredValue", "kind":"required", "type":"numeric"}
+       ]
+    }
   }

@@ -1,11 +1,15 @@
-function varargout = plotshaded(x,y,fstr);
+function varargout = plotshaded(x,y,fstr, alphavar);
 % x: x coordinates
 % y: either just one y vector, or 2xN or 3xN matrix of y-data
 % fstr: format ('r' or 'b--' etc)
 %
 % example
 % x=[-10:.1:10];plotshaded(x,[sin(x.*1.1)+1;sin(x*.9)-1],'r');
- 
+
+if nargin<4
+    alphavar = 0.25;
+end;
+
 if size(y,1)>size(y,2)
     y=y';
 end;
@@ -27,4 +31,4 @@ if size(y,1)==3 % also draw mean
     plot(x,y(2,:),fstr);
 end;
  
-alpha(hpatch, .5); % make patch transparent
+alpha(hpatch, alphavar); % make patch transparent

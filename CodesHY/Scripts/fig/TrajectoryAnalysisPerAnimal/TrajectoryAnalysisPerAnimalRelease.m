@@ -1,17 +1,4 @@
-%% Meta Info
-% % Urey
-% r_path = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\RTarrayAll.mat';
-% vid_top_filename = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_top\RawVideo\Press007.avi';
-% vid_side_traj1_filename = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_side\RawVideo\Press056.avi';
-% vid_side_traj2_filename = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_side\RawVideo\Press055.avi';
-% animal_name = 'Urey';
-% unit_num = 1;
-% event = 'press';
-
-% Chen
-
-
-% % Davis
+%% Uncommented this section to get the figure from Davis
 % r_path = 'D:\Ephys\ANMs\Davis\Video\20220331_video\RTarrayAll.mat';
 % vid_top_filename = 'D:\Ephys\ANMs\Davis\Video\20220331_video\VideoFrames_top\RawVideo\Press047.avi';
 % vid_side_traj1_filename = 'D:\Ephys\ANMs\Davis\Video\20220331_video\VideoFrames_side\RawVideo\Press047.avi';
@@ -23,11 +10,7 @@
 % t_post = 1000;
 % ntrial_raster = 20;
 % rand_seed = 123;
-
-% Russo
-
-
-% Eli
+%% Uncommented this section to get the figure from Eli
 % r_path = 'D:\Ephys\ANMs\Eli\Sessions\20210923_video\RTarrayAll.mat';
 % vid_top_filename = 'D:\Ephys\ANMs\Eli\Sessions\20210923_video\VideoFrames_top\RawVideo\Press010.avi';
 % vid_side_traj1_filename = 'D:\Ephys\ANMs\Eli\Sessions\20210923_video\VideoFrames_side\RawVideo\Press010.avi';
@@ -39,7 +22,7 @@
 % t_post = 1000;
 % ntrial_raster = 14;
 % rand_seed = 123;
-
+%%
 load(r_path)
 
 save_filename_png = ['./TrajectoryAnalysis_',animal_name,'.png'];

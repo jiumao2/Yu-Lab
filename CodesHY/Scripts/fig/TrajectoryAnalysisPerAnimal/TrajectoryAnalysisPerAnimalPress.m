@@ -1,5 +1,4 @@
-%% Meta Info
-% % Urey
+% Urey 20211124
 r_path = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\RTarrayAll.mat';
 vid_top_filename = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_top\RawVideo\Press007.avi';
 vid_side_traj1_filename = 'D:\Ephys\ANMs\Urey\Videos\20211124_video\VideoFrames_side\RawVideo\Press056.avi';
@@ -8,26 +7,9 @@ animal_name = 'Urey';
 unit_num = 1;
 event = 'press';
 
-% Chen
-
-
-% Davis
-% r_path = 'D:\Ephys\ANMs\Davis\Video\20220331_video\RTarrayAll.mat';
-% vid_top_filename = 'D:\Ephys\ANMs\Davis\Video\20220331_video\VideoFrames_top\RawVideo\Press047.avi';
-% vid_side_traj1_filename = 'D:\Ephys\ANMs\Davis\Video\20220331_video\VideoFrames_side\RawVideo\Press047.avi';
-% vid_side_traj2_filename = 'D:\Ephys\ANMs\Davis\Video\20220331_video\VideoFrames_side\RawVideo\Press053.avi';
-% animal_name = 'Davis';
-% unit_num = 1;
-% event = 'release';
-
-% Russo
-
-
-% Eli
-
 load(r_path)
 
-save_filename_png = ['./TrajectoryAnalysis_',animal_name,'.png'];
+save_filename_png = ['./Fig1_TrajectoryAnalysis_',animal_name,'.png'];
 save_filename_pdf = ['./TrajectoryAnalysis_',animal_name,'.pdf'];
 save_filename_eps = ['./TrajectoryAnalysis_',animal_name,'.eps'];
 save_resolution = 1200;

@@ -281,6 +281,7 @@ for i = 1:length(all_inds)
     PSTH_PressAll = [PSTH_PressAll; psth_correctpressall];
     
     StatOut = ExamineTaskResponsive(tspkmatpressall, trialspxmatpressall);
+    StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
     PSTH_PressAllStat.StatOut(i)  = StatOut;
             
     [psth_correct{1}, ts{1}, trialspxmat{1}, tspkmat{1}] = jpsth(r.Units.SpikeTimes(ku).timings,  t_correctsorted{1}, params);
@@ -298,6 +299,7 @@ for i = 1:length(all_inds)
 %     psth_i = [psth_i psth_correct{1}];
     
     StatOut = ExamineTaskResponsive(tspkmat{1}, trialspxmat{1});
+    StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
     PSTH_PressStat{1}.StatOut(i) =  StatOut;
     
     [psth_correct{2}, ts{2}, trialspxmat{2}, tspkmat{2}] = jpsth(r.Units.SpikeTimes(ku).timings,  t_correctsorted{2}, params);
@@ -312,6 +314,7 @@ for i = 1:length(all_inds)
 %     psth_i = [psth_i psth_correct{2}];
     
     StatOut = ExamineTaskResponsive(tspkmat{2}, trialspxmat{2});
+    StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
     PSTH_PressStat{2}.StatOut(i) =  StatOut;
     
     
@@ -330,6 +333,7 @@ for i = 1:length(all_inds)
     PSTH_Trigger = [PSTH_Trigger; psth_goodtrigger];
     
     StatOut = ExamineTaskResponsive(tspkmat_goodtrigger, trialspxmat_goodtrigger);
+    StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
     PSTH_TriggerStat.StatOut(i) =  StatOut;
             
     [psth_badtrigger, ts_badtrigger, trialspxmat_badtrigger, tspkmat_badtrigger] = jpsth(r.Units.SpikeTimes(ku).timings, t_triggers_late, params);
@@ -358,6 +362,7 @@ for i = 1:length(all_inds)
     PSTH_ReleaseAll = [PSTH_ReleaseAll; psth_correctreleaseall];
     
     StatOut = ExamineTaskResponsive(tspkmatreleaseall, trialspxmatreleaseall);
+    StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
     PSTH_ReleaseAllStat.StatOut(i)  = StatOut;
         
     [psth_release_correct{1}, ts_release{1}, trialspxmat_release{1}, tspkmat_release{1}] = jpsth(r.Units.SpikeTimes(ku).timings,  trelease_correctsorted{1}, params);
@@ -374,6 +379,7 @@ for i = 1:length(all_inds)
     PSTH_Release{1} = [PSTH_Release{1}; psth_release_correct{1}];
 %     psth_i = [psth_i psth_release_correct{1}];
     StatOut = ExamineTaskResponsive(tspkmat_release{1}, trialspxmat_release{1});
+    StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
     PSTH_ReleaseStat{1}.StatOut(i) =  StatOut;
     
     if i==1
@@ -384,6 +390,7 @@ for i = 1:length(all_inds)
     PSTH_Release{2} = [PSTH_Release{2}; psth_release_correct{2}];
 %     psth_i = [psth_i psth_release_correct{2}];
      StatOut = ExamineTaskResponsive(tspkmat_release{2}, trialspxmat_release{2});
+     StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
     PSTH_ReleaseStat{2}.StatOut(i) =  StatOut;
     
     %     % premature press PSTH
@@ -417,6 +424,7 @@ for i = 1:length(all_inds)
     
     PSTH_Reward = [PSTH_Reward;psth_rew];
     StatOut = ExamineTaskResponsive(tspkmat_rew, trialspxmat_rew);
+    StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
     PSTH_RewardStat.StatOut(i) =  StatOut;
     %
     %     % bad poke PSTH
@@ -471,16 +479,17 @@ PSTHOut.Trigger                  =        PSTH_Trigger;
 PSTHOut.TriggerZ                =        PSTH_TriggerZ;
 PSTHOut.TriggerStat           =        PSTH_TriggerStat;
 
-save PSTHOut PSTHOut
+
+PSTHOut.IndSort = VisualizePSTHPopulation(PSTHOut);
+r.PopPSTH = PSTHOut;
+
+% save RTarrayAll r
+
+save('PopulationPSTH.mat', 'PSTHOut');
 
 % Save a copy of PSTHOut to a collector folder
 % thisFolder = fullfile(findonedrive, '\Work\Physiology\PSTHs');
-thisFolder = fullfile('A:\Ephys\PSTHs');
-if ~exist(thisFolder, 'dir')
-    mkdir(thisFolder)
-end
-tosavename= fullfile(thisFolder, ['PopulationPSTH' '_' PSTHOut.Name '_' strrep(PSTHOut.Session, '-', '_')]);
+% tosavename= fullfile(thisFolder, ['PopulationPSTH' '_' PSTHOut.Name '_' strrep(PSTHOut.Session, '-', '_')]);
 
-save(tosavename, 'PSTHOut')
-
+% save(tosavename, 'PSTHOut')
 VisualizePSTHPopulation(PSTHOut)
