@@ -39,6 +39,7 @@ blk_raster_template = uint8(255*ones(raster_height,raster_width,3));
 p = raster_space_top+1;
 for k = 1:unit_num
     temp = spiketime_seq{k};
+    temp = temp(temp>t_start & temp<t_end);
     if ~isempty(temp)
         temp = round((temp-t_start)/(t_end-t_start)*(raster_width-raster_space_left-raster_space_right)+raster_space_left);
         for spk = 1:length(temp)

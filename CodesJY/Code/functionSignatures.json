@@ -26,6 +26,16 @@
       ]
     },
 
+    "SRTSpikesPopulation":
+    {
+       "inputs":
+       [
+         {"name":"r", "kind":"required", "type":"struct"},
+         {"name":"FP_short", "kind":"namevalue", "type":"numeric"},
+         {"name":"FP_long", "kind":"namevalue", "type":"numeric"}
+      ]
+    },
+    
    "KornblumRamping":
     {
        "inputs":

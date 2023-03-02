@@ -30,7 +30,9 @@ tic
 FRrange = [];
 printname = [];
 printsize = [2 2 20 16];
-tosave =1;
+tosave = 1;
+FP_short = 750;
+FP_long = 1500;
 if nargin>2
     for i=1:2:size(varargin,2)
         switch varargin{i}
@@ -42,6 +44,10 @@ if nargin>2
                 printsize = varargin{i+1};
             case 'tosave'
                 tosave = varargin{i+1};
+            case 'FP_short'
+                FP_short = varargin{i+1};
+            case 'FP_long'
+                FP_long = varargin{i+1};
             otherwise
                 errordlg('unknown argument')
         end
@@ -111,14 +117,14 @@ for i = 1:length(t_triggers)
         % check if it is short or long FP
         ilapse = it_trigger-t_correctpresses(indminrelease);
         
-        if abs(ilapse-750)<abs(ilapse-1500)
+        if abs(ilapse-FP_short)<abs(ilapse-FP_long)
             t_trigger_short_correct = [t_trigger_short_correct; it_trigger];
-            dt=[dt min(ilapse)-750];
-            plot(it_trigger-750, 4.8, 'r^');
+            dt=[dt min(ilapse)-FP_short];
+            plot(it_trigger-FP_short, 4.8, 'r^');
         else
             t_trigger_long_correct = [t_trigger_long_correct; it_trigger];
-            dt=[dt min(ilapse)-1500];
-            plot(it_trigger-1500, 4.8, 'r^');
+            dt=[dt min(ilapse)-FP_long];
+            plot(it_trigger-FP_long, 4.8, 'r^');
         end;
     else
         % trigger followed by late release
@@ -212,18 +218,18 @@ text(-1000,  2.1, 'Reward', 'color', 'c')
 set(gca, 'ylim', [0.5 3.5], 'xlim', [-5000 max(get(gca, 'xlim'))])
 
 % get correct response 0.75 sec, and 1.5 sec
-t_correctsorted{1}      =   t_correctpresses(FPs_correctpresses == 750);
-t_correctsorted{2}      =   t_correctpresses(FPs_correctpresses == 1500);
+t_correctsorted{1}      =   t_correctpresses(FPs_correctpresses == FP_short);
+t_correctsorted{2}      =   t_correctpresses(FPs_correctpresses == FP_long);
 
-trelease_correctsorted{1}      =   t_correctreleases(FPs_correctpresses == 750);
-trelease_correctsorted{2}      =   t_correctreleases(FPs_correctpresses == 1500);
+trelease_correctsorted{1}      =   t_correctreleases(FPs_correctpresses == FP_short);
+trelease_correctsorted{2}      =   t_correctreleases(FPs_correctpresses == FP_long);
 
-rt_correctsorted{1}     =   rt_correct(FPs_correctpresses == 750);
+rt_correctsorted{1}     =   rt_correct(FPs_correctpresses == FP_short);
 [rt_correctsorted{1}, indsort] =  sort(rt_correctsorted{1});
 t_correctsorted{1} = t_correctsorted{1}(indsort);
 trelease_correctsorted{1} = trelease_correctsorted{1}(indsort);
 
-rt_correctsorted{2}     =   rt_correct(FPs_correctpresses == 1500);
+rt_correctsorted{2}     =   rt_correct(FPs_correctpresses == FP_long);
 [rt_correctsorted{2}, indsort] =  sort(rt_correctsorted{2});
 t_correctsorted{2} = t_correctsorted{2}(indsort);
 trelease_correctsorted{2} = trelease_correctsorted{2}(indsort);
