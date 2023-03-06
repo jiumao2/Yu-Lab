@@ -199,8 +199,7 @@
        [
           {"name":"r", "kind":"required", "type":"struct"},
           {"name":"unit_num", "kind":"required", "type":"numeric"},
-          {"name":"press_indexes", "kind":"required", "type":"numeric"},
-          {"name":"bg", "kind":"required", "type":"logical"},
+          {"name":"trajectory", "kind":"namevalue", "type":"numeric"},
           {"name":"save_dir", "kind":"namevalue", "type":"char"},
           {"name":"binwidth", "kind":"namevalue", "type":"numeric"},
           {"name":"gaussian_kernel", "kind":"namevalue", "type":"numeric"},
@@ -262,5 +261,17 @@
           {"name":"preferredValue", "kind":"required", "type":"numeric"},
           {"name":"nonpreferredValue", "kind":"required", "type":"numeric"}
        ]
-    }
+    },
+
+    "getGraphFiringRate":
+    {
+      "inputs":
+      [
+         {"name":"x", "kind":"required", "type":"numeric"},
+         {"name":"y", "kind":"required", "type":"numeric"},
+         {"name":"traj_all", "kind":"required", "type":"cell"},
+         {"name":"firing_rate_all", "kind":"required", "type":"cell"},
+         {"name":"gaussian_kernel", "kind":"required", "type":"numeric"}
+      ]
+   }
   }

@@ -45,11 +45,10 @@ for k = 1:height(spikeTable)
 
     wf = getWaveforms(gwfparams);
     
-    amp_ch = max(squeeze(wf.waveFormsMean),[],2)-min(squeeze(wf.waveFormsMean),[],2);
-    [~, ch_amp_largest] = max(amp_ch);
-    ch_tbl{k} = ch_amp_largest;
+%     ch_tbl{k} = ch_amp_largest;
+    ch_tbl{k} = spikeTable(k,:).ch;
     
-    waveforms_tbl{k} = squeeze(wf.waveForms(:,:,ch_amp_largest,:));
+    waveforms_tbl{k} = squeeze(wf.waveForms(:,:,ch_tbl{k},:));
     waveforms_mean_tbl{k} = squeeze(wf.waveFormsMean);
     
     toc
@@ -135,15 +134,17 @@ KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
 KilosortOutput.save();
 
 %% Uncommenented correspoding segment to build R
+clear;
+load KilosortOutput.mat
 
 % % For 2FPs (750/1500): 
 % KilosortOutput.buildR(...
 %     'KornblumStyle', false,...
-%     'Subject', 'West',...
+%     'Subject', 'Max',...
 %     'blocks', {'datafile001.nev','datafile002.nev'},...
 %     'Version', 'Version4',...
 %     'BpodProtocol', 'OptoRecording',...
-%     'Experimenter', 'HY');
+%     'Experimenter', 'ZQ');
 
 % % For 2FPs (500/1000): 
 % KilosortOutput.buildR(...
@@ -173,6 +174,7 @@ load RTarrayAll.mat
 % end
 
 % % For 2FPs (750/1500):
+% SRTSpikesPopulation(r);
 % for k = 1:length(r.Units.SpikeTimes)
 %     SRTSpikesV5_unsorted(r,k);
 %     SRTSpikesV5(r,k);

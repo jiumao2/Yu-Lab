@@ -1,13 +1,14 @@
-function TrajectoryCell(r,unit_num,press_indexes,bg,varargin)
-    save_dir = './';
-    n_post_framenum = 0;
-    n_pre_framenum = 0;
+function TrajectoryCell(r,unit_num,varargin)
+    save_dir = './Fig/';
+    n_post_framenum = 20;
+    n_pre_framenum = 20;
     binwidth = 1;
     gaussian_kernel = 25;
     color_max_percentage = 1.00;
     color_min_percentage = 0.00;
-    save_fig = 'off';
-    if nargin>=5
+    save_fig = 'on';
+    traj = 'All';
+    if nargin>2
         for i=1:2:size(varargin,2)
             switch varargin{i}
                 case 'save_dir'
@@ -26,60 +27,40 @@ function TrajectoryCell(r,unit_num,press_indexes,bg,varargin)
                     n_post_framenum =  varargin{i+1};
                 case 'save_fig'
                     save_fig =  varargin{i+1};
+                case 'trajectory'
+                    traj = varargin{i+1};
                 otherwise
-                    errordlg('unknown argument')
+                    error('Unknown argument!')
             end
         end
     end
     
-    save_resolution = 1200;
-    bodypart = 'left_paw';
-    idx_bodypart = find(strcmp(r.VideoInfos_side(1).Tracking.BodyParts,bodypart));
-    marker_size = 30;
+    marker_size = 10;
     colors_num = 256;
+    alpha_point = 0.3;
     colors = parula(256);
-
-    h0 = figure('Renderer','opengl');
-    ax0 = axes(h0,'NextPlot','add');
-    image(ax0,bg);
-    set(ax0,'YDir','reverse','XLim',[0,size(bg,2)],'YLim',[0,size(bg,1)])
-    title(ax0,'All');
-    c0 = colorbar();
-    ylabel(c0,'Normalized firing rate','FontSize',10);
-    ax0.XAxis.Visible = 'off';ax0.YAxis.Visible = 'off';
+    %% load firing rate
+    idx_bodypart = find(strcmp(r.VideoInfos_side(1).Tracking.BodyParts, 'left_paw'));
     
-    h0_realigned = figure('Renderer','opengl');
-    ax0_realigned = axes(h0_realigned,'NextPlot','add');
-    image(ax0_realigned,bg);
-    set(ax0_realigned,'YDir','reverse','XLim',[0,size(bg,2)],'YLim',[0,size(bg,1)])
-    title(ax0_realigned,'All (realigned)');
-    c0_realigned = colorbar();
-    ylabel(c0_realigned,'Normalized firing rate','FontSize',10);
-    ax0_realigned.XAxis.Visible = 'off';ax0_realigned.YAxis.Visible = 'off';
+    press_indexes = getIndexVideoInfos(r,"LiftStartTimeLabeled","On","Hand","Left","Trajectory",traj);
+    example_idx = press_indexes(1);
+    vid_path = ['.\VideoFrames_side\RawVideo\Press',num2str(example_idx,'%03d'),'.avi'];
 
-    h0_yt = figure('Renderer','opengl');
-    ax0_yt = axes(h0_yt,'NextPlot','add');
-    set(ax0_yt,'YDir','reverse','XDir','reverse')
-    title(ax0_yt,'All (y vs t)');
-    c0_yt = colorbar();
-    ylabel(c0_yt,'Normalized firing rate','FontSize',10);
-    ax0_yt.XAxis.Visible = 'off';ax0_yt.YAxis.Visible = 'off';
-    
     idx_all = [r.VideoInfos_side.Index];
     vid_press_idx = findSeq(idx_all,press_indexes);
-
+    lift_times = [r.VideoInfos_side(vid_press_idx).LiftStartTime];
+    press_times = [r.VideoInfos_side(vid_press_idx).Time];
+    
     firing_rate_all_flattened = [];
     firing_rate_all = cell(length(press_indexes),1);
     t_all = cell(length(press_indexes),1);
     traj_all = cell(length(press_indexes),1);
-    traj_all_realigned = cell(length(press_indexes),1);
-    traj_all_yt = cell(length(press_indexes),1);
     highest_point = zeros(length(press_indexes),2);
+    highest_time = zeros(length(press_indexes),1);
     frame_num_all = zeros(1,length(press_indexes));
-
-    firing_rate_threshold = -0.1;
+    
     [spike_counts, t_spike_counts] = bin_timings(r.Units.SpikeTimes(unit_num).timings, binwidth);
-    spike_counts_all = smoothdata(spike_counts,'gaussian',gaussian_kernel*5)./binwidth*1000;
+    spike_density = smoothdata(spike_counts,'gaussian',gaussian_kernel*5)./binwidth*1000;
     for k = 1:length(vid_press_idx)
         % deal with bad tracking
         frame_start = r.VideoInfos_side(vid_press_idx(k)).LiftStartFrameNum;
@@ -87,216 +68,177 @@ function TrajectoryCell(r,unit_num,press_indexes,bg,varargin)
                 && r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_p{idx_bodypart}(frame_start-1) > 0.8
             frame_start = frame_start-1;
         end
-
+    
         frame_end = round(-r.VideoInfos_side(vid_press_idx(k)).t_pre/10+n_post_framenum);
         
         frame_num_temp = frame_start:frame_end;
         [~, i_maxy] = min(r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_y{idx_bodypart}(frame_num_temp));
         frame_num = frame_num_temp(1:(i_maxy+n_post_framenum));
         frame_num_all(k) = length(frame_num);
-
+    
+        highest_time(k) = r.VideoInfos_side(vid_press_idx(k)).VideoFrameTime(frame_num(i_maxy));
+    
         times_this = r.VideoInfos_side(vid_press_idx(k)).VideoFrameTime(frame_num);
         traj_all{k} = [r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_x{idx_bodypart}(frame_num),...
             r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_y{idx_bodypart}(frame_num)]';
         highest_point(k,:) = traj_all{k}(:,end-n_post_framenum)';
         t_all{k} = (0:10:10*(length(frame_num)-1))-10*(i_maxy-1);
         
-        firing_rate_this = getFiringRate_spike_train(spike_counts_all,t_spike_counts,times_this,binwidth);
-        firing_rate_all_flattened = [firing_rate_all_flattened,firing_rate_this];
-        firing_rate_all{k} = firing_rate_this;
+        idx_temp = findSeq(t_spike_counts, times_this, 'ordered');
+        firing_rate_all{k} = spike_density(idx_temp);
+        firing_rate_all_flattened = [firing_rate_all_flattened, firing_rate_all{k}];
     end
-    mean_highest_point = mean(highest_point);
-    for k = 1:length(vid_press_idx)
-        traj_all_realigned{k} = traj_all{k}-highest_point(k,:)'+mean_highest_point';
-        traj_all_yt{k} = [t_all{k};traj_all{k}(2,:)];
-    end
-
-    mean_traj = getMeanTrajectory(traj_all, round(mean(frame_num_all)));
-
-    firing_rate_all_flattened = sort(firing_rate_all_flattened);
-    firing_rate_max = firing_rate_all_flattened(floor(length(firing_rate_all_flattened)*color_max_percentage));
-    firing_rate_min = firing_rate_all_flattened(ceil(length(firing_rate_all_flattened)*color_min_percentage)+1);
-
-    for k = 1:length(vid_press_idx)
-        firing_rate_this = firing_rate_all{k};
-        firing_rate_this = (firing_rate_this-firing_rate_min)./(firing_rate_max-firing_rate_min);
-        firing_rate_this(firing_rate_this>1)=1;firing_rate_this(firing_rate_this<0)=0;
-        colors_this = colors(round(firing_rate_this*(colors_num-1)+1),:);
-        s = scatter(ax0,traj_all{k}(1,firing_rate_this>firing_rate_threshold),...
-            traj_all{k}(2,firing_rate_this>firing_rate_threshold),...
-            marker_size,...
-            colors_this(firing_rate_this>firing_rate_threshold,:),'filled');
-        alpha(s,0.5);
-    end
-
-    for k = 1:length(vid_press_idx)
-        firing_rate_this = firing_rate_all{k};
-        firing_rate_this = (firing_rate_this-firing_rate_min)./(firing_rate_max-firing_rate_min);
-        firing_rate_this(firing_rate_this>1)=1;firing_rate_this(firing_rate_this<0)=0;
-        colors_this = colors(round(firing_rate_this*(colors_num-1)+1),:);
-        s = scatter(ax0_realigned,traj_all_realigned{k}(1,firing_rate_this>firing_rate_threshold),...
-            traj_all_realigned{k}(2,firing_rate_this>firing_rate_threshold),...
-            marker_size,...
-            colors_this(firing_rate_this>firing_rate_threshold,:),'filled');
-        alpha(s,0.5);
-    end    
     
-    for k = 1:length(vid_press_idx)
-        firing_rate_this = firing_rate_all{k};
-        firing_rate_this = (firing_rate_this-firing_rate_min)./(firing_rate_max-firing_rate_min);
-        firing_rate_this(firing_rate_this>1)=1;firing_rate_this(firing_rate_this<0)=0;
-        colors_this = colors(round(firing_rate_this*(colors_num-1)+1),:);
-        s = scatter(ax0_yt,t_all{k}(firing_rate_this>firing_rate_threshold),...
-            traj_all{k}(2,firing_rate_this>firing_rate_threshold),...
-            marker_size,...
-            colors_this(firing_rate_this>firing_rate_threshold,:),'filled');
-        alpha(s,0.5);
-    end  
-    %% Confirming Lift-related cell
-    h_lift = figure('Renderer','opengl','Units','centimeters','Position',[10,10,12,4]);
-    ax_lift_start = axes(h_lift,'NextPlot','add','Units','centimeters','Position',[0.5,0.5,3,3]);
-    ax_lift_highest = axes(h_lift,'NextPlot','add','Units','centimeters','Position',[4.5,0.5,3,3]);
-    ax_press = axes(h_lift,'NextPlot','add','Units','centimeters','Position',[8.5,0.5,3,3]);
+    sorted_fr = sort(firing_rate_all_flattened);
+    max_fr = sorted_fr(round((length(sorted_fr)-1)*color_max_percentage+1));
+    min_fr = sorted_fr(round((length(sorted_fr)-1)*color_min_percentage+1));
 
-    lift_times = [r.VideoInfos_side(vid_press_idx).LiftStartTime];
-    press_times = [r.VideoInfos_side(vid_press_idx).Time];
-
-    lift_highest_times = zeros(1,length(vid_press_idx));
-    for k = 1:length(vid_press_idx)
-        frame_num_temp = r.VideoInfos_side(vid_press_idx(k)).LiftStartFrameNum:round(-r.VideoInfos_side(vid_press_idx(k)).t_pre/10);
-        [~, i_maxy] = min(r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_y{idx_bodypart}(frame_num_temp));
-        lift_highest_times(k) = r.VideoInfos_side(vid_press_idx(k)).VideoFrameTime(r.VideoInfos_side(vid_press_idx(k)).LiftStartFrameNum+i_maxy-1);
-    end
+    %% Figure A
+    fig_peth = EasyPlot.figure();
+    ax_lift_start = EasyPlot.createAxesAgainstFigure(fig_peth,'leftTop',...
+        'Height',3,...
+        'Width',3,...
+        'MarginLeft',0.8,...
+        'MarginBottom',0.8);
+    ax_lift_highest = EasyPlot.createAxesAgainstAxes(fig_peth,ax_lift_start,'right',...
+        'MarginLeft',0.5);
+    ax_press = EasyPlot.createAxesAgainstAxes(fig_peth,ax_lift_highest,'right',...
+        'MarginLeft',0.5);
+    ax_raster = EasyPlot.createAxesAgainstAxes(fig_peth,ax_press,'right',...
+        'MarginLeft',0.8);
 
     params_lift.pre = 1000;
     params_lift.post = 1000;
     params_lift.binwidth = 20;
-    params_press.pre = 2000;
-    params_press.post = 0;
+    params_press.pre = 1500;
+    params_press.post = 500;
     params_press.binwidth = 20;
+
     [psth_lift,t_psth_lift] = jpsth(r.Units.SpikeTimes(unit_num).timings,lift_times',params_lift);
-    [psth_lift_highest,t_psth_lift_highest] = jpsth(r.Units.SpikeTimes(unit_num).timings,lift_highest_times',params_lift);
+    [psth_lift_highest,t_psth_lift_highest] = jpsth(r.Units.SpikeTimes(unit_num).timings,highest_time,params_lift);
     [psth_press,t_psth_press] = jpsth(r.Units.SpikeTimes(unit_num).timings,press_times',params_press);
     psth_lift = smoothdata(psth_lift,'gaussian',5);
     psth_lift_highest = smoothdata(psth_lift_highest,'gaussian',5);
     psth_press = smoothdata(psth_press,'gaussian',5);
 
-    plot(ax_lift_start,t_psth_lift,psth_lift)
+    plot(ax_lift_start,t_psth_lift,psth_lift);
+    xline(ax_lift_start,0);
     title(ax_lift_start,'Lift')
     xlabel(ax_lift_start,'Time from lift (ms)')
+    ylabel(ax_lift_start, 'Firing rate (Hz)')
 
-    plot(ax_lift_highest,t_psth_lift_highest,psth_lift_highest)
+    plot(ax_lift_highest,t_psth_lift_highest,psth_lift_highest);
+    xline(ax_lift_highest,0);
     title(ax_lift_highest,'Lift highest')
     xlabel(ax_lift_highest,'Time from lift highest (ms)')
 
-    plot(ax_press,t_psth_press,psth_press)
+    plot(ax_press,t_psth_press,psth_press);
+    xline(ax_press,0);
     title(ax_press,'Press')
     xlabel(ax_press,'Time from press (ms)')
-    ylim_max = max([ax_lift_start.YLim(2),ax_press.YLim(2),ax_lift_highest.YLim(2)]);
-    ylim(ax_lift_start,[0,ylim_max]);ylim(ax_press,[0,ylim_max]);ylim(ax_lift_highest,[0,ylim_max]);
-
+    EasyPlot.setYLim({ax_lift_start,ax_lift_highest,ax_press});
     
-    gaussian_kernel = 100;
+    [~, idx_sorted] = sort(highest_time'-lift_times);
+    for k = 1:length(idx_sorted)
+        highest_time_this = highest_time(idx_sorted(k));
+        start_time_this = lift_times(idx_sorted(k));
+        press_time_this = press_times(idx_sorted(k));
 
-    h_h2_heatmap = figure('Renderer','opengl');
-    ax_h2_heatmap = axes(h_h2_heatmap,'NextPlot','add');
-    title(ax_h2_heatmap,'Heatmap');
-    set(ax_h2_heatmap,'YDir','reverse')
-    ax_h2_heatmap.XAxis.Visible = 'off';ax_h2_heatmap.YAxis.Visible = 'off';
-    colorbar(ax_h2_heatmap,'Limits',[0,1]);
-    x = 1:5:size(bg,2);
-    y = 1:5:size(bg,1);
-    [X,Y] = meshgrid(x,y);
-    z = zeros(length(x),length(y));
-    for k = 1:length(x)
-        for j = 1:length(y)
-            z(k,j) = getGraphFiringRate(x(k),y(j),traj_all,firing_rate_all,gaussian_kernel);
-        end
-    end
-    z = (z-firing_rate_min)./(firing_rate_max-firing_rate_min);
-    z(z>1)=1;z(z<0)=0;
-    imagesc(ax_h2_heatmap,z','XData',x,'YData',y);
-    ax_h2_heatmap.CLim = [0,1];
+        spk_time = r.Units.SpikeTimes(unit_num).timings(start_time_this-params_lift.pre<=r.Units.SpikeTimes(unit_num).timings &...
+            start_time_this+params_lift.post>=r.Units.SpikeTimes(unit_num).timings);
+        spk_time = spk_time - start_time_this;
+        if ~isempty(spk_time)
+            numspikes=length(spk_time);
+            xx=ones(3*numspikes,1)*nan;
+            yy=ones(3*numspikes,1)*nan;
     
-    h_h2_heatmap_realigned = figure('Renderer','opengl');
-    ax_h2_heatmap_realigned = axes(h_h2_heatmap_realigned,'NextPlot','add');
-    title(ax_h2_heatmap_realigned,'Heatmap (realigned)');
-    set(ax_h2_heatmap_realigned,'YDir','reverse')
-    ax_h2_heatmap_realigned.XAxis.Visible = 'off';ax_h2_heatmap_realigned.YAxis.Visible = 'off';
-    colorbar(ax_h2_heatmap_realigned,'Limits',[0,1]);
-    x = 1:5:size(bg,2);
-    y = 1:5:size(bg,1);
-    [X,Y] = meshgrid(x,y);
-    z = zeros(length(x),length(y));
-    for k = 1:length(x)
-        for j = 1:length(y)
-            z(k,j) = getGraphFiringRate(x(k),y(j),traj_all_realigned,firing_rate_all,gaussian_kernel);
+            yy(1:3:3*numspikes)=-0.5+k;
+            yy(2:3:3*numspikes)=yy(1:3:3*numspikes)+1;
+            xx(1:3:3*numspikes)=spk_time;
+            xx(2:3:3*numspikes)=spk_time;     
+            
+            plot(ax_raster,xx,yy,'-k');  
         end
+        t_highest_this = highest_time_this-start_time_this;
+        t_press_this = press_time_this-start_time_this;
+        plot(ax_raster,[t_highest_this,t_highest_this],[-0.5+k,0.5+k],'-','Color','m');
+        plot(ax_raster,[t_press_this,t_press_this],[-0.5+k,0.5+k],'-','Color','g');
     end
-    z = (z-firing_rate_min)./(firing_rate_max-firing_rate_min);
-    z(z>1)=1;z(z<0)=0;
-    imagesc(ax_h2_heatmap_realigned,z','XData',x,'YData',y);
-    ax_h2_heatmap_realigned.CLim = [0,1];
+    xlim(ax_raster, [-params_lift.pre, params_lift.post]);
+    ylim(ax_raster, [0.5, length(vid_press_idx)+0.5]);
+    ylabel(ax_raster, 'Trials')
+    xlabel(ax_raster, 'Time from lift start (ms)')
+    title('Raster')
 
-    h_h2_heatmap_yt = figure('Renderer','opengl');
-    ax_h2_heatmap_yt = axes(h_h2_heatmap_yt,'NextPlot','add');
-    title(ax_h2_heatmap_yt,'Heatmap (y vs t)');
-    set(ax_h2_heatmap_yt,'YDir','reverse','XDir','reverse');
-    ax_h2_heatmap_yt.XAxis.Visible = 'off';ax_h2_heatmap_yt.YAxis.Visible = 'off';
-    colorbar(ax_h2_heatmap_yt,'Limits',[0,1]);
-    x = ax0_yt.XLim(1):5:ax0_yt.XLim(2);
-    y = ax0_yt.YLim(1):5:ax0_yt.YLim(2);
-    [X,Y] = meshgrid(x,y);
-    z = zeros(length(x),length(y));
-    for k = 1:length(x)
-        for j = 1:length(y)
-            z(k,j) = getGraphFiringRate(x(k),y(j),traj_all_yt,firing_rate_all,gaussian_kernel);
-        end
+    %% Figure B
+    ax_traj = EasyPlot.createAxesAgainstAxes(fig_peth,ax_lift_start,'bottom',...
+        'MarginTop',1,...
+        'MarginBottom',0.8,...
+        "MarginLeft",1,...
+        'YDir','reverse',...
+        'Height',5,...
+        'Width',5);
+    ax_traj.XAxis.Visible = 'off';
+    ax_traj.YAxis.Visible = 'off';
+    
+    ax_yt = EasyPlot.createAxesAgainstAxes(fig_peth, ax_traj,'right',...
+        'Width',5,...
+        'MarginLeft',2.3,...
+        'YDir','reverse');
+    
+    % traj
+    vid_obj = VideoReader(vid_path);
+    bg = vid_obj.read(round(-r.VideoInfos_side(example_idx).t_pre/10));
+    image(ax_traj, bg);
+    xlim(ax_traj, [0,size(bg,2)])
+    ylim(ax_traj, [0,size(bg,1)])
+    title(ax_traj, [...
+        r.Meta(1).Subject,' ',...
+        datestr(r.Meta(1).DateTime,'yyyymmdd'),...
+        ' Unit ',num2str(unit_num)]);
+    
+    for k = 1:length(vid_press_idx)
+        colors_this = colors(fr_mapping(firing_rate_all{k}, max_fr, min_fr, colors_num),:);
+        s = scatter(ax_traj,traj_all{k}(1,:),...
+            traj_all{k}(2,:),...
+            marker_size,...
+            colors_this,'filled');
+        alpha(s, alpha_point);
     end
-    z = (z-firing_rate_min)./(firing_rate_max-firing_rate_min);
-    z(z>1)=1;z(z<0)=0;
-    imagesc(ax_h2_heatmap_yt,z','XData',x,'YData',y);
-    ax_h2_heatmap_yt.CLim = [0,1];
-    xlim(ax_h2_heatmap_yt,ax0_yt.XLim);
-    ylim(ax_h2_heatmap_yt,ax0_yt.YLim);
+    
+    % yt
+    for k = 1:length(vid_press_idx)
+        colors_this = colors(fr_mapping(firing_rate_all{k}, max_fr, min_fr, colors_num),:);
+        s = scatter(ax_yt,t_all{k},...
+            traj_all{k}(2,:),...
+            marker_size,...
+            colors_this,'filled');
+        alpha(s, alpha_point);
+    end
+
+    EasyPlot.colorbar(ax_yt,...
+        "label",'Normalized firing rate',...
+        'MarginRight',0.8);
+    ylabel(ax_yt, 'Pixels');
+    xlabel(ax_yt, 'Time from lift highest (ms)');
+    ax_yt.Position(3) = 5;
+    
+    EasyPlot.cropFigure(fig_peth);
 
     %% Save Figure
     if strcmp(save_fig,'on')
         if ~exist(save_dir,'dir')
             mkdir(save_dir)
         end
-        print(h0,fullfile(save_dir,'traj_all'),'-dpng',['-r',num2str(save_resolution)])
-        print(h0_realigned,fullfile(save_dir,'traj_all_realigned'),'-dpng',['-r',num2str(save_resolution)])
-        print(h0_yt,fullfile(save_dir,'traj_all_yt'),'-dpng',['-r',num2str(save_resolution)])
-        print(h_lift,fullfile(save_dir,'PETH'),'-dpng',['-r',num2str(save_resolution)])
-%         print(h_h1,fullfile(save_dir,'time'),'-dpng',['-r',num2str(save_resolution)])
-%         print(h_h2,fullfile(save_dir,'position'),'-dpng',['-r',num2str(save_resolution)])
-        print(h_h2_heatmap,fullfile(save_dir,'position_heatmap'),'-dpng',['-r',num2str(save_resolution)])
-        print(h_h2_heatmap_realigned,fullfile(save_dir,'position_heatmap_realigned'),'-dpng',['-r',num2str(save_resolution)])
-        print(h_h2_heatmap_yt,fullfile(save_dir,'position_heatmap_yt'),'-dpng',['-r',num2str(save_resolution)])
-%         print(h_h2_2,fullfile(save_dir,'position_points_number'),'-dpng',['-r',num2str(save_resolution)])
-%         print(h_h3,fullfile(save_dir,'warped_time'),'-dpng',['-r',num2str(save_resolution)])
-%         print(h_h4,fullfile(save_dir,'time (highest)'),'-dpng',['-r',num2str(save_resolution)])
-%         print(h_all,fullfile(save_dir,'comparison'),'-dpng',['-r',num2str(save_resolution)])
+        EasyPlot.exportFigure(fig_peth,fullfile(save_dir,['Fig01_LiftPETHUnit',num2str(unit_num)]),'type','png','dpi',1200);
+%         EasyPlot.exportFigure(fig_peth,fullfile(save_dir,['Fig01_LiftPETHUnit',num2str(unit_num)]),'type','eps','dpi',1200);
     end
+
 end
 
-function firing_rate = getGraphFiringRate(x,y,traj_all,firing_rate_all,gaussian_kernel)
-    traj_all_flattened = [];
-    firing_rate_all_flattened = [];
-    for k = 1:length(traj_all)
-        traj_all_flattened = [traj_all_flattened,traj_all{k}];
-        firing_rate_all_flattened = [firing_rate_all_flattened,firing_rate_all{k}];
-    end
-
-    gaussian_value = mvnpdf(traj_all_flattened',[x,y],gaussian_kernel*eye(2));
-    gaussian_value(gaussian_value<1e-6) = 0;
-    if sum(gaussian_value>0) <= 5
-        gaussian_value(gaussian_value>0) = 0;
-    end
-    if sum(gaussian_value) < 1e-5
-        firing_rate = 0;
-    else
-        firing_rate = dot(firing_rate_all_flattened,gaussian_value)./sum(gaussian_value);
-    end
+function out = fr_mapping(fr, max_fr, min_fr, colors_num)
+    out = (fr-min_fr)/(max_fr-min_fr);
+    out(out<0) = 0;
+    out(out>1) = 1;
+    out = round(out*(colors_num-1)+1);
 end

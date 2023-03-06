@@ -483,8 +483,8 @@ classdef KilosortOutputClass<handle
         
         function waveforms = getWaveforms(obj, unit_num, n_waveforms)
             % waveforms: NspikesxNchannelxLengthWaveform
-            [~,name,ext] = fileparts(obj.ParamsKilosort.fproc);
-            gwfparams.dataDir = './kilosort2_5_output/';    % KiloSort/Phy output folder
+            [filepath,name,ext] = fileparts(obj.ParamsKilosort.fproc);
+            gwfparams.dataDir = filepath;    % KiloSort/Phy output folder
             gwfparams.fileName = [name, ext];         % .dat file containing the raw 
             gwfparams.dataType = 'int16';            % Data type of .dat file (this should be BP filtered)
             gwfparams.nCh = obj.ParamsKilosort.Nchan;                      % Number of channels that were streamed to disk in .dat file

@@ -33,11 +33,11 @@
 
 ## Data process pipeline
 - Move the directory with your data to SSD. (faster)
-- Move the file `kilosort.ipynb` to your data directory.
+- Move the file `kilosort.ipynb` to your data directory (`kilosortTetrodes.ipynb` for tetrodes).
 - Open `kilosort.ipynb` in VS Code and set the kernal to `spikeinterface`. Modify the codes by following the instructions.
 - Do munual curation with [Phy](https://phy.readthedocs.io/en/latest/clustering/). Open 'Anaconda prompt'. First enter the output directory and run `phy template-gui params.py`.
 - Following the pipeline. Watch phy tutorial [here](https://www.youtube.com/watch?v=czdwIr-v5Yc). ![](phy_pipeline.png)
-- Copy `BuildSpikeTable.m` to data folder, edit key parameters and run. A new class object `KilosortOuput` will be generated. 
+- Copy `BuildSpikeTable.m` (`BuildSpikeTableTetrodes.m` for tetrodes) to data folder, edit key parameters and run. A new class object `KilosortOuput` will be generated. 
 - Run `KilosortOutput.BuildR()` to build `r`.
 
 
@@ -60,3 +60,6 @@
 |ops.mat|               struct                                          |Kilosort parameters|
 |recording.dat|         binary data                                     |Raw recording data|
 |temp_wh.dat|           binary data                                     |Filtered recording data|
+
+### References
+- [Tetrodes channel map](https://github.com/MouseLand/Kilosort/issues/51) and [Tetrodes sorting parameters](https://github.com/MouseLand/Kilosort/issues/95)
