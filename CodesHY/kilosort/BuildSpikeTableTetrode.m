@@ -72,19 +72,15 @@ if ~isempty(ns6_files)
     for i =1:length(ns6_files)
         if i == 1
             openNSx(ns6_files(i).name, 'read', 'report')
-            NS6 = rmfield(NS6,'Data');
             NS6all= NS6;
         else
             openNSx(ns6_files(i).name, 'read', 'report')
-            NS6 = rmfield(NS6,'Data');
             NS6all(i)= NS6;
         end
     end
 else
     error('No .ns6 files!')
 end
-
-save NS6all NS6all
 %%
 
 % Define channels
@@ -126,6 +122,12 @@ end
 
 savefile = 'index.mat'; % name of raw data files
 save(savefile, 'index');
+%% save NS6all
+for k = 1:length(NS6all)
+    NS6all(k).Data = [];
+end
+
+save NS6all NS6all
 %%
 % first 102 frame in Kilosort is skipped (Blackrock zeropad the data)
 % kilosort add 0 at the end of data
@@ -146,12 +148,13 @@ KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
 KilosortOutput.save();
 
 %%
-% clear;
-% load KilosortOutput.mat
+clear;
+load KilosortOutput.mat
+load NS6all.mat
 
 KilosortOutput.buildRMultiSessions( ...
-    {'Max_MedOptoRecording_20220723_200605.mat','Max_MedOptoRecording_20220724_004251.mat'},...
-    {'2022-07-23_20h01m_Subject Max.txt','2022-07-24_00h37m_Subject Max.txt'},...
+    {'Max_MedOptoRecording_20220726_153709.mat','Max_MedOptoRecording_20220726_204005.mat'},...
+    {'2022-07-26_15h32m_Subject Max.txt','2022-07-26_20h34m_Subject Max.txt'},...
     {[1,2],3},...
     'KornblumStyle', false,...
     'Subject', 'Max',...

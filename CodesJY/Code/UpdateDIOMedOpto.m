@@ -8,8 +8,6 @@ poke_ind =   find(strcmp(EventOut.EventsLabels, 'Poke'));
 release_id = find(strcmp(EventOut.EventsLabels, 'GoodRelease'));
 
 % bad poke in bpod
-% events.BadPokeInFirst = bad_pokein;
-% events.BadPokeOutFirst = bad_pokeout;
 badpokein_time_bpod = BpodEvents.BadPokeInFirst*1000;
 badpokeout_time_bpod = BpodEvents.BadPokeOutFirst*1000;
 
@@ -21,24 +19,17 @@ release_time_bpod = BpodEvents.GoodRelease*1000;
 nbpod = length(release_time_bpod);  
 
 % nbpod must be larger than nblackrock
-figure;
 
-% ha1=subplot(4, 1, 1)
-% plot(release_time_blackrock, 0.5, 'ko')
-% hold on
-% plot(release_time_bpod, 1.1, 'bo')
-% set(gca, 'ylim', [0.5 2])
-% plot(badpokein_time_bpod, 1.3, 'k*', 'linewidth', 1.5)
-% plot(badpokeout_time_bpod, 1.3, 'k^', 'linewidth', 1.5)
+figure;
 
 dt = [];
 release_time_blackrock2 = release_time_blackrock-release_time_blackrock(1);
 
-for i=1:1:nbpod-nblackrock
+for i=1:1:max(2,nbpod-nblackrock)
     ireleasebpod = release_time_bpod - release_time_bpod(i);
     ireleasebpod = ireleasebpod(ireleasebpod>=0);
     dt(i) = toaligh (release_time_blackrock2, ireleasebpod);
-end;
+end
 
 ha2=subplot(4, 1, 2);
 plot(dt, 'ko'); hold on
@@ -76,8 +67,8 @@ for i =1:length(bpod_new_release_time_matched)
         bpod_adjusted_release = [bpod_adjusted_release bpod_new_release_time_matched(i)];
         ephys_matching_bpod = [ephys_matching_bpod release_time_blackrock(indmin)];
         line([bpod_new_release_time_matched(i); release_time_blackrock(indmin)], [1.4; 0.5], 'color', 'k', 'linewidth', 1.5)      
-    end;
-end;
+    end
+end
 
 subplot(4, 1, 4)
 plot(bpod_adjusted_release-ephys_matching_bpod, 'ko-')
