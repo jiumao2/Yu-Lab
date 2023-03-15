@@ -194,9 +194,8 @@
 ![PSTH](./readme/TrajComparing_Unit1_Press.png)  
 #### Lift trajectories analysis
 - To find out at which stage lift-related neurons  
-- Copy `.\CodesHY\Scripts\PlotTrajectoryCell.m` to the current directory (xxx_video)  
-![](./readme/traj_all_yt.png)  
-![](./readme/heatmap_yt.png)  
+- Run `TrajectoryCell(r,unit_num,'trajectory',traj_num)`
+![](./readme/LiftPETH.png)   
 
 ## Pipeline of Analyzing Data From Multiple Sessions
 

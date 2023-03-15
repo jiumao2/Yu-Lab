@@ -72,7 +72,7 @@ function TrajectoryCell(r,unit_num,varargin)
         frame_end = round(-r.VideoInfos_side(vid_press_idx(k)).t_pre/10+n_post_framenum);
         
         frame_num_temp = frame_start:frame_end;
-        [~, i_maxy] = min(r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_y{idx_bodypart}(frame_num_temp));
+        [~, i_maxy] = min(r.VideoInfos_side(vid_press_idx(k)).Tracking.Coordinates_y{idx_bodypart}(frame_num_temp(1:end-n_post_framenum)));
         frame_num = frame_num_temp(1:(i_maxy+n_post_framenum));
         frame_num_all(k) = length(frame_num);
     
@@ -219,7 +219,7 @@ function TrajectoryCell(r,unit_num,varargin)
     EasyPlot.colorbar(ax_yt,...
         "label",'Normalized firing rate',...
         'MarginRight',0.8);
-    ylabel(ax_yt, 'Pixels');
+    ylabel(ax_yt, 'Y (pixels)');
     xlabel(ax_yt, 'Time from lift highest (ms)');
     ax_yt.Position(3) = 5;
     
