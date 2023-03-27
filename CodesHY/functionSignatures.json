@@ -100,7 +100,7 @@
        ]
     },
 
-    "getOptimalXtickInterval":
+    "getOptimalInterval":
     {
        "inputs":
        [
@@ -211,6 +211,23 @@
        ]
     },
 
+   "TrajectoryCellAll":
+    {
+       "inputs":
+       [
+          {"name":"r", "kind":"required", "type":"struct"},
+          {"name":"trajectory", "kind":"namevalue", "type":"numeric"},
+          {"name":"save_dir", "kind":"namevalue", "type":"char"},
+          {"name":"binwidth", "kind":"namevalue", "type":"numeric"},
+          {"name":"gaussian_kernel", "kind":"namevalue", "type":"numeric"},
+          {"name":"color_max_percentage", "kind":"namevalue", "type":"numeric"},
+          {"name":"color_min_percentage", "kind":"namevalue", "type":"numeric"},
+          {"name":"n_pre_framenum", "kind":"namevalue", "type":"numeric"},
+          {"name":"n_post_framenum", "kind":"namevalue", "type":"numeric"},
+          {"name":"save_fig", "kind":"namevalue", "type":"choices={'on','off'}"}
+       ]
+    },
+
     "getLiftStartFrameAuto":
     {
        "inputs":
@@ -273,5 +290,24 @@
          {"name":"firing_rate_all", "kind":"required", "type":"cell"},
          {"name":"gaussian_kernel", "kind":"required", "type":"numeric"}
       ]
-   }
+   },
+
+   "PreferenceIndexHistogram":
+   {
+      "inputs":
+      [
+         {"name":"r", "kind":"required", "type":"struct"}
+      ]
+   },
+
+   "gaussianSmooth1D":
+   {
+      "inputs":
+      [
+         {"name":"data", "kind":"required", "type":"numeric"},
+         {"name":"t", "kind":"required", "type":"numeric"},
+         {"name":"gaussianKernelWidth", "kind":"required", "type":"numeric"},
+         {"name":"tOut", "kind":"namevalue", "type":"numeric"}
+      ]
+   }   
   }

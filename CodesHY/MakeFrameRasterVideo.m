@@ -61,7 +61,7 @@ xtick_color = [255,255,255];
 xtick_line_width = 1;
 tick_height = 5;
 xtick_fontsize = 18;
-xtick_interval = getOptimalXtickInterval((t_end-t_start)/10); % ms
+xtick_interval = getOptimalInterval((t_end-t_start)/10); % ms
 xtick_space_left = raster_space_left;
 xtick_space_right = raster_space_right;
 

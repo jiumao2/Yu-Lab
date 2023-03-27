@@ -61,7 +61,9 @@ function PlotComparingTrajPSTH(r,num_unit,varargin)
         hold on
         spxtimes_long = [];
         trigtimes_long = [];
-
+        
+        x = [];
+        y = [];
         for j = 1:length(ind_traj_long)
             if strcmp(event,'Press')
                 trigtimes_long = [trigtimes_long,r.VideoInfos_top(ind_traj_long(j)).Time];
@@ -70,9 +72,12 @@ function PlotComparingTrajPSTH(r,num_unit,varargin)
             end
             temp_spktime = getPlotSpikeTime(r.Units.SpikeTimes(num_unit).timings,trigtimes_long(end),t_pre,t_post);
             for i = 1:length(temp_spktime)
-                plot(ax,[1,1]*temp_spktime(i),[j-0.5,j+0.5],'-','Color',colors(k,:))
+                x = [x,temp_spktime(i),temp_spktime(i),NaN];
+                y = [y,j-0.5,j+0.5,NaN];
             end
         end
+        plot(ax,x,y,'-','Color',colors(k,:))
+
         xlim(ax,[r.VideoInfos_top(k).t_pre,r.VideoInfos_top(k).t_post])
         ylim(ax,[0.5,length(ind_traj_long)+0.5])
         yticks(ax,length(ind_traj_long));
@@ -88,6 +93,9 @@ function PlotComparingTrajPSTH(r,num_unit,varargin)
         spxtimes_short = [];
         trigtimes_short = [];
 
+
+        x = [];
+        y = [];
         for j = 1:length(ind_traj_short)
             if strcmp(event,'Press')
                 trigtimes_short = [trigtimes_short,r.VideoInfos_top(ind_traj_short(j)).Time];
@@ -96,9 +104,12 @@ function PlotComparingTrajPSTH(r,num_unit,varargin)
             end
             temp_spktime = getPlotSpikeTime(r.Units.SpikeTimes(num_unit).timings,trigtimes_short(end),t_pre,t_post);
             for i = 1:length(temp_spktime)
-                plot(ax,[1,1]*temp_spktime(i),[j-0.5,j+0.5],'-','Color',colors(k,:))
+                x = [x,temp_spktime(i),temp_spktime(i),NaN];
+                y = [y,j-0.5,j+0.5,NaN];
             end
         end
+        plot(ax,x,y,'-','Color',colors(k,:))
+
         xlim(ax,[r.VideoInfos_top(k).t_pre,r.VideoInfos_top(k).t_post])
         ylim(ax,[0.5,length(ind_traj_short)+0.5])
         yticks(ax,length(ind_traj_short));
@@ -117,7 +128,7 @@ function PlotComparingTrajPSTH(r,num_unit,varargin)
         plot(ax,tpsth_long,psth_long,'LineWidth',line_width,'Color',colors(k,:))
         xlabel(ax,['Time relative to ',event,' (ms)'])
         ylabel(ax,'Firing Rate (Hz)')
-        title(ax,'PSTH')
+        title(ax,[r.Meta(1).Subject, ' ', datestr(r.Meta(1).DateTime,'yyyymmdd'), ' Unit ',num2str(num_unit)]);
         xlim(ax,[r.VideoInfos_top(k).t_pre,r.VideoInfos_top(k).t_post])
         temp = get(ax,'YLim');
         if ylim_max < temp(2)
@@ -133,7 +144,7 @@ function PlotComparingTrajPSTH(r,num_unit,varargin)
 
         plot(ax,tpsth_short,psth_short,'LineWidth',line_width,'Color',colors(k,:))
         xlabel(ax,['Time relative to ',event,' (ms)'])
-        title(ax,'PSTH')
+
         xlim(ax,[r.VideoInfos_top(k).t_pre,r.VideoInfos_top(k).t_post])
         temp = get(ax,'YLim');
         if ylim_max < temp(2)

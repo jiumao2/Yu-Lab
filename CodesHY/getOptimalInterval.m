@@ -1,4 +1,4 @@
-function out = getOptimalXtickInterval(interval)
+function out = getOptimalInterval(interval)
     count = 0;
     x = interval;
     if x >= 10
