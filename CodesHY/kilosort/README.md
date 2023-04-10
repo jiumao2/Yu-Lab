@@ -30,6 +30,7 @@
 - Install kilosort. If visual studio is properly installed, run `mex -setup C++` in MATLAB and run the file `Kilosort\CUDA\mexGPUall.m`.
 #### Install kilosort plugins
 - See [here](https://github.com/jiumao2/PhyWaveformPlugin)
+- Purpose: remove strange waveforms in phy. Phy does not provide direct access to curating on waveforms (for it is slow to extract the waveforms). The sorting output usually contains noisy waveforms. It is more convenient to directly remove the noise in a single view.
 
 ## Data process pipeline
 - Move the directory with your data to SSD. (faster)
@@ -63,3 +64,41 @@
 
 ### References
 - [Tetrodes channel map](https://github.com/MouseLand/Kilosort/issues/51) and [Tetrodes sorting parameters](https://github.com/MouseLand/Kilosort/issues/95)
+
+### Troubleshooting
+1. CUDA 'invalid configuration' errors
+```
+An unexpected error occurred trying to launch a kernel. The CUDA error was:
+invalid configuration argument
+```
+- See solution [here](https://github.com/MouseLand/Kilosort/issues/427).  
+
+for extract spikes:
+```
+try
+    st(5,:) = cF;
+catch 
+    st = [st; cF];
+end
+```
+for template learning:
+```
+try
+    ich = unique(iC(:, itemp));
+catch
+    tmpS = iC(:, itemp);
+    ich = unique(tmpS);
+end
+```
+
+2. GPU out of memory
+```
+Out of memory on device. To view more detail about available memory on the GPU, use 'gpuDevice()'. If the problem persists, reset the GPU by
+calling 'gpuDevice(1)'.
+```
+- Solution: do not use GPU in that step.  
+
+For example, comment out the following code in `align_block2.m`:
+```
+Fg = gpuArray(single(F));
+```
