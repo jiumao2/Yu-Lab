@@ -2,6 +2,7 @@ function events = Bpod_Events_MedOptoRecording(sd);
 % 2/20/2021
 % extract events from bpod's SessionData structure
 % MedLick Recording
+% 10/4/2022 add AllPokeIns and AllPokesOuts. 
 
 Ntrials = sd.nTrials;
 % 
@@ -24,6 +25,12 @@ all_events = fieldnames(sd.RawEvents.Trial{1}.States);
 events.GoodRelease = [];    % time of a successful lever release
 events.GoodPokeIn = [];      % time of port poke after a succesful lever release (reward delivered immediately)
 events.Reward = [];             % two-row matrix, first row valve open, second row valve close
+
+events.AllPokeIns = [];
+events.AllPokeOuts = [];
+
+events.AllPress = [];
+
 events.BadPokeIn = [];
 events.BadPokeOut = [];
 events.BadPokeInFirst = [];
@@ -34,7 +41,19 @@ t0 = sd.TrialStartTimestamp(1);
 
 for k =1:Ntrials
     t_trial = sd.TrialStartTimestamp(k); % in seconds
-    
+
+    if isfield(sd.RawEvents.Trial{k}.Events, 'AnalogIn1_1')
+        events.AllPress = [events.AllPress t_trial + sd.RawEvents.Trial{k}.Events.AnalogIn1_1];
+    end;
+
+    if isfield(sd.RawEvents.Trial{k}.Events, 'Port1In')
+        events.AllPokeIns = [events.AllPokeIns t_trial+sd.RawEvents.Trial{k}.Events.Port1In];
+    end
+
+    if isfield(sd.RawEvents.Trial{k}.Events, 'Port1Out')
+        events.AllPokeOuts = [events.AllPokeOuts t_trial+sd.RawEvents.Trial{k}.Events.Port1Out];
+    end;
+
     if ~isnan(sd.RawEvents.Trial{k}.States.WaitForPokedIn(1))  % failed attempt
         events.GoodRelease = [events.GoodRelease t_trial+sd.RawEvents.Trial{k}.States.WaitForMedTTL(end)];
         events.GoodPokeIn = [events.GoodPokeIn t_trial+sd.RawEvents.Trial{k}.States.WaitForPokedIn(2)];
@@ -45,8 +64,7 @@ for k =1:Ntrials
         press_time = t_trial+sd.RawEvents.Trial{k}.States.WaitForMedTTL(1);
         events.BadPress = [events.BadPress press_time];
     end;
-    
-    
+        
     % poke following a bad press
     if k>1 && isnan(sd.RawEvents.Trial{k-1}.States.WaitForPokedIn(1))
         badpokes = sd.RawEvents.Trial{k}.States.BadPortEntry; % bad poke entries of current trial
@@ -54,24 +72,28 @@ for k =1:Ntrials
         if ~isempty(ind_prepress)
             badpokes = badpokes(ind_prepress, :);
             events.BadPokeIn =      [events.BadPokeIn; t_trial+badpokes(:, 1)];
-            events.BadPokeOut =    [events.BadPokeIn; t_trial+badpokes(:, 2)];
+            events.BadPokeOut =    [events.BadPokeOut; t_trial+badpokes(:, 2)];
         end;
     end;
 end;
 
 % relative timing with respect to the first trial
-events.GoodRelease   = events.GoodRelease-t0;
-events.GoodPokeIn     = events.GoodPokeIn-t0;
-events.Reward            = events.Reward-t0;
-events.BadPokeIn        = events.BadPokeIn -t0;
-events.BadPokeOut     = events.BadPokeOut - t0;
-events.BadPress          = events.BadPress -t0;
+events.GoodRelease              = events.GoodRelease-t0;
+events.GoodPokeIn               = events.GoodPokeIn-t0;
+events.Reward                       = events.Reward-t0;
+events.BadPokeIn                   = events.BadPokeIn -t0;
+events.BadPokeOut               = events.BadPokeOut - t0;
+events.BadPress                     = events.BadPress -t0;
+events.AllPokeIns                   = events.AllPokeIns - t0;
+events.AllPokeOuts                 = events.AllPokeOuts - t0;
+events.AllPress = events.AllPress - t0;
 
 % figure;
 % plot(events.GoodRelease,1, 'go'); hold on
 % plot(events.GoodPokeIn, 2, 'b*')
 % plot(events.BadPokeIn, 3, 'r*')
 % plot(events.BadPress, 3, 'k^')
+% line([events.AllPokeIns; events.AllPokeIns], [0 4], 'color', 'b')
 % set(gca, 'ylim', [0 4])
 % xlabel('sec')
 

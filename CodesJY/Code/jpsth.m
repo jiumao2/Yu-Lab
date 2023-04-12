@@ -12,7 +12,7 @@ binwidth = params.binwidth; % also in msec
 
 n_events = length(trigtimes); % time of events
 
-spxtimes                 =      round(spxtimes); 
+spxtimes                 =      round(spxtimes(spxtimes>0)); 
 tspkall                     =       [1:max([spxtimes trigtimes'])+5000];
 spkall                      =      zeros(1, length(tspkall));
 spkall(spxtimes)      =     1; 

@@ -1,4 +1,4 @@
-function EventOut = DIO_Events3(NEV, trange)
+function EventOut = DIO_Events4(NEV, trange)
 % 2020/08/31
 % version 3
 % this version contains more data, including frame signal 
@@ -136,6 +136,16 @@ for i =1:N_Events
     
     text(mean(trange), 0.8+(i-1), EventsLabels{i}, 'fontsize', 10);
 end;
+
+% in some protocols, 'MEDTTL' sends two pulses to Bpod to trigger low or
+% high rewards (low, one pulse; high, two pulses). It is necessary to
+% remove the second pulses. 
+ind_MEDTTL = 3; % 'GoodRelease',
+IndShortPulses = 1+find(diff(EventOnset{ind_MEDTTL})<23);
+
+EventOnset{ind_MEDTTL}(IndShortPulses) = [];
+EventOffset{ind_MEDTTL}(IndShortPulses) = [];
+
  
 xlabel ('Time (s)')
 

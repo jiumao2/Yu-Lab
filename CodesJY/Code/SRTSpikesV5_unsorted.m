@@ -1060,6 +1060,7 @@ function SRTSpikesV5_unsorted(r, ind, varargin)
 
     % plot autocorrelation
     kutime = round(r.Units.SpikeTimes(ku).timings);
+    kutime = kutime-min(kutime)+1;
 
     kutime2 = zeros(1, max(kutime));
     kutime2(kutime)=1;

@@ -300,6 +300,14 @@
       ]
    },
 
+   "checkSorting":
+   {
+      "inputs":
+      [
+         {"name":"r", "kind":"required", "type":"struct"}
+      ]
+   },
+
    "gaussianSmooth1D":
    {
       "inputs":

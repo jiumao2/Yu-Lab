@@ -177,5 +177,3 @@ EventOut.Offset = EventOffset;
 sprintf('Total time: %2.0f min; Number of presses: %2.0d; Number of good release: %2.0d;',...
     NEV.MetaTags.DataDurationSec/60, length(EventOnset{4}), length(EventOnset{2}));
 
-
-save EventOut EventOut
