@@ -7,7 +7,7 @@
           {"name":"r", "kind":"required", "type":"struct"},
           {"name":"unit_num", "kind":"required", "type":"numeric"},
           {"name":"Name", "kind":"namevalue", "type":"char"},
-          {"name":"Tosave", "kind":"namevalue", "type":"numeric"},
+          {"name":"ToSave", "kind":"namevalue", "type":"numeric"},
           {"name":"FP_short", "kind":"namevalue", "type":"numeric"},
           {"name":"FP_long", "kind":"namevalue", "type":"numeric"}
        ]
@@ -20,7 +20,7 @@
          {"name":"r", "kind":"required", "type":"struct"},
          {"name":"unit_num", "kind":"required", "type":"numeric"},
          {"name":"Name", "kind":"namevalue", "type":"char"},
-         {"name":"Tosave", "kind":"namevalue", "type":"numeric"},
+         {"name":"ToSave", "kind":"namevalue", "type":"numeric"},
          {"name":"FP_short", "kind":"namevalue", "type":"numeric"},
          {"name":"FP_long", "kind":"namevalue", "type":"numeric"}
       ]

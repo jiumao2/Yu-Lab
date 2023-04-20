@@ -270,26 +270,8 @@ function SRTSpikesV5(r, ind, varargin)
     [psth_longtrigger, ts_longtrigger] = jpsth(r.Units.SpikeTimes(ku).timings, t_trigger_long_correct, params);
     psth_longtrigger = smoothdata (psth_longtrigger, 'gaussian', 5);
 
-    close all;
-
-    %% release
-    figure(58); clf
-    plot(ts{2}, psth_correct{2}, 'k', 'linewidth', 1); hold on
-    plot(ts{1}, psth_correct{1}, 'b', 'linewidth', 1);
-
-    line([FP_short FP_short], [0 10], 'color', 'r', 'linestyle', '-.', 'linewidth', 1)
-    line([FP_long FP_long], [0 10], 'color', 'r', 'linestyle', '-.', 'linewidth', 1)
-
-    text(FP_short+10, 5, [num2str(FP_short),' ms'], 'color', 'k')
-    text(FP_long+10, 5, [num2str(FP_long),' ms'], 'color', 'b')
-
-    xlabel('Time from press onset (ms)')
-    ylabel('Firing rate (spk per s)')
-    title('Press-related activity')
-
     %% plot raster and spks
-    figure(27);
-    clf(27);
+    figure();
     set(gcf, 'unit', 'centimeters', 'position', printsize, 'paperpositionmode', 'auto' ,'color', 'w')
 
     ha_PETH_press =  axes('unit', 'centimeters', 'position', [1 1 6 2], 'nextplot', 'add', 'xlim', [-PressTimeDomain(1) PressTimeDomain(2)]);
@@ -1094,7 +1076,7 @@ function SRTSpikesV5(r, ind, varargin)
 
     FinalHeight = ycolumn2(2)+0.6+2;
 
-    set(27, 'position', [2 2 20 FinalHeight] )
+    set(gcf, 'position', [2 2 20 FinalHeight] )
 
     toc;
 
