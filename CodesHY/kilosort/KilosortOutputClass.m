@@ -115,24 +115,29 @@ classdef KilosortOutputClass<handle
                 ephys_block_start = blocks{1};
             end
 
+            % Read NS6 file.
+            if isempty(NS6all)
+                for i = 1:length(blocks)
+                    if i == 1
+                        openNSx([blocks{i}(1:end-3),'ns6'], 'read', 'report')
+                        NS6all = NS6;
+                    else
+                        openNSx([blocks{i}(1:end-3),'ns6'], 'read', 'report')
+                        NS6all(i) = NS6;
+                    end
+                end
+            end
+
             if strcmp(behavior_block_start, ephys_block_start)
                 t_start = 0;
             else
                 % load behavior start time
-                nevfile = behavior_block_start;
-                if ~exist([nevfile(1:11) '.mat'],'file')
-                    openNEV(nevfile, 'report', 'read')  % open ‘datafile###.nev’, create “datafile###.mat”
-                end
-                load([nevfile(1:11) '.mat'])
-                t0 = NEV.MetaTags.DateTimeRaw;
+                start_idx = strcmp(blocks, behavior_block_start);
+                t0 = NS6all(start_idx).MetaTags.DateTimeRaw;
                 
                 % load ephys (spike sorting output) start time
-                nevfile = ephys_block_start;
-                if ~exist([nevfile(1:11) '.mat'],'file')
-                    openNEV(nevfile, 'report', 'read')  % open ‘datafile###.nev’, create “datafile###.mat”
-                end  
-                load([nevfile(1:11) '.mat'])
-                t1 = NEV.MetaTags.DateTimeRaw;
+                start_idx = strcmp(blocks, ephys_block_start);
+                t1 = NS6all(start_idx).MetaTags.DateTimeRaw;
                 
                 % compute dt
                 dt = t0-t1;
@@ -215,11 +220,11 @@ classdef KilosortOutputClass<handle
                 end
             
                 if ib ==1
-                    RecordingOnset = EventOut.Meta.DateTimeRaw;
+                    RecordingOnset = NS6all(1).MetaTags.DateTimeRaw;
                 end
             
                 if ib>1
-                    dt_i = EventOut.Meta.DateTimeRaw-RecordingOnset;
+                    dt_i = NS6all(ib).MetaTags.DateTimeRaw-RecordingOnset;
                     dBlockOnset(ib) = dt_i(end)+dt_i(end-1)*1000+dt_i(end-2)*1000*60+dt_i(end-3)*1000*60*60;  % in ms
                 end
                 %  update poke information in EventOut with bpod events
@@ -481,6 +486,19 @@ classdef KilosortOutputClass<handle
                 end
             end
 
+            % Read NS6 file.
+            if isempty(NS6all)
+                for i = 1:length(blocks)
+                    if i == 1
+                        openNSx([blocks{i}(1:end-3),'ns6'], 'read', 'report')
+                        NS6all = NS6;
+                    else
+                        openNSx([blocks{i}(1:end-3),'ns6'], 'read', 'report')
+                        NS6all(i) = NS6;
+                    end
+                end
+            end
+
             if KornblumStyle
                 % Note: my (JY's) codes are stored in packages, e.g.,
                 % track_training_progress_advanced_KornblumStyle can be
@@ -526,11 +544,11 @@ classdef KilosortOutputClass<handle
                 end
             
                 if ib ==1
-                    RecordingOnset = EventOut.Meta.DateTimeRaw;
+                    RecordingOnset = NS6all(1).MetaTags.DateTimeRaw;
                 end
             
                 if ib>1
-                    dt_i = EventOut.Meta.DateTimeRaw-RecordingOnset;
+                    dt_i = NS6all(ib).MetaTags.DateTimeRaw-RecordingOnset;
                     dBlockOnset(ib) = dt_i(end)+dt_i(end-1)*1000+dt_i(end-2)*1000*60+dt_i(end-3)*1000*60*60;  % in ms
                 end
                 %  update poke information in EventOut with bpod events
