@@ -174,12 +174,15 @@
           {"name":"gaussian_kernel", "kind":"namevalue", "type":"numeric"}
        ]
     }, 
+    
     "bin_timings":
     {
        "inputs":
        [
           {"name":"spike_times", "kind":"required", "type":"numeric"},
-          {"name":"binwidth", "kind":"optional", "type":"numeric"}
+          {"name":"binwidth", "kind":"optional", "type":"numeric"},
+          {"name":"StartFromZero", "kind":"namevalue", "type":"choices={'on','off'}"},
+          {"name":"tStart", "kind":"namevalue", "type":"numeric"}
        ]
     }, 
 
