@@ -102,3 +102,26 @@ For example, comment out the following code in `align_block2.m`:
 ```
 Fg = gpuArray(single(F));
 ```
+
+3. Wrong best channel in phy  
+
+Sometimes phy marks wrong best channel. We would see beautiful autocorrelogram and ISI histogram but small waveforms.  
+
+Solution 1 (Recommended):  
+-  Use the updated [plugin](https://github.com/jiumao2/PhyWaveformPlugin). This plugin automatically selects the channel with largest amplitude in SingleWaveformView and allows you to change the channel ID in the view.  
+- Relabeled the best channel afterwards in `BuildSpikeTable.m` if necessary.
+```
+spikeTable([spikeTable.cluster_id]==cluster_id,:).ch = real_best_channel;
+```
+  
+Solution 2 (Not Recommended):
+- Marked this unit as `mua` and find out the best channel of this unit after spike sorting.
+- Return to phy and and select the channel to clear noise.
+- Relabeled the best channel afterwards in `BuildSpikeTable.m` if necessary.
+```
+spikeTable([spikeTable.cluster_id]==cluster_id,:).ch = real_best_channel;
+```
+
+4. Cannot open phy  
+- Check whether the path in `params.py` is right, especially after you move your data to another computer.
+- Remove the directory `.phy`. Never copy this directory when transferring your data.
