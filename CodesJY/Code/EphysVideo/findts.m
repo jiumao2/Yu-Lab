@@ -9,15 +9,15 @@ function tsout = findts(seqfile)
 
 n_frame = ReadFrameNumSEQ(seqfile);
 ts = zeros(1,n_frame);
-ts_start = ReadTimestampSEQ(seqfile, 1);
 tic
 
 for k = 1:n_frame
-    ts(k) = ReadTimestampSEQ(seqfile, k) - ts_start;
+    ts(k) = ReadTimestampSEQ(seqfile, k);
     if rem(k, 1000)==0
-        sprintf('last frame time %2.0f s', ts(k)/1000)
+        sprintf('last frame time %2.0f s', (ts(k)-ts(1))/1000)
     end
 end
+
 ts = ts-ts(1);
 tsout.ts = ts;
 tsout.skipind = [];    

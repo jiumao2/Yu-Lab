@@ -12,8 +12,8 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Installation
 ### prerequesite:
-- [Visual studio community 2017](https://visualstudio.microsoft.com/zh-hans/vs/older-downloads/) with 'C++桌面开发' (compatatible to MATLAB version)
-- MATLAB 2021a-2022b + necessory toolboxes + MEX
+- [Visual studio community 2017](https://visualstudio.microsoft.com/zh-hans/vs/older-downloads/) with 'C++桌面开发' (compatatible to MATLAB version, check it [here](https://www.mathworks.com/support/requirements/previous-releases.html))
+- MATLAB + necessory toolboxes + MEX
 - [kilosort3](https://github.com/MouseLand/Kilosort) or [kilosort2_5](https://github.com/MouseLand/Kilosort/releases/tag/v2.5) (place in a proper directory)
 - [npy-matlab](https://github.com/kwikteam/npy-matlab) (place in a proper directory and better save it in MATLAB path)
 - Anaconda
@@ -21,10 +21,12 @@
 ### Steps
 #### Install phy
 - New conda environment with python 3.8 `conda create -n phy python=3.8`
+- Activate the new environment `conda activate phy`
 - Install phy `pip install phy --pre --upgrade`
 - Deal with numpy version error `pip uninstall numpy`, `pip install numpy==1.23`
 #### Install spike interface
 - New conda environment with python 3.8 `conda create -n spikeinterface python=3.8`
+- Activate the new environment `conda activate spikeinterface`
 - Install spikeinterface `pip install spikeinterface[full,widgets]`
 #### Install kilosort
 - Install kilosort. If visual studio is properly installed, run `mex -setup C++` in MATLAB and run the file `Kilosort\CUDA\mexGPUall.m`.
@@ -35,7 +37,7 @@
 ## Data process pipeline
 - Move the directory with your data to SSD. (faster)
 - Move the file `kilosort.ipynb` to your data directory (`kilosortTetrodes.ipynb` for tetrodes).
-- Open `kilosort.ipynb` in VS Code and set the kernal to `spikeinterface`. Modify the codes by following the instructions.
+- Open `kilosort.ipynb` in VS Code and set the kernal to `spikeinterface`. Modify the codes by following the instructions. Confirm that the path to kilosort, the kilosort version, the channel map and the sessions are correct.
 - Do munual curation with [Phy](https://phy.readthedocs.io/en/latest/clustering/). Open 'Anaconda prompt'. First enter the output directory and run `phy template-gui params.py`.
 - Following the pipeline. Watch phy tutorial [here](https://www.youtube.com/watch?v=czdwIr-v5Yc). ![](phy_pipeline.png)
 - Copy `BuildSpikeTable.m` (`BuildSpikeTableTetrodes.m` for tetrodes) to data folder, edit key parameters and run. A new class object `KilosortOuput` will be generated. 
@@ -125,3 +127,6 @@ spikeTable([spikeTable.cluster_id]==cluster_id,:).ch = real_best_channel;
 4. Cannot open phy  
 - Check whether the path in `params.py` is right, especially after you move your data to another computer.
 - Remove the directory `.phy`. Never copy this directory when transferring your data.
+
+5. No good units after kilosort or missing spikes
+- Try to lower the spike detection threshold. Modify the sorting parameters in `kilosort.ipynb`. For example, add `sorted_params['projection_threshold'] = [8,3]`.

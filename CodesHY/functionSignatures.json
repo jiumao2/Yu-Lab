@@ -49,7 +49,8 @@
           {"name":"t_post", "kind":"required", "type":"numeric"},
           {"name":"gaussian_kernel", "kind":"namevalue", "type":"numeric"},
           {"name":"normalized", "kind":"namevalue", "type":"choices={'None','zscore'}"},
-          {"name":"event", "kind":"namevalue", "type":"choices={'press','release','reward'}"}
+          {"name":"event", "kind":"namevalue", "type":"choices={'press','release','reward'}"},
+          {"name":"Channel_Number", "kind":"namevalue", "type":"logical"}
        ]
     }, 
     
@@ -320,5 +321,14 @@
          {"name":"gaussianKernelWidth", "kind":"required", "type":"numeric"},
          {"name":"tOut", "kind":"namevalue", "type":"numeric"}
       ]
-   }   
+   },
+
+   "align_times":
+   {
+      "inputs":
+      [
+         {"name":"t", "kind":"required", "type":"numeric"},
+         {"name":"map", "kind":"required", "type":"numeric"}
+      ]
+   }
   }

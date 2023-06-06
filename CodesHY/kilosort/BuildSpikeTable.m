@@ -115,6 +115,13 @@ end
 
 savefile = 'index.mat'; % name of raw data files
 save(savefile, 'index');
+
+%% save NS6all
+for k = 1:length(NS6all)
+    NS6all(k).Data = [];
+end
+
+save NS6all NS6all
 %%
 % first 102 frame in Kilosort is skipped (Blackrock zeropad the data)
 % kilosort add 0 at the end of data
@@ -128,7 +135,6 @@ end
 spikeTable.spike_times_r = spike_times_r;
 disp(spikeTable)
 
-
 %%
 chanMap = load('chanMap.mat');
 KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
@@ -136,14 +142,15 @@ KilosortOutput.save();
 
 %% Uncommenented correspoding segment to build R
 
-% % For 2FPs (750/1500): 
-% KilosortOutput.buildR(...
-%     'KornblumStyle', false,...
-%     'Subject', 'West',...
-%     'blocks', {'datafile001.nev','datafile002.nev'},...
-%     'Version', 'Version4',...
-%     'BpodProtocol', 'OptoRecording',...
-%     'Experimenter', 'HY');
+% For 2FPs (750/1500): 
+KilosortOutput.buildR(...
+    'KornblumStyle', false,...
+    'Subject', 'Frank',...
+    'blocks', {'datafile001.nev','datafile002.nev','datafile003.nev'},...
+    'Version', 'Version5',...
+    'BpodProtocol', 'OptoRecording',...
+    'Experimenter', 'HY',...
+    'NS6all', NS6all);
 
 % % For 2FPs (500/1000): 
 % KilosortOutput.buildR(...
@@ -152,7 +159,8 @@ KilosortOutput.save();
 %     'blocks', {'datafile001.nev','datafile002.nev'},...
 %     'Version', 'Version5',...
 %     'BpodProtocol', 'OptoRecording',...
-%     'Experimenter', 'HY');
+%     'Experimenter', 'HY',...
+%     'NS6all', NS6all);
 
 % % For Kormblum: 
 % KilosortOutput.buildR(...
@@ -161,10 +169,12 @@ KilosortOutput.save();
 %     'blocks', {'datafile001.nev','datafile002.nev'},...
 %     'Version', 'Version5',...
 %     'BpodProtocol', 'OptoRecording',...
-%     'Experimenter', 'HY');
+%     'Experimenter', 'HY',...
+%     'NS6all', NS6all);
 %% Uncommenented correspoding segment to plot PSTHs
 clear
-load RTarrayAll.mat
+output = dir("*RTarray*.mat");
+load(output.name);
 
 % % For 2FPs (500/1000):
 % for k = 1:length(r.Units.SpikeTimes)
@@ -172,11 +182,12 @@ load RTarrayAll.mat
 %     SRTSpikesV5(r,k,'FP_long',1000,'FP_short',500);
 % end
 
-% % For 2FPs (750/1500):
-% for k = 1:length(r.Units.SpikeTimes)
-%     SRTSpikesV5_unsorted(r,k);
-%     SRTSpikesV5(r,k);
-% end
+% For 2FPs (750/1500):
+for k = 1:length(r.Units.SpikeTimes)
+    SRTSpikesV5_unsorted(r,k);
+    SRTSpikesV5(r,k);
+    close all;
+end
 
 % % For Kormblum: 
 % for k = 1:length(r.Units.SpikeTimes)

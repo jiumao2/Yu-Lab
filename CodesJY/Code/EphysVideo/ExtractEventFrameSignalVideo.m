@@ -122,11 +122,19 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
 
     switch camview
         case 'side'
-            indframe = find(strcmp(r.Video.Labels, 'SideFrameOn'));
-            t_frameon = r.Video.EventTimings(r.Video.EventMarkers == indframe);
+            if isfield(r.Video, 't_frameon_side')
+                t_frameon = r.Video.t_frameon_side;
+            else
+                indframe = find(strcmp(r.Video.Labels, 'SideFrameOn'));
+                t_frameon = r.Video.EventTimings(r.Video.EventMarkers == indframe);
+            end
         case 'top'
-            indframe = find(strcmp(r.Video.Labels, 'TopFrameOn'));
-            t_frameon = r.Video.EventTimings(r.Video.EventMarkers == indframe);
+            if isfield(r.Video, 't_frameon_top')
+                t_frameon = r.Video.t_frameon_top;
+            else
+                indframe = find(strcmp(r.Video.Labels, 'TopFrameOn'));
+                t_frameon = r.Video.EventTimings(r.Video.EventMarkers == indframe);
+            end
         otherwise
             disp('Check camera view')
             return;
