@@ -76,6 +76,9 @@ classdef KilosortOutputClass<handle
             behavior_block_start = NaN;
             addForce = false;
             addLaser = false;
+            b = [];
+            BehaviorClass = [];
+            saveWaveMean = false;
             
             if nargin>=2
                 for i=1:2:size(varargin,2)
@@ -102,6 +105,12 @@ classdef KilosortOutputClass<handle
                             addForce = varargin{i+1};
                         case 'addLaser'
                             addLaser = varargin{i+1};
+                        case 'b'
+                            b = varargin{i+1};
+                        case 'BehaviorClass'
+                            BehaviorClass = varargin{i+1};
+                        case 'saveWaveMean'
+                            saveWaveMean = varargin{i+1};
                         otherwise
                             errordlg('unknown argument')
                     end
@@ -168,33 +177,31 @@ classdef KilosortOutputClass<handle
                 
                 k = j;
             end
-
-            MEDFile = dir('*Subject*.txt');
-
-            if KornblumStyle
-                % Note: my (JY's) codes are stored in packages, e.g.,
-                % track_training_progress_advanced_KornblumStyle can be
-                % found in Behavior.MED.track_training_progress_advanced_KornblumStyle
-                b = Behavior.MED.track_training_progress_advanced_KornblumStyle(MEDFile.name);
-                BehaviorClass = Behavior.Timing.KornblumClass(MEDFile.name);
-                BehaviorClass.Plot();
-                BehaviorClass.Save()
-                BehaviorClass.Print()
-            else
-                [b, BehaviorClass] = Behavior.MED.track_training_progress_advanced(MEDFile.name);
-                BehaviorClass.Plot();
-            end
             
-            behfile= dir('B_*mat');
-            load(behfile.name)
+            if isempty(b) || isempty(BehaviorClass)
+                MEDFile = dir('*Subject*.txt');
+    
+                if KornblumStyle
+                    % Note: my (JY's) codes are stored in packages, e.g.,
+                    % track_training_progress_advanced_KornblumStyle can be
+                    % found in Behavior.MED.track_training_progress_advanced_KornblumStyle
+                    b = Behavior.MED.track_training_progress_advanced_KornblumStyle(MEDFile.name);
+                    BehaviorClass = Behavior.Timing.KornblumClass(MEDFile.name);
+                else
+                    [b, BehaviorClass] = Behavior.MED.track_training_progress_advanced(MEDFile.name);
+                end
+                
+                behfile= dir('B_*mat');
+                load(behfile.name)
+            end
+            BehaviorClass.Plot();
+            BehaviorClass.Save();
+            BehaviorClass.Print();
             % return FP if there is no FP (wait 1/2 sessions)
             
             if isempty(b.FPs)  
                 b = UpdateWaitB(b); % add FP
             end
-            
-            BpodFile = dir([Subject '*.mat']);
-            load(BpodFile.name);
 
             EventOutCombined = []; % this one combines all event times and difference in time between blocks.
 
@@ -251,17 +258,28 @@ classdef KilosortOutputClass<handle
                 end
             end
             
-            % Align Events
-            switch BpodProtocol
-                case 'OptoRecording'
-                    %  read bpod events
-                    BpodEvents = Bpod_Events_MedOptoRecording(SessionData);
-                    % Update poke based on data from Bpod events
-                    EventOutCombined = UpdatePokeFromBpodEvents(EventOutCombined, BpodEvents);
-                case 'OptoRecordingMix'  % optogenetic stimulation was applied at the onset of different events, we need to extract those times, and align them to blackrock's time
-                    %  read bpod events
-                    BpodEvents = Bpod_Events_MedOptoRecMix(SessionData);
-                    EventOutCombined = UpdateDIOMedOptoRecMix(EventOutCombined, BpodEvents);
+            BpodFile = dir([Subject '*.mat']);
+            BpodFilenames = {BpodFile.name};
+            for i_file = 1:length(BpodFilenames)
+                load(BpodFilenames{i_file});
+    
+                % Align Events
+                switch BpodProtocol
+                    case 'OptoRecording'
+                        %  read bpod events
+                        BpodEvents = Bpod_Events_MedOptoRecording(SessionData);
+                        % Update poke based on data from Bpod events
+                        EventOutCombined = UpdatePokeFromBpodEvents(EventOutCombined, BpodEvents);
+                    case {'OptoRecordingMix',  'MedOptoRecMixKB'}  % optogenetic stimulation was applied at the onset of different events, we need to extract those times, and align them to blackrock's time
+                        %  read bpod events
+                        BpodEvents = Bpod_Events_MedOptoRecMix(SessionData);
+                        EventOutCombined = UpdateDIOMedOptoRecMix(EventOutCombined, BpodEvents);
+                    case 'OptoRecordingSelfTimed'
+                        %  read bpod events
+                        BpodEvents = Bpod_Events_MedOptoRecordingSelfTimed(SessionData);
+                        % Update poke based on data from Bpod events
+                        EventOutCombined = UpdatePokeFromBpodEvents(EventOutCombined, BpodEvents);
+                end
             end
             
             EventOutCombined = AlignBehaviorClassToBR(EventOutCombined, BehaviorClass);
@@ -390,7 +408,12 @@ classdef KilosortOutputClass<handle
             
             % put spikes
             for i = 1:size(r.Units.SpikeNotes, 1)
-                r.Units.SpikeTimes(i) = struct('timings',  [], 'wave', [], 'spk_id', []);
+                if saveWaveMean
+                    r.Units.SpikeTimes(i) = struct('timings',  [], 'wave', [], 'wave_mean', [], 'spk_id', []);
+                    r.Units.SpikeTimes(i).wave_mean = obj.SpikeTable(i,:).waveforms_mean{1};
+                else
+                    r.Units.SpikeTimes(i) = struct('timings',  [], 'wave', [], 'spk_id', []);
+                end
             
                 % load spike time:
                 r.Units.SpikeTimes(i).timings = obj.SpikeTable(i,:).spike_times_r{1} - t_start;
@@ -844,11 +867,21 @@ classdef KilosortOutputClass<handle
             
             % put spikes
             for i = 1:size(r.Units.SpikeNotes, 1)
-                r.Units.SpikeTimes(i) = struct('timings',  [], 'wave', [], 'spk_id', []);
+                if saveWaveMean
+                    r.Units.SpikeTimes(i) = struct('timings',  [], 'wave', [], 'wave_mean', [], 'spk_id', []);
+                    r.Units.SpikeTimes(i).wave_mean = obj.SpikeTable(i,:).waveforms_mean{1};
+                else
+                    r.Units.SpikeTimes(i) = struct('timings',  [], 'wave', [], 'spk_id', []);
+                end
             
                 % load spike time:
                 r.Units.SpikeTimes(i).timings = obj.SpikeTable(i,:).spike_times_r{1};
                 r.Units.SpikeTimes(i).wave = obj.SpikeTable(i,:).waveforms{1};
+                if saveWaveMean
+                    r.Units.SpikeTimes(i).wave_mean = obj.SpikeTable(i,:).waveforms_mean{1};
+                else
+                    r.Units.SpikeTimes(i) = rmfield(r.Units.SpikeTimes(i), 'wave_mean');
+                end
             
                 % remove  90% of spike waveforms to reduce file size
                 % index spk train
@@ -1093,7 +1126,7 @@ classdef KilosortOutputClass<handle
         end
         
         function plotCorrelation(obj)
-            bin_width = 10;
+            bin_width = 1;
             c = zeros(height(obj.SpikeTable));
             for k = 1:height(obj.SpikeTable)
                 for j = k:height(obj.SpikeTable)
@@ -1114,6 +1147,25 @@ classdef KilosortOutputClass<handle
             end
             figure;
             imagesc(c)
+            colormap(plasma)
+            clim([0,1])
+        end
+
+        function plotChannelActivity(obj)
+            figure;
+            n_channel = length(obj.ChanMap.chanMap);
+            good_unit_channel = zeros(1,n_channel);
+            all_channels = cell2mat(obj.SpikeTable(strcmp(obj.SpikeTable(:,:).group,'good'),:).ch);
+            for k = 1:n_channel
+                good_unit_channel(k) = sum(all_channels==k);
+            end
+            colormap_this = jet(max(good_unit_channel)+1);
+            colors = zeros(n_channel,3);
+            for k = 1:n_channel
+                colors(k,:) = colormap_this(sum(all_channels==k)+1,:);
+            end
+            scatter(obj.ChanMap.xcoords,obj.ChanMap.ycoords,10,colors,"filled","o");
+            axis equal;
         end
         
     end

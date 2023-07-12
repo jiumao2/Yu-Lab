@@ -1,23 +1,30 @@
 function ind_out = findNearestPoint(seq, p)
-l = 1;
-r = length(seq);
-m = round((l+r)/2);
+% seq: 1xn double
+% p: 1xm double
 
-while r-l>1
-    if seq(m) > p
-        r = m;
-    elseif seq(m) < p
-        l = m;
-    else
-        ind_out = m;
-        return
-    end
+ind_out = zeros(size(p));
+for ind_p = 1:length(p)
+    p_this = p(ind_p);
+    l = 1;
+    r = length(seq);
     m = round((l+r)/2);
-end
-
-if abs(seq(l)-p) < abs(seq(r)-p)
-    ind_out = l;
-else
-    ind_out = r;
+    
+    while r-l>1
+        if seq(m) > p_this
+            r = m;
+        elseif seq(m) < p_this
+            l = m;
+        else
+            ind_out = m;
+            return
+        end
+        m = round((l+r)/2);
+    end
+    
+    if abs(seq(l)-p_this) < abs(seq(r)-p_this)
+        ind_out(ind_p) = l;
+    else
+        ind_out(ind_p) = r;
+    end
 end
 end

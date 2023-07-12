@@ -183,7 +183,8 @@
           {"name":"spike_times", "kind":"required", "type":"numeric"},
           {"name":"binwidth", "kind":"optional", "type":"numeric"},
           {"name":"StartFromZero", "kind":"namevalue", "type":"choices={'on','off'}"},
-          {"name":"tStart", "kind":"namevalue", "type":"numeric"}
+          {"name":"tStart", "kind":"namevalue", "type":"numeric"},
+          {"name":"t_edges", "kind":"namevalue", "type":"numeric"}
        ]
     }, 
 
@@ -329,6 +330,16 @@
       [
          {"name":"t", "kind":"required", "type":"numeric"},
          {"name":"map", "kind":"required", "type":"numeric"}
+      ]
+   },
+
+   "extractNeuronFeature":
+   {
+      "inputs":
+      [
+         {"name":"r", "kind":"required", "type":"struct"},
+         {"name":"unit_num", "kind":"required", "type":"numeric"},
+         {"name":"onlyFirstSession", "kind":"namevalue", "type":"choices={'on','off'}"}
       ]
    }
   }

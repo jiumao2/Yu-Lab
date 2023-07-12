@@ -63,19 +63,23 @@ classdef KornblumClass
 
     methods
         function obj = KornblumClass(medfile)
-            if nargin==0
-                medfile = dir('*_Subject*.txt');
-                if length(medfile)>1
-                    clc
-                    error('More than one MED file is found')
+            if ~isstruct(medfile)
+                if nargin==0
+                    medfile = dir('*_Subject*.txt');
+                    if length(medfile)>1
+                        clc
+                        error('More than one MED file is found')
+                    end;
+                    medfile = medfile.name;
+                    disp(medfile)
                 end;
-                medfile = medfile.name;
-                disp(medfile)
-            end;
-            %UNTITLED2 Construct an instance of this class
-            %   Detailed explanation goes here
-            bdata = Behavior.MED.track_training_progress_advanced_KornblumStyle(medfile);
-            % b2 = BehaviorClass(b);
+                %UNTITLED2 Construct an instance of this class
+                %   Detailed explanation goes here
+                bdata = Behavior.MED.track_training_progress_advanced_KornblumStyle(medfile);
+                % b2 = BehaviorClass(b);
+            else
+                bdata = medfile;
+            end
           
             obj.TrialNum        =       length(bdata.PressTime);
             obj.PressIndex     =       [1:obj.TrialNum];

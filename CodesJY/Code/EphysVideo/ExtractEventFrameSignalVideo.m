@@ -650,7 +650,7 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
             VideoInfo.Event = events;
             VideoInfo.Index = i;
             if isfield(r.Behavior,'CueIndex') && ~isempty(r.Behavior.CueIndex)
-                VideoInfo.Cue = r.Behavior.CueIndex(i);
+                VideoInfo.Cue = r.Behavior.CueIndex(i,2);
             end
             VideoInfo.Time = t_frameon(ind_frame_postevent_all);
             VideoInfo.Foreperiod = FP_ni;

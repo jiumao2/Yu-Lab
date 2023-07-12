@@ -48,7 +48,7 @@
 #### Place Files Properly  
 - Include all [Ephys/Med/Bpod file](#necessary-files), `DetectSpikesGeneral.m` and `BuildArray_MedOpto.m` in a single folder  
 - `DetectSpikesGeneral.m` and `BuildArray_MedOpto.m` can be found in `.\CodesHY\Scripts`
-![avatar](./readme/SpikeDectectionFiles.jpg)
+![](./readme/SpikeDectectionFiles.jpg)
 
 #### Spike Detection  
 - `openNEV` open xxx.nev  
@@ -66,14 +66,14 @@
   - `mua_x.mat`: unclustered data converted from `times_chdat_meansubx.mat`, which can be opened by SimpleClust. Run `mua2wave_clust('x')` or `wave_clust2mua('x')` to convert these 2 kinds of data  
 #### Simple Clust  
 - Run `jsimpleclust`
-![avatar](./readme/SimpleClustManual.png)
+![](./readme/SimpleClustManual.png)
   - open `mua_x.mat`
   - select all points that are noise or not spikes of interest  
-  ![avatar](./readme/SimpleClust1.png)
+  ![](./readme/SimpleClust1.png)
   - click '+wavelet'. This step takes about 3 minutes  
-  ![avatar](./readme/SimpleClust2.png)
+  ![](./readme/SimpleClust2.png)
   - select different waveforms based on multiple features  
-  ![avatar](./readme/SimpleClust3.png)
+  ![](./readme/SimpleClust3.png)
   - removing "bad" waveforms  based on multiple features
   - save and exit
   - tips:
@@ -84,18 +84,18 @@
 - Run `wc` and `celestina`
   - load `chdat_meansubx_spikes.mat`
   - manually clear the abnormal waveforms and reject the noisy clustered
-  ![avatar](./readme/wc1.jpg)
+  ![](./readme/wc1.jpg)
   - click 'Save clusters' !!!
   - click 'load from GUI' in celestina. Check whether a cluster is a single unit and whether 2 clusters are the same
   - run `PlotWaveClusSorting('4', 'trange', [220 230], 'spkrange', [-1800 500], 'lfprange', [-800 500])` to plot the spikes from channel 4, time from 220s to 230s, spike y axis ranging from -1800mV to 500mV and LFP y-axis ranging from -800mV to 500mV  
-  ![avatar](./readme/PlotWaveClusSorting.jpg)  
+  ![](./readme/PlotWaveClusSorting.jpg)  
 
 ### PSTH
 - Open `BuildArray_MedOpto.m`. Edit `name`, `blocks` and `units`. Determine whether a unit is a single unit by ISIH (Interspike Interval Histogram) in wc (usually less than 1% in < 3ms).
 - Run `BuildArray_MedOpto.m`. Select the thresholds as instructed. And then PSTH of all units will be plot and saved in `./Fig/`
-  ![avatar](./readme/Ch4_Unit3.png)  
+  ![](./readme/Ch4_Unit3.png)  
 - `RTarrayAll.mat` will save all the behavioral and electrophysiological data.  
-![avatar](./readme/r2.jpg)
+![](./readme/r2.jpg)
 - The meaning of fields in `r`:  
   - Meta: the meta information of each block
   - Behavior: behavioral data
@@ -107,12 +107,33 @@
   - Units: electrophysilogical data
     - Profile: the units in each channel
     - SpikeNotes/Definition: `Definition` defines the `SpikeNotes`
-    - SpikeTimes: the spike time and the waveform of each spike
+    - SpikeTimes: the spike time and the waveform of each spike  
+#### how is R array built?
+1. Make unit table: channel id, unit quality (single/multi unit)
+2. Read NS6 file and get the timestamps when each block starts and compute `dt` (the time interval between blocks)
+3. Use function `track_training_progress_advanced` to read data from MED files. A `B_Animal_Date_Time.mat` file will be generated. It contains a variable `b`: the information of each trial and the timings of each event. The time is according to the MED system.
+![](./readme/MED.png)  
+4. Load Bpod file. It contains a struct `SessionData` which contains the information of each trial and the timings of each event. The time is according to the Bpod system.  
+![](./readme/Bpod.png)  
+The most important information is in `SessionData.RawEvents.Trial{1, trialNumber}.States`.  
+![](./readme/BpodStates.png)  
+5. Do alignment in each block. The final timeline is according to the BlackRock system.  
+(1) Load NEV data. Use function `DIO_Events4` or `DIO_Events5` to extract the data out and form `EventOut`.  
+![](./readme/NEV.png) 
+![](./readme/EventOut_EventsLabels.png)
+![](./readme/EventOut_TimeEvents.png)
+6. Combines all `EventOut` using `dt` to generate `EventOutCombined`.
+7. Use function `Bpod_Events_MedOptoRecording` to extract data from `SessionData`. `BpodEvents` will be generated, which will be used to update 'poke' events using function `UpdatePokeFromBpodEvents`.
+![](./readme/BpodEvents.png)  
+8. Align MED events to BlackRock events using function `AlignBehaviorClassToBR` to update `EventOutCombined`. Add FP, outcome, cue and trigger information to `EventOutCombined`. Note that the press times in BlackRock should be always contains in the press times in MED.    
+9. Use the information in `EventOutCombined` and electrophysiological information to construct `r`.
+
+
 ### Video Analysis
 #### Place Files Properly  
 - Include all [Video files](#necessary-files), `ExtractVideoFrames.m`, `updateR.m` and `updateVideoTracking.m` in a single folder  
 - `ExtractVideoFrames.m`, `updateR.m` and `updateVideoTracking.m` can be found in `.\CodesHY\Scripts`
-![avatar](./readme/VideoAnalysisFiles.jpg)
+![](./readme/VideoAnalysisFiles.jpg)
 #### Get Timestamps Of Each Frame
 - Open `ExtractVideoFrames.m`. Edit `topviews` and `sideviews`.
 - Run `ExtractVideoFrames.m`. `timestamps.mat` which contains timestamps of each frame will be saved.
@@ -126,13 +147,13 @@
 #### Extracting Frames When Neuron Bursts (high firing rate)
 - `ExtractBurstFrame(r,1,'view','top')` it will generate `./VideoFrame_top/BurstFrame/Unit1.avi`, which contains the 1000 (or more) frames when the unit has highest firing rate  
   - Urey 2021.11.24 Unit 3  
-![avatar](./readme/Unit3.gif)
+![](./readme/Unit3.gif)
 #### Extracting Frames With Raster Plot
 - Copy `.\CodesHY\Scripts\MakeRasterPlotVideo.m` to the current directory (xxx_video)
 - Edit `camview`.
 - Run `MakeRasterPlotVideo.m`. Raw video with raster plot will be generated in `./VideoFrame_camview/Video`  
   - Urey 2021.11.24 Unit 3 Trail 200  
-![avatar](./readme/Press200.gif)
+![](./readme/Press200.gif)
 #### PCA
 - Run `pca_video_with_tracking()`
   - `bodypart`: if you have tracking data, this function would do cross correlation with firing rate and label the trackings to videos
@@ -209,8 +230,8 @@
 ### PSTH  
 - `SRTSpikesV6(r_all,unit_num)`  
   - Russo 20210906~20210910  
-![Avater](./readme/Ch14_Unit1.png)
+![](./readme/Ch14_Unit1.png)
 ### Tracking Analysis
 `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysisAll.m`
   - Russo 20210906~20210910  
-![Avater](./readme/TrajComparing_Unit13_Press.png)
+![](./readme/TrajComparing_Unit13_Press.png)
