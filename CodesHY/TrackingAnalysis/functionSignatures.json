@@ -105,5 +105,13 @@
           {"name":"y", "kind":"required", "type":"numeric"},
           {"name":"mode", "kind":"namevalue", "type":"choices={'fast','normal'}"}
        ]
+    },
+
+    "plotTrajPreferenceTime":
+    {
+      "inputs":
+      [
+         {"name":"r", "kind":"required", "type":"struct"}
+      ]
     }
   }

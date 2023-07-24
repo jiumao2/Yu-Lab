@@ -109,7 +109,7 @@ for i =1:nFPs
 end
 
 % the size of FPs can be different in r
-if size(FPs_correct_presses,1)~=1
+if size(FPs_correct_presses,1)~=1 && size(t_correct_releases,1)==1
     FPs_correct_presses = FPs_correct_presses';
 end
 

@@ -5,6 +5,9 @@ function PSTH = ComputePlotPSTH(r, PSTHOut, ku, varargin)
 % Extracted from SRTSpikes
 % Jianing Yu 5/10/2023  This is adapted from Spikes.SRT.ComputePlotPSTH
 
+% Modified by Yue Huang on 7/12/2023
+% Change the way of making raster plots to run faster
+
 close all;
 PSTH.UnitID       = ku;
 combine_cue_uncue = 0;

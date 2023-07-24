@@ -144,8 +144,8 @@ for k = 1:length(ind_correct)
     plot(this_x(idx_good),this_y(idx_good),'.-','Color',colors(cat(end),:));
 
 end  
-if ~exist('Fig','dir')
-    mkdir('Fig')
+if ~exist('./Fig','dir')
+    mkdir('./Fig');
 end
 saveas(gcf,'Fig/Traj_classification.png');
 %% save to R
@@ -155,9 +155,7 @@ end
 r.TrajectoryConstraints = trajectory;
 save RTarrayAll.mat r
 %% Draw Trajectories
-for k = 1:length(trajectory)+1
-    drawTraj(r,k);
-end
+drawTraj(r);
 %% Make Figures
 for num_unit = 1:length(r.Units.SpikeTimes)
 PlotComparingTrajPSTH(r,num_unit,'event',event);
