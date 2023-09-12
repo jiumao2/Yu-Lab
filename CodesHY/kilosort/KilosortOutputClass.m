@@ -485,6 +485,7 @@ classdef KilosortOutputClass<handle
             BpodProtocol = 'OptoRecording';
             Experimenter = 'HY';
             NS6all = [];
+            saveWaveMean = false;
             
             if nargin>=4
                 for i=1:2:size(varargin,2)
@@ -503,6 +504,8 @@ classdef KilosortOutputClass<handle
                             Experimenter =  varargin{i+1}; 
                         case 'NS6all'
                             NS6all = varargin{i+1};
+                        case 'saveWaveMean'
+                            saveWaveMean = varargin{i+1};
                         otherwise
                             error('unknown argument!');
                     end
@@ -730,6 +733,7 @@ classdef KilosortOutputClass<handle
             behavior_blocks = blocks;
             addForce = false;
             addLaser = false;
+            saveWaveMean = false;
             
             if nargin>=5
                 for i=1:2:size(varargin,2)
@@ -754,6 +758,8 @@ classdef KilosortOutputClass<handle
                             addForce = varargin{i+1};
                         case 'addLaser'
                             addLaser = varargin{i+1};
+                        case 'saveWaveMean'
+                            saveWaveMean = varargin{i+1};
                         otherwise
                             errordlg('unknown argument')
                     end
@@ -769,7 +775,8 @@ classdef KilosortOutputClass<handle
                     'BpodProtocol', BpodProtocol,...
                     'blocks', blocks(idx_blocks{k}),...
                     'Experimenter', Experimenter,...
-                    'NS6all', NS6all(idx_blocks{k})...
+                    'NS6all', NS6all(idx_blocks{k}),...
+                    'saveWaveMean', saveWaveMean...
                     );
             end
 
@@ -877,11 +884,6 @@ classdef KilosortOutputClass<handle
                 % load spike time:
                 r.Units.SpikeTimes(i).timings = obj.SpikeTable(i,:).spike_times_r{1};
                 r.Units.SpikeTimes(i).wave = obj.SpikeTable(i,:).waveforms{1};
-                if saveWaveMean
-                    r.Units.SpikeTimes(i).wave_mean = obj.SpikeTable(i,:).waveforms_mean{1};
-                else
-                    r.Units.SpikeTimes(i) = rmfield(r.Units.SpikeTimes(i), 'wave_mean');
-                end
             
                 % remove  90% of spike waveforms to reduce file size
                 % index spk train
@@ -1010,10 +1012,8 @@ classdef KilosortOutputClass<handle
             y = obj.ChanMap.ycoords;
             
             waveforms = obj.SpikeTable(unit_num,:).waveforms_mean{1};
-            waveforms = waveforms(:,16:end);
             
             waveforms_example = obj.getWaveforms(unit_num, N_waveforms_std);
-            waveforms_example = waveforms_example(:,:,16:end);
             
             max_amp = max(max(waveforms,[],2)-min(waveforms,[],2));
             y_scale = 50/max_amp;

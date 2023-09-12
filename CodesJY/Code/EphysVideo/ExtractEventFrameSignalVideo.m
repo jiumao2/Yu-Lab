@@ -33,6 +33,7 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
     sort_by_unit = true;
     frame_rate = 10;
     start_trial = 1;
+    min_frame_interval = 1000;
 
     if nargin>3
         for i=1:2:size(varargin,2)
@@ -53,6 +54,8 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
                     frame_rate = varargin{i+1}; 
                 case 'start_trial'
                     start_trial = varargin{i+1}; 
+                case 'min_frame_interval'
+                    min_frame_interval = varargin{i+1};
                 otherwise
                     errordlg('unknown argument')
             end
@@ -149,7 +152,7 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
     end
     t_spikeson_all = sort(t_spikeson_all);
 
-    ind_break = find(diff(t_frameon)>1000);
+    ind_break = find(diff(t_frameon)>min_frame_interval);
     t_seg =[];
     % t_trigger_sort=[];
     % t_press_sort=[];

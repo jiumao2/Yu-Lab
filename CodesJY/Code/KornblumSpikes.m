@@ -347,8 +347,6 @@ PSTHOut.Trigger = {psth_goodtrigger, ts_goodtrigger, trialspxmat_goodtrigger,...
     tspkmat_goodtrigger, t_triggers_correct};
 PSTHOut.TriggerLate = {psth_badtrigger, ts_badtrigger, trialspxmat_badtrigger,...
     tspkmat_badtrigger, t_triggers_late};
-  
-close all;
 
 %% plot raster and spks
 cue_linewidth           =    1.5;
@@ -358,7 +356,7 @@ if length(ind_cue)<0.5*length(ind_uncue)
     cue_linewidth = 0.75;
 end
 
-figure(27); clf(27)
+figure();
 set(gcf, 'unit', 'centimeters', 'position', printsize, 'paperpositionmode', 'auto' ,'color', 'w')
 
 ha1 =  axes('unit', 'centimeters', 'position', [1 1 5 2], 'nextplot', 'add', 'xlim', [-PressTimeDomain(1) PressTimeDomain(2)]);
@@ -1125,7 +1123,7 @@ uicontrol('style', 'text', 'units', 'centimeters', 'position', [ycolumn2(1) ycol
 % change the height of the figure
 
 FinalHeight = ycolumn2(2)+4; 
-set(27, 'position', [2 2 20 FinalHeight] )
+set(gcf, 'position', [2 2 20 FinalHeight] )
 toc;
 
 % save to a folder

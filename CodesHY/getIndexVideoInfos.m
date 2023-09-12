@@ -76,8 +76,8 @@ function idx_out = getIndexVideoInfos(r, varargin)
     if strcmp(Trajectory,'All')
         Trajectory_idx = idx_all;
     else
-        traj_all = nan*zeros(length(r.VideoInfos_side),1);
-        for k = 1:length(r.VideoInfos_side)
+        traj_all = nan*zeros(length(r.VideoInfos_top),1);
+        for k = 1:length(r.VideoInfos_top)
             if ~isempty(r.VideoInfos_top(k).Trajectory)
                 traj_all(k) = r.VideoInfos_top(k).Trajectory;
             end

@@ -3,6 +3,7 @@ function PlotComparingTrajPSTH(r,num_unit,varargin)
     t_pre = r.VideoInfos_top(1).t_pre;
     t_post = r.VideoInfos_top(1).t_post;
     binwidth = 20;
+    session = -1;
 
     if nargin>=3
         for i=1:2:size(varargin,2)
@@ -14,15 +15,29 @@ function PlotComparingTrajPSTH(r,num_unit,varargin)
                 case 't_post'
                     t_post =  varargin{i+1};
                 case 'binwidth'
-                    binwidth =  varargin{i+1};    
+                    binwidth =  varargin{i+1};
+                case 'session'
+                    session = varargin{i+1};
                 otherwise
                     errordlg('unknown argument')
             end
         end
     end
 
+    if session~=-1
+        t_start = get_t_start_session(r,session);
+        t_end = get_t_end_session(r,session);
+    end
+
     ind_correct = find(strcmp({r.VideoInfos_top.Performance},'Correct'));
     cat = [r.VideoInfos_top.Trajectory];
+
+    t_all = [r.VideoInfos_top(ind_correct).Time];
+    if session~=-1
+        ind_correct = ind_correct(t_all>t_start & t_all<t_end);
+        cat = cat(t_all>t_start & t_all<t_end);
+    end
+    
     num_traj = max(cat(:))-1;
     colors = colororder;
     colors(num_traj+1,:) = [0.5,0.5,0.5];
@@ -180,5 +195,9 @@ function PlotComparingTrajPSTH(r,num_unit,varargin)
     h.Units = 'Centimeters';
     h.Position(3) = 2*axes_width+1;
     h.Position(4) = max(h1,h2)+0.5;
-    saveas(gcf,['Fig/TrajComparing_Unit',num2str(num_unit),'_',event,'.png']);
+    if session == -1
+        saveas(gcf,['Fig/TrajComparing_Unit',num2str(num_unit),'_',event,'.png']);
+    else
+        saveas(gcf,['Fig/TrajComparing_Unit',num2str(num_unit),'_',event,'_Session_',num2str(session),'.png']);
+    end
 end

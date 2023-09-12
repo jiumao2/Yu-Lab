@@ -1,4 +1,4 @@
-function [average_spikes_long, average_spikes_short] = get_average_spikes(r, unit_of_interest,t_pre,t_post,varargin)
+function [average_spikes_cued, average_spikes_uncued] = get_average_spikes_KB(r, unit_of_interest,t_pre,t_post,varargin)
 
     gaussian_kernel = 50;
     normalized = '';
@@ -33,8 +33,8 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
         unit_of_interest = unit_of_interest_new;
     end
     if isempty(unit_of_interest)
-        average_spikes_long = [];
-        average_spikes_short = [];
+        average_spikes_cued = [];
+        average_spikes_uncued = [];
         return
     end
 
@@ -57,7 +57,7 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
     % gaussian kernel
     spikes = smoothdata(spikes','gaussian',gaussian_kernel*5)'; % sigma = 250/5 = 50ms
 
-    % pick correct trials and separate long-FP/short-FP trials
+    % pick correct trials and separate cued/uncued trials
     ind_press = find(strcmp(r.Behavior.Labels, 'LeverPress'));
     t_presses = round(r.Behavior.EventTimings(r.Behavior.EventMarkers == ind_press));
     ind_release = find(strcmp(r.Behavior.Labels, 'LeverRelease'));
@@ -66,8 +66,9 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
     t_rewards= round(r.Behavior.EventTimings(r.Behavior.EventMarkers == ind_rewards));
 
     correct_index = r.Behavior.CorrectIndex;
-    FP_long_index = find(r.Behavior.Foreperiods(correct_index)==1500);
-    FP_short_index = find(r.Behavior.Foreperiods(correct_index)==750);
+    cue = r.Behavior.CueIndex(correct_index,2);
+    cued_index = find(cue==1);
+    uncued_index = find(cue==0);
 
 %     movetime = zeros(1, length(t_rewards));
 %     for i =1:length(t_rewards)
@@ -80,8 +81,8 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
 %     t_rewards = t_rewards(movetime>0);
 
     t_rewards_new = [];
-    FP_long_index_reward = [];
-    FP_short_index_reward = [];
+    cued_reward = [];
+    uncued_reward = [];
     for i = 1:length(correct_index)
         dt = t_rewards - t_releases(correct_index(i));
         idx_dt = find(dt>0, 1);
@@ -90,10 +91,10 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
         end
         if correct_index(i)==length(t_releases) || dt(idx_dt)<t_releases(correct_index(i)+1)-t_releases(correct_index(i))
             t_rewards_new = [t_rewards_new, t_rewards(idx_dt)];
-            if r.Behavior.Foreperiods(correct_index(i)) == 1500
-                FP_long_index_reward = [FP_long_index_reward, i];
+            if cue(i) == 1
+                cued_reward = [cued_reward, i];
             else
-                FP_short_index_reward = [FP_short_index_reward, i];
+                uncued_reward = [uncued_reward, i];
             end
         end
     end
@@ -114,10 +115,10 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
         t_event = t_event(t_event<t_end);
     end
 
-    FP_long_index(FP_long_index>length(t_event)) = [];
-    FP_short_index(FP_short_index>length(t_event)) = [];
-    FP_long_index_reward(FP_long_index_reward>length(t_event)) = [];
-    FP_short_index_reward(FP_short_index_reward>length(t_event)) = [];
+    cued_index(cued_index>length(t_event)) = [];
+    uncued_index(uncued_index>length(t_event)) = [];
+    cued_reward(cued_reward>length(t_event)) = [];
+    uncued_reward(uncued_reward>length(t_event)) = [];
 
     spikes_trial = zeros(t_len, length(t_event), length(unit_of_interest));
 
@@ -129,16 +130,16 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
 
     % Average
     if ~strcmp(event,'reward')
-        average_spikes_long = reshape(mean(spikes_trial(:,FP_long_index,:),2),t_len,[]);
-        average_spikes_short = reshape(mean(spikes_trial(:,FP_short_index,:),2),t_len,[]);  
+        average_spikes_cued = reshape(mean(spikes_trial(:,cued_index,:),2),t_len,[]);
+        average_spikes_uncued = reshape(mean(spikes_trial(:,uncued_index,:),2),t_len,[]);  
     else
-        average_spikes_long = reshape(mean(spikes_trial(:,FP_long_index_reward,:),2),t_len,[]);
-        average_spikes_short = reshape(mean(spikes_trial(:,FP_short_index_reward,:),2),t_len,[]);
+        average_spikes_cued = reshape(mean(spikes_trial(:,cued_reward,:),2),t_len,[]);
+        average_spikes_uncued = reshape(mean(spikes_trial(:,uncued_reward,:),2),t_len,[]);
     end
 
     if strcmp(normalized,'zscore')
-        average_spikes_long = zscore(average_spikes_long,0,1);
-        average_spikes_short = zscore(average_spikes_short,0,1);
+        average_spikes_cued = zscore(average_spikes_cued,0,1);
+        average_spikes_uncued = zscore(average_spikes_uncued,0,1);
     end
 
 end

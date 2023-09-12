@@ -3,7 +3,12 @@ function drawTraj(r, bodypart)
         bodypart = 'right_ear';
     end
 vid_dir = './VideoFrames_top/RawVideo/';
-colors = {{[62,84,172]/255,[191,172,226]/255},{[179,0,94]/255,[255,95,158]/255},{[189,205,214]/255,[238,233,218]/255}};
+colors = {...
+    {[62,84,172]/255,[191,172,226]/255},...
+    {[179,0,94]/255,[255,95,158]/255},...
+    {[189,205,214]/255,[238,233,218]/255},...
+    {[0,128,0]/255,[141,182,0]/255},...
+    {[255,162,0]/255,[155,107,25]/255}};
 lineWidth = 0.2;
 
 ind_bodypart = find(strcmp(r.VideoInfos_top(1).Tracking.BodyParts, bodypart));
@@ -115,7 +120,7 @@ ylabel(ax_all{2,1}, 'Before press');
 ylabel(ax_all{3,1}, 'After trigger');
 
 EasyPlot.cropFigure(fig);
-EasyPlot.exportFigure(fig,'Fig/TrajClassification','type','png');
+EasyPlot.exportFigure(fig,['Fig/TrajClassification_',r.Meta(1).Subject,'_',datestr(r.Meta(1).DateTime,'yyyymmdd')]);
 end
 
 function [x_plot, y_plot] = getFlattenedTraj(traj)

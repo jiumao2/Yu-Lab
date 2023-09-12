@@ -341,5 +341,22 @@
          {"name":"unit_num", "kind":"required", "type":"numeric"},
          {"name":"onlyFirstSession", "kind":"namevalue", "type":"choices={'on','off'}"}
       ]
+   },
+
+   "plotTrajPreferenceTime":
+   {
+      "inputs":
+      [
+         {"name":"r", "kind":"required", "type":"struct"},
+         {"name":"trajNotes", "kind":"optional", "type":"cell"}
+      ]
+   },
+
+   "plotHandPreferenceTime":
+   {
+      "inputs":
+      [
+         {"name":"r", "kind":"required", "type":"struct"}
+      ]
    }
   }

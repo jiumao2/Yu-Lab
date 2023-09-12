@@ -9,16 +9,22 @@ for ind_p = 1:length(p)
     r = length(seq);
     m = round((l+r)/2);
     
+    flag = false;
     while r-l>1
         if seq(m) > p_this
             r = m;
         elseif seq(m) < p_this
             l = m;
         else
-            ind_out = m;
-            return
+            ind_out(ind_p) = m;
+            flag = true;
+            break
         end
         m = round((l+r)/2);
+    end
+
+    if flag
+        continue
     end
     
     if abs(seq(l)-p_this) < abs(seq(r)-p_this)

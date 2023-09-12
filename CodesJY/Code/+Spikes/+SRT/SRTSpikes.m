@@ -62,7 +62,7 @@ end
 rb                            =       r.Behavior;
 % all FPs
 if length(r.BehaviorClass)>1
-    r.BehaviorClass = r.BehaviorClass{1};
+    r.BehaviorClass = r.BehaviorClass(1);
 end
 
 MixedFPs                =       r.BehaviorClass.MixedFP; % you have to use BuildR2023 or BuildR4Tetrodes2023 to have this included in r.

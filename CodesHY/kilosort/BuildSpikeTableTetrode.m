@@ -47,8 +47,10 @@ for k = 1:height(spikeTable)
 
     wf = getWaveforms(gwfparams);
     
-%     ch_tbl{k} = ch_amp_largest;
-    y = ycoords(spikeTable(k,:).ch);
+    amp_ch = max(squeeze(wf.waveFormsMean),[],2)-min(squeeze(wf.waveFormsMean),[],2);
+    [~, ch_amp_largest] = max(amp_ch);
+
+    y = ycoords(ch_amp_largest);
     ch_tetrodes{k} = find(ycoords==y);
     ch_tbl{k} = round(y/10000);
     
