@@ -1,7 +1,6 @@
 clear
 load('RTarray_Max_20220721.mat')
 fr = 10;
-camview = 'top';
 % there are filenames = { 'datafile001.ns6',  'datafile002.ns6',  'datafile003.ns6'};
 topviews = {
     '20220721-18-40-35.000.seq' % session 001
@@ -175,7 +174,36 @@ save RTarrayAll.mat r
 
 %% Make video clips
 load timestamps.mat
+camview = 'top';
+if isfield(r,'VideoInfos')
+    r = rmfield(r,'VideoInfos');
+end
 
+ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', camview,...
+    'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1);
+
+mat_dir = ['./VideoFrames_',camview,'/MatFile'];
+output = dir([mat_dir,'/*.mat']);
+filenames = {output.name};
+filenames = sort(filenames);
+if strcmp(camview,'top')
+    for k = 1:length(filenames)
+        temp_filename = [mat_dir,'/',filenames{k}];
+        load(temp_filename);
+        r.VideoInfos_top(k) = VideoInfo;
+    end
+elseif strcmp(camview,'side')
+    for k = 1:length(filenames)
+        temp_filename = [mat_dir,'/',filenames{k}];
+        load(temp_filename);
+        r.VideoInfos_side(k) = VideoInfo;
+    end    
+end
+
+save('RTarrayAll.mat','r')
+%% Make video clips
+load timestamps.mat
+camview = 'side';
 if isfield(r,'VideoInfos')
     r = rmfield(r,'VideoInfos');
 end

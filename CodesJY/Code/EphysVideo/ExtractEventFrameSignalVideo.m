@@ -477,12 +477,12 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
                 tic
                 img_seq = cell(length(frames_to_extract),1);
                 for frame_index = 1:length(frames_to_extract)
-    %                 try
+%                     try
                         img_seq{frame_index} = ReadJpegSEQ2(vidfile, frames_to_extract(frame_index)); % ica is image cell array
-    %                 catch
-    %                     img_seq{frame_index} = img_seq{frame_index-1};
-    %                     disp(['[', events, ' ', num2str(i),'] error on read No. ',num2str(frame_index),' frame']);
-    %                 end
+%                     catch
+%                         img_seq{frame_index} = img_seq{frame_index-1};
+%                         disp(['[', events, ' ', num2str(i),'] error on read No. ',num2str(frame_index),' frame']);
+%                     end
                 end
                 toc
 

@@ -3,34 +3,35 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [Electrophysiology Data Analysis Pipeline](#electrophysiology-data-analysis-pipeline)
-  - [Overview](#overview)
-    - [Necessary Files](#necessary-files)
-  - [Pipeline of Analyzing Data From Single Session](#pipeline-of-analyzing-data-from-single-session)
-    - [Spike Sorting](#spike-sorting)
+- [Overview](#overview)
+  - [Necessary Files](#necessary-files)
+- [Pipeline of Analyzing Data From Single Session](#pipeline-of-analyzing-data-from-single-session)
+  - [Spike Sorting](#spike-sorting)
+    - [Kilosort](#kilosort)
+    - [Wave clus](#wave-clus)
       - [Place Files Properly](#place-files-properly)
       - [Spike Detection](#spike-detection)
       - [Simple Clust](#simple-clust)
       - [Double Checking](#double-checking)
-    - [PSTH](#psth)
-    - [Video Analysis](#video-analysis)
-      - [Place Files Properly](#place-files-properly-1)
-      - [Get Timestamps Of Each Frame](#get-timestamps-of-each-frame)
-      - [Make Video Clips](#make-video-clips)
-      - [Extracting Frames When Neuron Bursts (high firing rate)](#extracting-frames-when-neuron-bursts-high-firing-rate)
-      - [Extracting Frames With Raster Plot](#extracting-frames-with-raster-plot)
-      - [PCA](#pca)
-      - [Add More Information About The Video Clips](#add-more-information-about-the-video-clips)
-      - [Encoding Analysis: Generalized Linear Model](#encoding-analysis-generalized-linear-model)
-    - [Trajectory Analysis](#trajectory-analysis)
-      - [DeepLabCut](#deeplabcut)
-      - [EphysDLCapp: Manually Check the Trackings](#ephysdlcapp-manually-check-the-trackings)
-      - [Define Trajectories And Generate Figures](#define-trajectories-and-generate-figures)
-      - [Lift trajectories analysis](#lift-trajectories-analysis)
-  - [Pipeline of Analyzing Data From Multiple Sessions](#pipeline-of-analyzing-data-from-multiple-sessions)
-    - [Combine All The Units](#combine-all-the-units)
-    - [PSTH](#psth-1)
-    - [Tracking Analysis](#tracking-analysis)
+      - [PSTH](#psth)
+      - [how is R array built?](#how-is-r-array-built)
+  - [Video Analysis](#video-analysis)
+    - [Place Files Properly](#place-files-properly-1)
+    - [Get Timestamps Of Each Frame](#get-timestamps-of-each-frame)
+    - [Extracting Frames When Neuron Bursts (high firing rate)](#extracting-frames-when-neuron-bursts-high-firing-rate)
+    - [Extracting Frames With Raster Plot](#extracting-frames-with-raster-plot)
+    - [PCA](#pca)
+    - [Encoding Analysis: Generalized Linear Model](#encoding-analysis-generalized-linear-model)
+  - [Trajectory Analysis](#trajectory-analysis)
+    - [DeepLabCut](#deeplabcut)
+    - [EphysDLCapp: Manually Check the Trackings](#ephysdlcapp-manually-check-the-trackings)
+    - [Define Trajectories And Generate Figures](#define-trajectories-and-generate-figures)
+    - [Lift trajectories analysis](#lift-trajectories-analysis)
+- [Pipeline of Analyzing Data From Multiple Sessions](#pipeline-of-analyzing-data-from-multiple-sessions)
+  - [Combine All The Units](#combine-all-the-units)
+  - [PSTH](#psth-1)
+  - [Tracking Analysis](#tracking-analysis)
+- [Preliminary Results](#preliminary-results)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -45,12 +46,16 @@
 ## Pipeline of Analyzing Data From Single Session
 
 ### Spike Sorting  
-#### Place Files Properly  
+#### Kilosort  
+- See [here](./CodesHY/kilosort/readme.md)
+
+#### Wave clus
+##### Place Files Properly  
 - Include all [Ephys/Med/Bpod file](#necessary-files), `DetectSpikesGeneral.m` and `BuildArray_MedOpto.m` in a single folder  
 - `DetectSpikesGeneral.m` and `BuildArray_MedOpto.m` can be found in `.\CodesHY\Scripts`
 ![](./readme/SpikeDectectionFiles.jpg)
 
-#### Spike Detection  
+##### Spike Detection  
 - `openNEV` open xxx.nev  
 - `CheckNEVSpikes(NEV)` check waveforms and choose good channels  
 - Edit the variable `LiveChs` (line 22) based on online sorting and the chosen channels  
@@ -64,7 +69,7 @@
   - `chdat_meansubx_spikes.mat`: Spike detection data, the result from `chdat_meansubx.mat` going through `Get_spikes`. Saves spikes, spike times (in ms), used parameters and a sample segment of the continuous data.
   - `times_chdat_meansubx.mat`: Auto-clustering data, the result from `chdat_meansubx_spikes.mat` going through `Do_clustering`. Saves spikes, spike times (in ms), coefficients used (inspk), used parameters, random spikes selected for clustering (ipermut) and results (cluster_class)  
   - `mua_x.mat`: unclustered data converted from `times_chdat_meansubx.mat`, which can be opened by SimpleClust. Run `mua2wave_clust('x')` or `wave_clust2mua('x')` to convert these 2 kinds of data  
-#### Simple Clust  
+##### Simple Clust  
 - Run `jsimpleclust`
 ![](./readme/SimpleClustManual.png)
   - open `mua_x.mat`
@@ -79,7 +84,7 @@
   - tips:
     - Since '+wavelet' step need a few time, you can open more MATLAB for efficiency
     - You can open `chx_simpleclust.mat` to check your previously clustered data
-#### Double Checking
+##### Double Checking
 - Run `mua2wave_clust('x')` to converted `chx_simpleclust.mat` back to `times_chdat_meansubx.mat` and `chdat_meansubx_spikes.mat`
 - Run `wc` and `celestina`
   - load `chdat_meansubx_spikes.mat`
@@ -90,7 +95,7 @@
   - run `PlotWaveClusSorting('4', 'trange', [220 230], 'spkrange', [-1800 500], 'lfprange', [-800 500])` to plot the spikes from channel 4, time from 220s to 230s, spike y axis ranging from -1800mV to 500mV and LFP y-axis ranging from -800mV to 500mV  
   ![](./readme/PlotWaveClusSorting.jpg)  
 
-### PSTH
+##### PSTH
 - Open `BuildArray_MedOpto.m`. Edit `name`, `blocks` and `units`. Determine whether a unit is a single unit by ISIH (Interspike Interval Histogram) in wc (usually less than 1% in < 3ms).
 - Run `BuildArray_MedOpto.m`. Select the thresholds as instructed. And then PSTH of all units will be plot and saved in `./Fig/`
   ![](./readme/Ch4_Unit3.png)  
@@ -102,13 +107,13 @@
     - Labels: the meaning of each label marker
     - CorrectIndex/PrematureIndex/LateIndex/DarkIndex: the index of correct/premature/late/dark trial. Each trial corresponds to each press.
     - Foreperiod: the forperiod of each trial
-    - Some trials (presses) are not categorized into either class (correct/premature/late/dark)
     - EventMarkers/EventTimings: the timings of each event
   - Units: electrophysilogical data
     - Profile: the units in each channel
     - SpikeNotes/Definition: `Definition` defines the `SpikeNotes`
-    - SpikeTimes: the spike time and the waveform of each spike  
-#### how is R array built?
+    - SpikeTimes: the spike time and the waveform of each spike
+  - BehaviorClass: a class generated from `MED` files  
+##### how is R array built?
 1. Make unit table: channel id, unit quality (single/multi unit)
 2. Read NS6 file and get the timestamps when each block starts and compute `dt` (the time interval between blocks)
 3. Use function `track_training_progress_advanced` to read data from MED files. A `B_Animal_Date_Time.mat` file will be generated. It contains a variable `b`: the information of each trial and the timings of each event. The time is according to the MED system.
@@ -131,16 +136,15 @@ The most important information is in `SessionData.RawEvents.Trial{1, trialNumber
 
 ### Video Analysis
 #### Place Files Properly  
-- Include all [Video files](#necessary-files), `ExtractVideoFrames.m`, `updateR.m` and `updateVideoTracking.m` in a single folder  
-- `ExtractVideoFrames.m`, `updateR.m` and `updateVideoTracking.m` can be found in `.\CodesHY\Scripts`
+- Include all [Video files](#necessary-files), `MakeVideoClips.m` and `updateVideoTracking.m` in a single folder  
+- `MakeVideoClips.m` and `updateVideoTracking.m` can be found in `.\CodesHY\Scripts`
 ![](./readme/VideoAnalysisFiles.jpg)
 #### Get Timestamps Of Each Frame
-- Open `ExtractVideoFrames.m`. Edit `topviews` and `sideviews`.
-- Run `ExtractVideoFrames.m`. `timestamps.mat` which contains timestamps of each frame will be saved.
-#### Make Video Clips
-- Open `UpdateR.m`. Edit the path of `RTarrayAll.mat`, `fr` and `video_length`.
+- Open `MakeVideoClips.m`. Edit `topviews` and `sideviews`.
+- Run `MakeVideoClips.m`. The ROI of LED and threshold should be manually selected. Then the light-on timestamps will be extracted.
+- Map the frame times to the times in `r` using LED signals.
 - Edit this line `ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', 'top', 'make_video_with_spikes', false, 'sort_by_unit',true,'frame_rate',10,'start_trial',1);` in the last section according to your request
-- Run `UpdateR.m`. A new directory `./VideoFrame_top/` or `./VideoFrame_side/` will be generated.  
+- A new directory `./VideoFrame_top/` or `./VideoFrame_side/` will be generated.  
   - `./VideoFrame_top/MatFile/`: the information about each video clip
   - `./VideoFrame_top/RawVideo`: all the raw video clips  
   A New `r` will be saved. `r.VideoInfos_top` merge the information in `./VideoFrame_top/MatFile/`
@@ -164,13 +168,9 @@ The most important information is in `SessionData.RawEvents.Trial{1, trialNumber
 - Principle Components
 - Eli 2021.9.23  
 ![PC](./readme/PC.png)
-- Video Output
-  - Eli 2021.9.23 Trial 19
+- Video Output  
+  - Eli 2021.9.23 Trial 19  
 ![PCA](./readme/Press019_PC1.gif)  
-#### Add More Information About The Video Clips
-- `.\CodesHY\Scripts\merge_r.mlapp` should be copied under the directory `VideoFrame_camview/`
-- The information will be saved in 'VideoFrame/MatFile/'
-- This app only deals with 'Correct' trials
 #### Encoding Analysis: Generalized Linear Model  
 - Copy `.\CodesHY\glm_SRT\glm_main.m` to the current directory (xxx_video)
 - Choose the kernels and set the parameters of each kernel
@@ -179,7 +179,7 @@ The most important information is in `SessionData.RawEvents.Trial{1, trialNumber
 - Four Kernels of generalized linear model
   - Urey 2021.11.24 Unit 3  
 ![PSTH](./readme/kernel_Unit3.png)
-- Reconstructed PSTH (Urey 2021.11.24 Unit 3)
+- Reconstructed PSTH (Urey 2021.11.24 Unit 3)  
 ![PSTH](./readme/PSTH_Unit3.png)
 
 ### Trajectory Analysis
@@ -187,22 +187,9 @@ The most important information is in `SessionData.RawEvents.Trial{1, trialNumber
 - Use DeepLabCut and analyze the videos in `./VideoFrame_camview/RawVideo`, .csv files should be generated
 - Run `UpdateTracking.m` to update mat files in `./VideoFrame_camview/MatFile` and include tracking data to `r`. The tracking information will be saved in `r.VideoInfos_camview.Tracking`
 #### EphysDLCapp: Manually Check the Trackings
-- Change directory to `./VideoFrame_camview/`
-- Run `EphysDLCapp`  
-![](./readme/EphysDLCApp_side.png)
-![](./readme/EphysDLCApp_top.png)
-- Instructions:
-  - Load Video: start this app by load a video in `./VideoFrame_camview/RawVideo`
-  - Next Video: save data to mat and load next "Correct" video
-  - Fill Start: pick the frame number when the rat starts to lift its hand
-  - Fill Highest: pick the frame number when the rat's hand is highest
-  - Hand: choose the hand that the rat first lifts
-  - Manual Check: manually modify the tracking by clicking on the image
-  - Save data to mat: save to `./VideoFrame_camview/MatFile/`
-  - Skip: save the data but set the isGoodTracking to false and move to next "Correct" video
+- See [EphysDLCApp](./CodesHY/EphysDLCApp/README.md)
 
 #### Define Trajectories And Generate Figures
-- Run `vid=VideoReader('./VideoFrames_top/RawVideo/Press010.avi');bg = vid.read(1);imwrite(bg,'bg.png')` to generate `bg.png`
 - Copy `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysis.m` to the current directory (xxx_video)
 - Set the parameters and run. Follow the instructions  
 - <text id='Traj_classification'>Traj_classification.png  </text>  
@@ -221,12 +208,8 @@ The most important information is in `SessionData.RawEvents.Trial{1, trialNumber
 ## Pipeline of Analyzing Data From Multiple Sessions
 
 ### Combine All The Units
-- Copy `.\CodesHY\Scripts\merge_r.mlapp` to the path where you store session data
-- Load `r` from each session
-- Click "Show Example Unit" to see the units inside `r`
-- Click "Pick this r" if you want to include this `r` in `r_all`
-- Click "Compare Units" to compare each single unit in `r` and in `r_all`. You should determine by eye whether 2 units are same or different
-- Click "Save r_all" and `r_all.mat` will be generated in current path
+- See [findSameNeurons.mlapp](./CodesHY/findSameNeurons/README.md) 
+
 ### PSTH  
 - `SRTSpikesV6(r_all,unit_num)`  
   - Russo 20210906~20210910  
@@ -235,3 +218,7 @@ The most important information is in `SessionData.RawEvents.Trial{1, trialNumber
 `.\CodesHY\TrackingAnalysis\scripts\trackingAnalysisAll.m`
   - Russo 20210906~20210910  
 ![](./readme/TrajComparing_Unit13_Press.png)
+
+## Preliminary Results
+- See [here](https://jianingyulab2019.yuque.com/org-wiki-jianingyulab2019-it6r8i/hlwgkm/pdz5s9dszfpg79so)
+- Video analysis:  [here](https://github.com/jiumao2/VideoAnalysisDataset) or [here](https://jianingyulab2019.yuque.com/org-wiki-jianingyulab2019-it6r8i/hlwgkm/emw04igwvauf2nuh)  
