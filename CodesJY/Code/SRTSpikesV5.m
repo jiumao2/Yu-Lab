@@ -67,6 +67,9 @@ function SRTSpikesV5(r, ind, varargin)
     markersize_portin = 1;
 
     rb = r.Behavior;
+    if size(rb.Foreperiods, 1) == 1
+        rb.Foreperiods = rb.Foreperiods';
+    end
 
     % time of all presses
     ind_press = find(strcmp(rb.Labels, 'LeverPress'));

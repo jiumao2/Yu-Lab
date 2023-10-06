@@ -358,5 +358,13 @@
       [
          {"name":"r", "kind":"required", "type":"struct"}
       ]
+   },
+
+   "TrajHandCrossTalk":
+   {
+      "inputs":
+      [
+         {"name":"r", "kind":"required", "type":"struct"}
+      ]
    }
   }

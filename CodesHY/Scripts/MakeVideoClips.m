@@ -16,12 +16,12 @@ sideviews ={
  
 %% this is the function to extract time stamps from a seq file
 ts_top = struct('ts', [], 'skipind', []);
-for i=1:length(topviews)
+for i = 1:length(topviews)
     ts_top(i) = findts(topviews{i});
 end
  
 ts_side = struct('ts', [], 'skipind', []);
-for i=1:length(sideviews)
+for i = 1:length(sideviews)
     ts_side(i) = findts(sideviews{i});
 end
 clear ts
@@ -64,6 +64,8 @@ if ~isfield(ts, 'mask')
     save timestamps ts
 end
 %% Extract intensity
+sample_interval = 20; % shorter than the LED-on duration
+
 figure;
 if ~isfield(ts, 'intensity')
     n_frame = 0;
@@ -71,14 +73,19 @@ if ~isfield(ts, 'intensity')
         n_frame = n_frame+length(ts.side(k).ts);
     end
     threshold = NaN;
-    intensity = zeros(1,n_frame);
-    count = 1;
+    intensity = nan(1,n_frame);
+    count = 0;
     for k = 1:length(ts.sideviews)
         for j = 1:length(ts.side(k).ts)
-            img = ReadJpegSEQ2(ts.sideviews{k},j);
-            intensity(count) = mean(img(mask));
             count = count+1;
-            if mod(count, 1000) == 0
+            if mod(count, sample_interval)~=1
+                continue
+            end
+
+            img = ReadJpegSEQ2(ts.sideviews{k},j);
+            intensity(count) = mean(img(ts.mask));
+            
+            if mod(count, 1000) == 1
                 disp([num2str(count), ' out of ', num2str(n_frame), ' frames have been extracted!']);
                 cla;
                 plot(intensity(1:count-1),'x-');
@@ -100,12 +107,35 @@ p = drawpoint();
 yline(p.Position(2));
 threshold = p.Position(2);
 
-% close all
-%% get trigger times from r
-press_times = r.Behavior.EventTimings(r.Behavior.EventMarkers==find(strcmp(r.Behavior.Labels, 'LeverPress')));
-FPs = r.Behavior.Foreperiods;
-trigger_times = press_times + FPs;
-trigger_times = trigger_times(sort([r.Behavior.CorrectIndex,r.Behavior.LateIndex]));
+% refine the unsampled points
+count = 0;
+for k = 1:length(ts.sideviews)
+    for j = 1:length(ts.side(k).ts)
+        count = count+1;
+        if isnan(ts.intensity(count)) || ts.intensity(count)<threshold
+            continue
+        end
+        
+        i = count-1;
+        j_this = j-1;
+        while isnan(ts.intensity(i)) && j_this>0
+            img = ReadJpegSEQ2(ts.sideviews{k},j_this);
+            ts.intensity(i) = mean(img(ts.mask));
+            i = i-1;
+            j_this = j_this-1;
+        end
+
+        i = count+1;
+        j_this = j+1;
+        while isnan(ts.intensity(i)) && j_this<=length(ts.side(k).ts)
+            img = ReadJpegSEQ2(ts.sideviews{k},j_this);
+            ts.intensity(i) = mean(img(ts.mask));
+            i = i+1;
+            j_this = j_this+1;
+        end
+    end
+end
+    
 %% get trigger times from videos
 trigger_times_start_idx = [];
 trigger_times_end_idx = [];
@@ -133,11 +163,26 @@ end
 
 trigger_times_start_vid = t_side_all(trigger_times_start_idx);
 trigger_times_end_vid = t_side_all(trigger_times_end_idx);
-% %%
+
+% %% Some points might be removed manually
 % idx_remove = findNearestPoint(trigger_times_start_vid, trigger_times_start_vid(1)+2304610);
 % idx_remove = [1,2];
 % trigger_times_start_vid(idx_remove) = [];
 % trigger_times_start_idx(idx_remove) = [];
+%% get trigger times from r
+press_times = r.Behavior.EventTimings(r.Behavior.EventMarkers==find(strcmp(r.Behavior.Labels, 'LeverPress')));
+FPs = r.Behavior.Foreperiods;
+
+% deal with problems of shape
+if size(press_times,1)~=1
+    press_times = press_times';
+end
+if size(FPs,1)~=1
+    FPs = FPs';
+end
+
+trigger_times = press_times + FPs;
+trigger_times = trigger_times(sort([r.Behavior.CorrectIndex,r.Behavior.LateIndex]));
 %%  
 idx_out = findseqmatch(trigger_times,trigger_times_start_vid);
 
@@ -151,15 +196,15 @@ for k = 1:length(idx_out)
         [1,2], 'k-');
 end
 
-time_maps = [trigger_times(idx_out)';trigger_times_start_vid];
+time_maps = [trigger_times(idx_out);trigger_times_start_vid];
 
-time_diff = trigger_times(idx_out)'-trigger_times_start_vid;
+time_diff = trigger_times(idx_out)-trigger_times_start_vid;
 time_diff = time_diff-time_diff(1);
 
 frames_times_side = align_times(t_side_all, time_maps);
 frames_times_top = align_times(t_top_all, time_maps);
 
-time_diff_corrected = trigger_times(idx_out)'-frames_times_side(trigger_times_start_idx);
+time_diff_corrected = trigger_times(idx_out)-frames_times_side(trigger_times_start_idx);
 time_diff_corrected = time_diff_corrected-time_diff_corrected(1);
 
 figure;
