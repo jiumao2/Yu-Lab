@@ -1,6 +1,8 @@
 function frame_num = getLiftStartFrameAuto(X,Y)
     % X: vector of length n; frame n is the frame of pressing. The x coordinate of the tracking of the left paw
     % Y: vector of length n
+    
+    % these parameters are chosen by analyzing the labeled data
     thres1 = 2500;
     thres2 = 200;
     bias = 1;
