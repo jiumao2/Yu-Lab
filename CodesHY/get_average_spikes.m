@@ -5,6 +5,8 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
     event = 'press';
     is_channel_number = false;
     is_only_first_session = false;
+    t_start = NaN;
+    t_end = NaN;
     for i =1:2:nargin-4
         switch varargin{i}
             case 'gaussian_kernel'
@@ -17,8 +19,12 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
                 is_channel_number = varargin{i+1};
             case 'onlyFirstSession'
                 is_only_first_session = varargin{i+1};
+            case 'tStart'
+                t_start = varargin{i+1};
+            case 'tEnd'
+                t_end = varargin{i+1};
             otherwise
-                error('unknown argument')
+                error('unknown argument');
         end
     end
 
@@ -55,7 +61,7 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
     end
 
     % gaussian kernel
-    spikes = smoothdata(spikes','gaussian',gaussian_kernel*5)'; % sigma = 250/5 = 50ms
+    spikes = smoothdata(spikes','gaussian',gaussian_kernel*5)' * 1000; % sigma = 250/5 = 50ms
 
     % pick correct trials and separate long-FP/short-FP trials
     ind_press = find(strcmp(r.Behavior.Labels, 'LeverPress'));
@@ -110,9 +116,17 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
     t_event = t_event(t_event+t_post<length(spikes));
 
     if is_only_first_session
+        t_start = get_t_start_session(r,1);
         t_end = get_t_end_session(r,1);
-        t_event = t_event(t_event<t_end);
     end
+    if isnan(t_start)
+        t_start = get_t_start_session(r, 1);
+    end
+    if isnan(t_end)
+        t_end = get_t_end_session(r, length(r.Meta));
+    end
+
+    t_event = t_event(t_event>t_start & t_event<t_end);
 
     FP_long_index(FP_long_index>length(t_event)) = [];
     FP_short_index(FP_short_index>length(t_event)) = [];

@@ -50,7 +50,9 @@
           {"name":"gaussian_kernel", "kind":"namevalue", "type":"numeric"},
           {"name":"normalized", "kind":"namevalue", "type":"choices={'None','zscore'}"},
           {"name":"event", "kind":"namevalue", "type":"choices={'press','release','reward'}"},
-          {"name":"Channel_Number", "kind":"namevalue", "type":"logical"}
+          {"name":"Channel_Number", "kind":"namevalue", "type":"logical"},
+          {"name":"tStart", "kind":"namevalue", "type":"numeric"},
+          {"name":"tEnd", "kind":"namevalue", "type":"numeric"}
        ]
     }, 
     

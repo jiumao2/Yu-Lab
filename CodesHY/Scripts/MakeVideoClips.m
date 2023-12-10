@@ -217,6 +217,21 @@ r.Video.t_frameon_side = frames_times_side;
 r.Video.t_frameon_top = frames_times_top;
 save RTarrayAll.mat r
 
+%% Check minimum of frame intervals
+frame_intervals_top = diff(frames_times_top);
+frame_intervals_top = sort(frame_intervals_top, 'descend');
+disp('Top frame intervals in top-view videos:')
+disp(frame_intervals_top(frame_intervals_top>1000));
+disp();
+
+frame_intervals_side = diff(frames_times_side);
+frame_intervals_side = sort(frame_intervals_side, 'descend');
+disp('Frame intervals that is higher than 1000 in top-view videos:')
+disp(frame_intervals_side(frame_intervals_side>1000));
+disp();
+
+% if the number is not equal to num_segment-1, the min_frame_interval below should be modified
+
 %% Make video clips
 load timestamps.mat
 camview = 'top';
@@ -225,7 +240,7 @@ if isfield(r,'VideoInfos')
 end
 
 ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', camview,...
-    'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1);
+    'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1,'min_frame_interval',1000);
 
 mat_dir = ['./VideoFrames_',camview,'/MatFile'];
 output = dir([mat_dir,'/*.mat']);
@@ -246,7 +261,7 @@ elseif strcmp(camview,'side')
 end
 
 save('RTarrayAll.mat','r')
-%% Make video clips
+% Make video clips
 load timestamps.mat
 camview = 'side';
 if isfield(r,'VideoInfos')
@@ -254,7 +269,7 @@ if isfield(r,'VideoInfos')
 end
 
 ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', camview,...
-    'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1);
+    'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1,'min_frame_interval',1000);
 
 mat_dir = ['./VideoFrames_',camview,'/MatFile'];
 output = dir([mat_dir,'/*.mat']);

@@ -815,7 +815,7 @@ classdef KilosortOutputClass<handle
                 r2.Behavior.PrematureIndex = r2.Behavior.PrematureIndex+press_num;
                 r2.Behavior.LateIndex = r2.Behavior.LateIndex+press_num;
                 r2.Behavior.DarkIndex = r2.Behavior.DarkIndex+press_num;
-                r2.Behavior.CueIndex = r2.Behavior.CueIndex+press_num;
+                r2.Behavior.CueIndex(:,1) = r2.Behavior.CueIndex(:,1)+press_num;
                 r2.Behavior.EventTimings = r2.Behavior.EventTimings+dt;
                 
                 r.Behavior.Outcome = [r.Behavior.Outcome, r2.Behavior.Outcome];
