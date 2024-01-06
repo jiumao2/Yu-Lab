@@ -11,10 +11,20 @@ function data_out = gaussianSmooth1D(data, t, gaussianKernelWidth, varargin)
         end
     end
     data_out = zeros(size(data));
+
+    idx_good = find(~isnan(data));
+    data_good = data(idx_good);
+    t_good = t(idx_good);
+
     for k = 1:length(t_out)
-        t_new = t-t_out(k);
+        t_new = t_good-t_out(k);
         kernel = normpdf(t_new,0,gaussianKernelWidth);
-        data_out(k) = dot(kernel,data)./(sum(kernel));
+
+        % omit nan values
+        data_out(k) = dot(kernel,data_good)./(sum(kernel));
     end
-    data_out(isnan(data_out)) = 0;
+    
+    if length(t_out) == length(t) && all(t_out == t)
+        data_out(isnan(data)) = NaN;
+    end
 end

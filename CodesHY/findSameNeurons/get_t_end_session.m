@@ -1,5 +1,8 @@
-function t = get_t_end_session(r, k)
-    t = get_t_start_session(r,k)+r.Meta(k).DataDuration/30;
+function t = get_t_end_session(r, i_segments)
+    t = zeros(size(i_segments));
+    for k = 1:length(i_segments)
+        t(k) = get_t_start_session(r,i_segments(k))+r.Meta(i_segments(k)).DataDuration/30;
+    end
 
 %     spike_time_all = sort([r.Units.SpikeTimes.timings]);
 %     if k == length(r.Meta)

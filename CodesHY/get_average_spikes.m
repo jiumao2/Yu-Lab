@@ -126,8 +126,6 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
         t_end = get_t_end_session(r, length(r.Meta));
     end
 
-    t_event = t_event(t_event>t_start & t_event<t_end);
-
     FP_long_index(FP_long_index>length(t_event)) = [];
     FP_short_index(FP_short_index>length(t_event)) = [];
     FP_long_index_reward(FP_long_index_reward>length(t_event)) = [];
@@ -141,13 +139,15 @@ function [average_spikes_long, average_spikes_short] = get_average_spikes(r, uni
         end
     end
 
+    idx_included = find(t_event>t_start & t_event<t_end);
+
     % Average
     if ~strcmp(event,'reward')
-        average_spikes_long = reshape(mean(spikes_trial(:,FP_long_index,:),2),t_len,[]);
-        average_spikes_short = reshape(mean(spikes_trial(:,FP_short_index,:),2),t_len,[]);  
+        average_spikes_long = reshape(mean(spikes_trial(:,intersect(FP_long_index,idx_included),:),2),t_len,[]);
+        average_spikes_short = reshape(mean(spikes_trial(:,intersect(FP_short_index,idx_included),:),2),t_len,[]);  
     else
-        average_spikes_long = reshape(mean(spikes_trial(:,FP_long_index_reward,:),2),t_len,[]);
-        average_spikes_short = reshape(mean(spikes_trial(:,FP_short_index_reward,:),2),t_len,[]);
+        average_spikes_long = reshape(mean(spikes_trial(:,intersect(FP_long_index_reward,idx_included),:),2),t_len,[]);
+        average_spikes_short = reshape(mean(spikes_trial(:,intersect(FP_short_index_reward,idx_included),:),2),t_len,[]);
     end
 
     if strcmp(normalized,'zscore')

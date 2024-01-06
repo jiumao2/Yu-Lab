@@ -368,5 +368,35 @@
       [
          {"name":"r", "kind":"required", "type":"struct"}
       ]
+   },
+
+   "rasterize":
+   {
+      "inputs":
+      [
+         {"name":"spikeTimes", "kind":"optional"},
+         {"name":"height", "kind":"optional", "type":"numeric"}
+
+      ]
+   },
+
+   "proportionTest":
+   {
+      "inputs":
+      [
+         {"name":"px", "kind":"required", "type":"numeric"},
+         {"name":"nx", "kind":"required", "type":"numeric"},
+         {"name":"py", "kind":"required", "type":"numeric"},
+         {"name":"ny", "kind":"required", "type":"numeric"},
+         {"name":"tail", "kind":"optional", "type":"choices={'both','right','left'}"}
+      ]
+   },
+
+   "chi2Test":
+   {
+      "inputs":
+      [
+         {"name":"x", "kind":"required", "type":"numeric"}
+      ]
    }
   }
