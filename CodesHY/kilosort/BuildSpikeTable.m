@@ -2,6 +2,7 @@ dir_output = 'kilosort2_5_output';
 addpath(dir_output)
 spikeTable = phy2mat(dir_output);
 load ops.mat
+load Wrot.mat
 %% update spike table
 % channel index start from 1
 spikeTable.ch = spikeTable.ch+1;
@@ -44,14 +45,22 @@ for k = 1:height(spikeTable)
     gwfparams.spikeClusters = ones(length(spikeTable(k,:).spike_times{1}),1); % Vector of cluster IDs (Phy nomenclature)   same length as .spikeTimes
 
     wf = getWaveforms(gwfparams);
+
+    raw_waveforms = permute(squeeze(wf.waveForms), [2,1,3]);
+    n_spikes = size(raw_waveforms, 2);
+    raw_waveforms_reshaped = reshape(raw_waveforms, size(raw_waveforms, 1), []);
+    % Unwhittening the data to get the raw and real waveforms
+    raw_waveforms_reshaped = (raw_waveforms_reshaped' / Wrot)';
+    raw_waveforms = reshape(raw_waveforms_reshaped, size(raw_waveforms));
+    raw_waveforms_mean = squeeze(mean(raw_waveforms, 2));
     
-    amp_ch = max(squeeze(wf.waveFormsMean),[],2)-min(squeeze(wf.waveFormsMean),[],2);
+    amp_ch = max(raw_waveforms_mean,[],2)-min(raw_waveforms_mean,[],2);
     [~, ch_amp_largest] = max(amp_ch);
     ch_tbl{k} = ch_amp_largest;
     
-    waveforms_tbl{k} = squeeze(wf.waveForms(:,:,ch_amp_largest,:));
-    waveforms_mean_tbl{k} = squeeze(wf.waveFormsMean);
-    
+    waveforms_tbl{k} = squeeze(raw_waveforms(ch_amp_largest,:,:));
+    waveforms_mean_tbl{k} = squeeze(raw_waveforms_mean);
+
     toc
 end
 

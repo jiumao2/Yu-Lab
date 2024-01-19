@@ -398,5 +398,23 @@
       [
          {"name":"x", "kind":"required", "type":"numeric"}
       ]
+   },
+
+   "get_waveform_trough_to_peak_width":
+   {
+      "inputs":
+      [
+         {"name":"waveform", "kind":"required", "type":"numeric"},
+         {"name":"n_waveforms", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+   "get_waveform_half_width":
+   {
+      "inputs":
+      [
+         {"name":"waveform", "kind":"required", "type":"numeric"},
+         {"name":"n_waveforms", "kind":"optional", "type":"numeric"}
+      ]
    }
   }

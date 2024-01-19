@@ -258,7 +258,7 @@ classdef KilosortOutputClass<handle
                 end
             end
             
-            BpodFile = dir([Subject '*.mat']);
+            BpodFile = dir([Subject '_Med*.mat']);
             BpodFilenames = {BpodFile.name};
             for i_file = 1:length(BpodFilenames)
                 load(BpodFilenames{i_file});

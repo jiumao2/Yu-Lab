@@ -226,7 +226,7 @@ yshift_row1 = 1;
 ha_press_psth =  axes('unit', 'centimeters', 'position', [1.25 yshift_row1 6 2], 'nextplot', 'add', 'xlim', [-PressTimeDomain(1) PressTimeDomain(2)]);
 yshift_row2 = yshift_row1+2+0.25;
 hplot_press= zeros(1, nFPs);
-FRMax = 10;
+FRMax = 3;
 for i =1:nFPs
     hplot_press(i) = plot(ts_press{i}, psth_presses_correct{i}, 'color', FP_cols(i, :),  'linewidth', 1.5);
     FRMax = max([FRMax max(psth_presses_correct{i})]);
@@ -243,12 +243,12 @@ yshift_row3 = yshift_row2 +2+0.25;
 % plot premature and late as well
 if  size(trialspxmat_premature_press, 2)>3
     plot(ts_premature_press, psth_premature_press, 'color', premature_col, 'linewidth',1.5);
-    FRMax = max([FRMax max(psth_premature_press)]);
+%     FRMax = max([FRMax max(psth_premature_press)]);
 %      disp(FRMax)
 end
 if  size(trialspxmat_late_press, 2)>3
     plot(ts_late_press, psth_late_press, 'color', late_col, 'linewidth', 1.5)
-    FRMax = max([FRMax max(psth_late_press)]);
+%     FRMax = max([FRMax max(psth_late_press)]);
 %     disp(FRMax)
 end
 axis 'auto y'
@@ -477,12 +477,12 @@ ha_release_psth_error =  axes('unit', 'centimeters', 'position', [8.25 yshift_ro
 yshift_row3 = yshift_row2 +2+0.25;
 if  size(trialspxmat_premature_release, 2)>3
     plot(ts_premature_release, psth_premature_release, 'color', premature_col, 'linewidth', 1.5)
-    FRMax = max([FRMax max(psth_premature_release)]);
+%     FRMax = max([FRMax max(psth_premature_release)]);
 %     disp(FRMax)
 end
 if  size(trialspxmat_late_release, 2)>3
     plot(ts_late_release, psth_late_release, 'color', late_col, 'linewidth', 1.5)
-    FRMax = max([FRMax max(psth_late_release)]);
+%     FRMax = max([FRMax max(psth_late_release)]);
 %     disp(FRMax)
 end
 axis 'auto y'
@@ -675,7 +675,7 @@ xlabel('Time from rewarded/nonrewarded poke (ms)')
 ylabel ('Spks per s')
 axis 'auto y'
 hline_poke = line([0 0], get(gca, 'ylim'), 'color', reward_col, 'linewidth', 1);
-FRMax = max([FRMax max(psth_nonreward_pokes)]);
+% FRMax = max([FRMax max(psth_nonreward_pokes)]);
 % disp(FRMax)
 % Raster plot
 
@@ -853,7 +853,7 @@ plot(ts_late_trigger, psth_late_trigger, 'color', late_col, 'linewidth', 1.5)
 xlabel('Time from trigger stimulus (ms)')
 ylabel ('Spks per s')
 
-FRMax = max([FRMax max(psth_late_trigger)]);
+% FRMax = max([FRMax max(psth_late_trigger)]);
 % disp(FRMax)
 xlim = max(get(gca, 'xlim'));
 axis 'auto y'
