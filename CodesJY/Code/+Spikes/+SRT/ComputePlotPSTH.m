@@ -1053,6 +1053,19 @@ if isfield(r.Units.SpikeTimes(ku), 'wave_mean')
     wave_form = r.Units.SpikeTimes(ku).wave_mean/4;
     PSTH.SpikeWaveMean = wave_form;
     n_chs = size(wave_form, 1); % number of channels
+    ch_selected = 1:n_chs;
+    if n_chs > 32
+        ch_largest = r.Units.SpikeNotes(ku,1);
+        n_chs = 32;
+        if ch_largest < n_chs/2
+            ch_selected = 1:n_chs;
+        elseif ch_largest > size(wave_form, 1) - n_chs/2 + 1
+            ch_selected = size(wave_form, 1)-n_chs/2+1:size(wave_form, 1);
+        else
+            ch_selected = ch_largest-15:ch_largest+16;
+        end
+
+    end
     n_sample = size(wave_form, 2); % sample size per spike
     n_cols = 8;
     n_rows = n_chs/n_cols;
@@ -1065,10 +1078,10 @@ if isfield(r.Units.SpikeTimes(ku), 'wave_mean')
 
     t_wave_all = [];
     wave_all = [];
-    for i =1:n_rows
-        for j=1:n_cols
+    for i = 1:n_rows
+        for j = 1:n_cols
             k = j+(i-1)*n_cols;
-            wave_k = wave_form(k, :)+v_sep*(i-1);
+            wave_k = wave_form(ch_selected(k), :)+v_sep*(i-1);
             t_wave = (1:n_sample)+n_sample*(j-1)+4;
             t_wave_all = [t_wave_all, t_wave, NaN];
             wave_all = [wave_all, wave_k, NaN];

@@ -1,7 +1,15 @@
 function t = get_t_end_session(r, i_segments)
     t = zeros(size(i_segments));
-    for k = 1:length(i_segments)
-        t(k) = get_t_start_session(r,i_segments(k))+r.Meta(i_segments(k)).DataDuration/30;
+    if isfield(r.Meta, 'DataDuration')
+        for k = 1:length(i_segments)
+            t(k) = get_t_start_session(r,i_segments(k))+r.Meta(i_segments(k)).DataDuration/30;
+        end
+    else
+        if length(i_segments) > 1
+            error('DataDuration not found');
+        end
+
+        t = max(arrayfun(@(x)max(x.timings), r.Units.SpikeTimes));
     end
 
 %     spike_time_all = sort([r.Units.SpikeTimes.timings]);

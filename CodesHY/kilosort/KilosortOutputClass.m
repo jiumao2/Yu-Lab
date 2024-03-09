@@ -66,6 +66,7 @@ classdef KilosortOutputClass<handle
 %                 'Experimenter', 'HY');
         function r = buildR(obj, varargin)
             KornblumStyle = true;
+            ProbeStyle = false;
             Subject = 'West';
             blocks = {'datafile001.nev','datafile002.nev'};
             Version = 'Version5';
@@ -85,6 +86,8 @@ classdef KilosortOutputClass<handle
                     switch varargin{i}
                         case 'KornblumStyle'
                             KornblumStyle = varargin{i+1};
+                        case 'ProbeStyle'
+                            ProbeStyle = varargin{i+1};
                         case 'Subject'
                             Subject = varargin{i+1};
                         case 'Version'
@@ -187,6 +190,8 @@ classdef KilosortOutputClass<handle
                     % found in Behavior.MED.track_training_progress_advanced_KornblumStyle
                     b = Behavior.MED.track_training_progress_advanced_KornblumStyle(MEDFile.name);
                     BehaviorClass = Behavior.Timing.KornblumClass(MEDFile.name);
+                elseif ProbeStyle
+                    [b, BehaviorClass] = Behavior.MED.track_training_probe(MEDFile.name);
                 else
                     [b, BehaviorClass] = Behavior.MED.track_training_progress_advanced(MEDFile.name);
                 end
@@ -476,9 +481,313 @@ classdef KilosortOutputClass<handle
             disp('~~~~~R is ready~~~~~')
             disp('~~~~~~~~~~~~~~~~~~') 
         end
+        
+        function r = buildRNeuropixels(obj, varargin)
+            KornblumStyle = false;
+            ProbeStyle = false;
+            Subject = 'Neymar';
+            BpodProtocol = 'OptoRecording';
+            Experimenter = 'HY';
+            b = [];
+            BehaviorClass = [];
+            
+            if nargin>=2
+                for i=1:2:size(varargin,2)
+                    switch varargin{i}
+                        case 'KornblumStyle'
+                            KornblumStyle = varargin{i+1};
+                        case 'ProbeStyle'
+                            ProbeStyle = varargin{i+1};
+                        case 'Subject'
+                            Subject = varargin{i+1};
+                        case 'BpodProtocol'
+                            BpodProtocol =  varargin{i+1};    
+                        case 'Experimenter'
+                            Experimenter =  varargin{i+1}; 
+                        case 'b'
+                            b = varargin{i+1};
+                        case 'BehaviorClass'
+                            BehaviorClass = varargin{i+1};
+                        otherwise
+                            errordlg('unknown argument')
+                    end
+                end
+            end
+
+            % Check spks
+            units = {};
+            k = 1;
+            while k<=height(obj.SpikeTable)
+                channel = obj.SpikeTable(k,:).ch{1};
+                j = k+1;
+                while j<=height(obj.SpikeTable) && obj.SpikeTable(j,:).ch{1} == channel
+                    j = j+1;
+                end
+                IndNew=size(units, 1)+1;
+                type = '';
+                for i = k:j-1
+                    if strcmp(obj.SpikeTable(i,:).group{1},'good')
+                        type = [type, 's'];
+                    else
+                        type = [type, 'm'];
+                    end
+                end
+                units{IndNew, 1} = channel;
+                units{IndNew, 2} = type;
+                units{IndNew, 3} = [];
+                
+                k = j;
+            end
+            
+            if isempty(b) || isempty(BehaviorClass)
+                MEDFile = dir('*Subject*.txt');
+    
+                if KornblumStyle
+                    % Note: my (JY's) codes are stored in packages, e.g.,
+                    % track_training_progress_advanced_KornblumStyle can be
+                    % found in Behavior.MED.track_training_progress_advanced_KornblumStyle
+                    b = Behavior.MED.track_training_progress_advanced_KornblumStyle(MEDFile.name);
+                    BehaviorClass = Behavior.Timing.KornblumClass(MEDFile.name);
+                elseif ProbeStyle
+                    [b, BehaviorClass] = Behavior.MED.track_training_probe(MEDFile.name);
+                else
+                    [b, BehaviorClass] = Behavior.MED.track_training_progress_advanced(MEDFile.name);
+                end
+                
+                behfile= dir('B_*mat');
+                load(behfile.name)
+            end
+            BehaviorClass.Plot();
+            BehaviorClass.Save();
+            BehaviorClass.Print();
+            % return FP if there is no FP (wait 1/2 sessions)
+            
+            if isempty(b.FPs)  
+                b = UpdateWaitB(b); % add FP
+            end
+
+            % a name for saving the r array
+            aGoodName   = ['RTarray_', b.Metadata.SubjectName, '_' b.Metadata.Date '.mat'];
+            
+            load ./EventOut.mat;
+
+            % Poke signals are incorrect. Update poke from bpod.  10/4/2022
+            EventOut.Onset{strcmp(EventOut.EventsLabels, 'Poke')} = [];
+            EventOut.Offset{strcmp(EventOut.EventsLabels, 'Poke')} = [];
+            
+
+            %  update poke information in EventOut with bpod events
+            EventOut.Meta.Subject = Subject;
+            EventOut.Meta.Experimenter = Experimenter;
+
+            EventOutCombined = EventOut;
+            EventOutCombined = rmfield(EventOutCombined, 'TimeEvents');
+            
+            
+            BpodFile = dir([Subject '_Med*.mat']);
+            BpodFilenames = {BpodFile.name};
+            for i_file = 1:length(BpodFilenames)
+                load(BpodFilenames{i_file});
+    
+                % Align Events
+                switch BpodProtocol
+                    case 'OptoRecording'
+                        %  read bpod events
+                        BpodEvents = Bpod_Events_MedOptoRecording(SessionData);
+                        % Update poke based on data from Bpod events
+                        EventOutCombined = UpdatePokeFromBpodEvents(EventOutCombined, BpodEvents);
+                    case {'OptoRecordingMix',  'MedOptoRecMixKB'}  % optogenetic stimulation was applied at the onset of different events, we need to extract those times, and align them to blackrock's time
+                        %  read bpod events
+                        BpodEvents = Bpod_Events_MedOptoRecMix(SessionData);
+                        EventOutCombined = UpdateDIOMedOptoRecMix(EventOutCombined, BpodEvents);
+                    case 'OptoRecordingSelfTimed'
+                        %  read bpod events
+                        BpodEvents = Bpod_Events_MedOptoRecordingSelfTimed(SessionData);
+                        % Update poke based on data from Bpod events
+                        EventOutCombined = UpdatePokeFromBpodEvents(EventOutCombined, BpodEvents);
+                end
+            end
+            
+            EventOutCombined = AlignBehaviorClassToBR(EventOutCombined, BehaviorClass);
+            
+            %% construct an array (r) with aligned behavior, spikes and LFP data.
+            % name is r
+            
+            % turn everything in minutes
+            % single unit: 1; multiunit: 2
+            r=[];
+            r.BehaviorClass = BehaviorClass; % added 2023
+
+            % update meta
+            r.Meta = EventOutCombined.Meta;
+            d = datetime(r.Meta.fileCreateTime);
+            r.Meta.DateTime = datestr(d);
+            r.Meta.DateTimeRaw = [d.Year, d.Month, 0, d.Day, d.Hour, d.Minute, d.Second, 0];
+
+            r.Behavior.Labels={
+                'FrameOn',...
+                'FrameOff', ...
+                'LeverPress', ...
+                'Trigger',...
+                'LeverRelease',...
+                'ValveOnset', ...
+                'ValveOffset',...
+                'PokeOnset',...
+                'OptoStimOn',...
+                'OptoStimOff'};
+            
+            r.Behavior.LabelMarkers = 1:length(r.Behavior.Labels);
+            
+            r.Behavior.Outcome                        = EventOutCombined.OutcomeEphys;
+            % the followings are redundant but are listed so that other
+            % programs still work. 
+            r.Behavior.CorrectIndex                 =      find(strcmp(r.Behavior.Outcome, 'Correct'));
+            r.Behavior.PrematureIndex            =      find(strcmp(r.Behavior.Outcome, 'Premature'));
+            r.Behavior.LateIndex                      =      find(strcmp(r.Behavior.Outcome, 'Late'));
+            r.Behavior.DarkIndex                     =      find(strcmp(r.Behavior.Outcome, 'Dark'));
+            r.Behavior.Foreperiods                  =      EventOutCombined.FP_Ephys;
+            r.Behavior.CueIndex                      =      EventOutCombined.CueEphys;
+            
+            r.Behavior.EventTimings = [];
+            r.Behavior.EventMarkers = [];
+            % add frame signal: 1 on, 2 off
+            indframe = find(strcmp(EventOutCombined.EventsLabels, 'Frame'));
+            eventonset = EventOutCombined.Onset{indframe};
+            eventoffset = EventOutCombined.Offset{indframe};
+            eventmix = [eventonset; eventoffset];
+            indeventmix = [ones(length(eventonset), 1); ones(length(eventoffset), 1)*2]; % frame onset  1; frame offset 2
+            r.Behavior.EventTimings = [r.Behavior.EventTimings; eventmix];
+            r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indeventmix];
+            
+            % add leverpress onset and offset signal: 3 and 5
+            indleverpress= find(strcmp(EventOutCombined.EventsLabels, 'LeverPress'));
+            eventonset = EventOutCombined.Onset{indleverpress};
+            eventoffset = EventOutCombined.Offset{indleverpress};
+            eventmix = [eventonset; eventoffset];
+            indeventmix = [ones(length(eventonset), 1)*3; ones(length(eventoffset),1)*5];
+            r.Behavior.EventTimings = [r.Behavior.EventTimings; eventmix];
+            r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indeventmix];
+            
+            % add trigger stimulus signal: 4
+            indtriggers= find(strcmp(EventOutCombined.EventsLabels, 'Trigger'));
+            eventonset = EventOutCombined.Onset{indtriggers};
+            triggeronset =EventOutCombined.Onset{indtriggers};
+            if size(eventonset, 1)<size(eventonset, 2)
+                eventonset = eventonset';
+            end
+            indevent = ones(length(eventonset), 1)*4;
+            r.Behavior.EventTimings = [r.Behavior.EventTimings; eventonset];
+            r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indevent];
+            
+            figure(11); clf
+            axes('nextplot', 'add', 'ylim', [0 10])
+            
+            plot(triggeronset, 4, 'go')
+            text(triggeronset(1), 4.2, 'trigger')
+            
+            % add valve onset and offset signals: 6 and 7
+            indvalve= find(strcmp(EventOutCombined.EventsLabels, 'Valve'));
+            eventonset = EventOutCombined.Onset{indvalve};
+            eventoffset = EventOutCombined.Offset{indvalve};
+            eventmix = [eventonset; eventoffset];
+            indeventmix = [ones(length(eventonset), 1)*6; ones(length(eventoffset), 1)*7]; % frame onset  1; frame offset 2
+            r.Behavior.EventTimings = [r.Behavior.EventTimings; eventmix];
+            r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indeventmix];
+            
+            plot(eventoffset, 8, 'm^')
+            text(eventoffset(1), 8.2, 'valve')
+            
+            % add poke onset signals: 8
+            indpoke= strcmp(EventOutCombined.EventsLabels, 'Poke');
+            eventonset = EventOutCombined.Onset{indpoke};
+            eventmix = eventonset;
+            indeventmix = ones(length(eventonset), 1)*8; 
+            r.Behavior.EventTimings = [r.Behavior.EventTimings; eventmix];
+            r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indeventmix];
+            
+            % add optostim, if there is any. 9 on, 10 off
+            indopto = find(strcmp(EventOutCombined.EventsLabels, 'OptoStim'));
+            if ~isempty(indopto)
+                eventonset = EventOutCombined.Onset{indopto};
+                eventoffset = EventOutCombined.Offset{indopto}+BpodEvents.OptoStimDur;
+                eventmix = [eventonset; eventoffset];
+                indeventmix = [9*ones(length(eventonset), 1); 10*ones(length(eventoffset), 1)]; %
+                r.Behavior.EventTimings = [r.Behavior.EventTimings; eventmix];
+                r.Behavior.EventMarkers = [r.Behavior.EventMarkers; indeventmix];
+            end
+            
+            % sort timing
+            [r.Behavior.EventTimings, index_timing] = sort(r.Behavior.EventTimings);
+            r.Behavior.EventMarkers = r.Behavior.EventMarkers(index_timing);
+            
+            %% Add spikes
+            r.Units.Channels = 1:obj.ParamsKilosort.Nchan;
+            r.Units.Profile = units;
+            r.Units.Definition = {'channel_id cluster_id unit_type polytrode', '1: single unit', '2: multi unit'};
+            r.Units.SpikeNotes = [];
+            for i = 1:size(units, 1)
+                sorting_code = units{i, 2};
+                for k = 1:length(sorting_code)
+                    switch sorting_code(k)
+                        case 'm'
+                            r.Units.SpikeNotes = [r.Units.SpikeNotes; units{i, 1} k 2 0];
+                        case 's'
+                            r.Units.SpikeNotes = [r.Units.SpikeNotes; units{i, 1} k 1 0];
+                    end
+                end
+            end
+            
+            % put spikes
+            for i = 1:size(r.Units.SpikeNotes, 1)
+                r.Units.SpikeTimes(i) = struct('timings',  [], 'wave', [], 'wave_mean', [], 'spk_id', []);
+                r.Units.SpikeTimes(i).wave_mean = obj.SpikeTable(i,:).waveforms_mean{1};
+            
+                % load spike time:
+                r.Units.SpikeTimes(i).timings = obj.SpikeTable(i,:).spike_times_r{1};
+                r.Units.SpikeTimes(i).wave = obj.SpikeTable(i,:).waveforms{1};
+
+                if any(strcmpi(obj.SpikeTable.Properties.VariableNames, 'spike_ID'))
+                    disp('spike_ID found! Escape reducing waveforms step!');
+                    % the spike waveforms are already reduced
+                    r.Units.SpikeTimes(i).spk_id = obj.SpikeTable(i,:).spike_ID{1};
+                else
+                    % remove 90% of spike waveforms to reduce file size
+                    % index spk train
+                    r.Units.SpikeTimes(i).spk_id = 1:length(r.Units.SpikeTimes(i).timings);
+                    if length(r.Units.SpikeTimes(i).timings)>10000
+                        remove_percentage = 0.9;
+                    else
+                        remove_percentage = 1-1000/length(r.Units.SpikeTimes(i).timings);
+                    end
+                
+                    if remove_percentage>0
+                        ind_to_remove = randperm(length(r.Units.SpikeTimes(i).timings), round(length(r.Units.SpikeTimes(i).timings)*remove_percentage));
+                        r.Units.SpikeTimes(i).spk_id(ind_to_remove) = [];
+                        r.Units.SpikeTimes(i).wave(ind_to_remove, :) = [];
+                    end
+                end
+            end
+            
+            % make sure UIAxesBehav and UIAxesRaster have the same width
+            % Final touch double check the alignment. 
+            % Check if it is kornblum class
+            if KornblumStyle
+                CorrectBehaviorEphysMapping(r,  r.BehaviorClass); % this also save r in the current directory
+            end
+            
+            tic
+            save(aGoodName,'r', '-v7.3');
+            toc
+            
+            clc
+            disp('~~~~~~~~~~~~~~~~~~')
+            disp('~~~~~R is ready~~~~~')
+            disp('~~~~~~~~~~~~~~~~~~')         
+        end
 
         function r = buildSingleR(obj, bpod_file, med_file, varargin)
             KornblumStyle = true;
+            ProbeStyle = true;
             Subject = 'West';
             blocks = {'datafile001.nev','datafile002.nev'};
             Version = 'Version5';
@@ -492,6 +801,8 @@ classdef KilosortOutputClass<handle
                     switch varargin{i}
                         case 'KornblumStyle'
                             KornblumStyle = varargin{i+1};
+                        case 'ProbeStyle'
+                            ProbeStyle = varargin{i+1};
                         case 'Subject'
                             Subject = varargin{i+1};
                         case 'Version'
@@ -534,6 +845,8 @@ classdef KilosortOutputClass<handle
                 BehaviorClass.Plot();
                 BehaviorClass.Save()
                 BehaviorClass.Print()
+            elseif ProbeStyle
+                [b, BehaviorClass] = Behavior.MED.track_training_probe(MEDFile.name);
             else
                 [b, BehaviorClass] = Behavior.MED.track_training_progress_advanced(med_file);
                 BehaviorClass.Plot();
@@ -564,10 +877,11 @@ classdef KilosortOutputClass<handle
                         EventOut = DIO_Events4(NEV); % create
                     case 'Version5'
                         EventOut = DIO_Events5(NEV); % create
-                        % Poke signals are incorrect. Update poke from bpod.  10/4/2022
-                        EventOut.Onset{strcmp(EventOut.EventsLabels, 'Poke')} = [];
-                        EventOut.Offset{strcmp(EventOut.EventsLabels, 'Poke')} = [];
                 end
+
+                % Poke signals are incorrect. Update poke from bpod.  10/4/2022
+                EventOut.Onset{strcmp(EventOut.EventsLabels, 'Poke')} = [];
+                EventOut.Offset{strcmp(EventOut.EventsLabels, 'Poke')} = [];
             
                 if ib ==1
                     RecordingOnset = NS6all(1).MetaTags.DateTimeRaw;
@@ -724,6 +1038,7 @@ classdef KilosortOutputClass<handle
         
         function r = buildRMultiSessions(obj, bpod_files, med_files, idx_blocks, varargin)
             KornblumStyle = true;
+            ProbeStyle = true;
             Subject = 'West';
             blocks = {'datafile001.nev','datafile002.nev'};
             Version = 'Version5';
@@ -740,6 +1055,8 @@ classdef KilosortOutputClass<handle
                     switch varargin{i}
                         case 'KornblumStyle'
                             KornblumStyle = varargin{i+1};
+                        case 'ProbeStyle'
+                            ProbeStyle = varargin{i+1};
                         case 'Subject'
                             Subject = varargin{i+1};
                         case 'Version'
@@ -770,6 +1087,7 @@ classdef KilosortOutputClass<handle
             for k = 1:length(r_all)
                 r_all{k} = obj.buildSingleR(bpod_files{k}, med_files{k},...
                     'KornblumStyle', KornblumStyle,...
+                    'ProbeStyle', ProbeStyle,...
                     'Subject', Subject,...
                     'Version', Version,...
                     'BpodProtocol', BpodProtocol,...
@@ -1152,10 +1470,25 @@ classdef KilosortOutputClass<handle
         end
 
         function plotChannelActivity(obj)
-            figure;
+            fig = EasyPlot.figure();
+            ax = EasyPlot.axes(fig);
+            x_range = range(obj.ChanMap.xcoords);
+            y_range = range(obj.ChanMap.ycoords);
+            width = 8;
+            height = 8;
+            if x_range > y_range
+                height = width/x_range*y_range;
+            else
+                width = height/y_range*x_range;
+            end
+            EasyPlot.set(ax, 'Width', width, 'Height', height,...
+                'MarginLeft', 0.5,...
+                'XAxisVisible', 'off',...
+                'YAxisVisible', 'off');
+
             n_channel = length(obj.ChanMap.chanMap);
             good_unit_channel = zeros(1,n_channel);
-            all_channels = cell2mat(obj.SpikeTable(strcmp(obj.SpikeTable(:,:).group,'good'),:).ch);
+            all_channels = cell2mat(obj.SpikeTable(:,:).ch);
             for k = 1:n_channel
                 good_unit_channel(k) = sum(all_channels==k);
             end
@@ -1164,8 +1497,26 @@ classdef KilosortOutputClass<handle
             for k = 1:n_channel
                 colors(k,:) = colormap_this(sum(all_channels==k)+1,:);
             end
-            scatter(obj.ChanMap.xcoords,obj.ChanMap.ycoords,10,colors,"filled","o");
-            axis equal;
+            scatter(ax, obj.ChanMap.xcoords,obj.ChanMap.ycoords,2,colors,"filled","o");
+            ylim(ax, [min(obj.ChanMap.ycoords), max(obj.ChanMap.ycoords)]);
+            xlim(ax, [min(obj.ChanMap.xcoords), max(obj.ChanMap.xcoords)]);
+
+            ticks_all = linspace(0, 1, 2*size(colormap_this, 1)+1);
+            ticks = ticks_all(2:2:length(ticks_all));
+            tick_labels = 0:length(ticks)-1;
+            EasyPlot.colorbar(ax,...
+                'label', 'Unit number',...
+                'colormap', colormap_this,...
+                'Ticks', ticks,...
+                'TickLabels', tick_labels,...
+                'Height', height/2);
+
+            sc = EasyPlot.scalebar(ax, 'Y', 'location', 'southwest',...
+                'yBarLabel', '1 mm', 'yBarLength', 1000, 'yBarRatio', 1);
+            EasyPlot.move(sc, 'dx', -0.5);
+
+            EasyPlot.cropFigure(fig);
+            EasyPlot.exportFigure(fig, 'channelActivity');
         end
         
     end

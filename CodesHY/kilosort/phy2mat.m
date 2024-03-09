@@ -4,6 +4,6 @@ if ~exist(cluster_info_filename,'file')
     error(['File "',cluster_info_filename,'" cannot be find']);
 end
 
-cluster_info = readtable('cluster_info.tsv','Delimiter','\t','FileType','text');
+cluster_info = readtable(cluster_info_filename,'Delimiter','\t','FileType','text');
 
 end

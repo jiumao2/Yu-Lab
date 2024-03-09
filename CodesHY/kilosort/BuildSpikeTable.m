@@ -220,6 +220,7 @@ load(output.name);
 
 % % For SRT:
 % Spikes.SRT.SRTSpikes(r,[]);
+% load(output.name);
 % Spikes.SRT.PopulationActivity(r);
 
 % % For Kornblum:

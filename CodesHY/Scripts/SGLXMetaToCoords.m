@@ -22,16 +22,21 @@
 %
 % Jennifer Colonell, Janelia Research Campus
  
-function SGLXMetaToCoords()
+function SGLXMetaToCoords(meta_path)
 
 % Output selection:
-outType = 3;
+outType = 1;
 
 % Plot shank view
 bPlot = 1;
 
 % Ask user for metadata file
-[metaName,path] = uigetfile('*.meta', 'Select Metadata File');
+if nargin < 1
+    [metaName,path] = uigetfile('*.meta', 'Select Metadata File');
+else
+    [path, name, ext] = fileparts(meta_path);
+    metaName = [name, ext];
+end
 
 % Parse input file to get the metadata structure
 meta = ReadMeta(metaName, path);
@@ -64,7 +69,7 @@ switch outType
         fclose(fid);
         
     case 1     %KS2 *.mat
-        newName = [fname,'_kilosortChanMap.mat'];
+        newName = fullfile(path, 'chanMap.mat');
         nchan = numel(xCoord);
         chanMap = (1:nchan)';
         chanMap0ind = chanMap - 1;
@@ -73,7 +78,7 @@ switch outType
         ycoords = yCoord; % variable names need to  match KS standard
         kcoords = shankInd + 1;     %KS1 uses kcoords to force templates to be on one shank
         name = fname;
-        save( newName, 'chanMap', 'chanMap0ind', 'connected', 'name', 'xcoords', 'ycoords', 'kcoords' );
+        save(newName, 'chanMap', 'chanMap0ind', 'connected', 'name', 'xcoords', 'ycoords', 'kcoords', '-v7');
     
     case 2  %strings to copy into JRC prm file
        % for JRC, shankMap = array of shank indicies, 1 based 

@@ -314,10 +314,12 @@ for k = 1:length(rate_pre)
     end
 end
 
-plot(ax_direction_pre, t_direction(is_reward_to_press==1)/1000/60, direction(is_reward_to_press==1), 'b.', 'MarkerSize', 3);
+plot(ax_direction_pre, t_direction(is_reward_to_press==1 & performance == 1)/1000/60, direction(is_reward_to_press==1 & performance == 1), 'b.', 'MarkerSize', 3);
+plot(ax_direction_pre, t_direction(is_reward_to_press==1 & performance ~= 1)/1000/60, direction(is_reward_to_press==1 & performance ~= 1), 'r.', 'MarkerSize', 3);
 plot(ax_direction_pre, t/1000/60, rate_pre, 'b-', 'LineWidth', 2);
 
-plot(ax_direction_post, t_direction(is_reward_to_press==0)/1000/60, direction(is_reward_to_press==0), 'b.', 'MarkerSize', 3);
+plot(ax_direction_post, t_direction(is_reward_to_press==0 & performance == 1)/1000/60, direction(is_reward_to_press==0 & performance == 1), 'b.', 'MarkerSize', 3);
+plot(ax_direction_post, t_direction(is_reward_to_press==0 & performance ~= 1)/1000/60, direction(is_reward_to_press==0 & performance ~= 1), 'r.', 'MarkerSize', 3);
 plot(ax_direction_post, t/1000/60, rate_post, 'b-', 'LineWidth', 2);
 
 EasyPlot.setYLim({ax_direction_pre, ax_direction_post}, [-0.2, 1.2]);

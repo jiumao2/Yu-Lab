@@ -416,5 +416,16 @@
          {"name":"waveform", "kind":"required", "type":"numeric"},
          {"name":"n_waveforms", "kind":"optional", "type":"numeric"}
       ]
+   },
+
+   "fdr_bh":
+   {
+      "inputs":
+      [
+         {"name":"pvals", "kind":"required", "type":"numeric"},
+         {"name":"q", "kind":"optional", "type":"numeric"},
+         {"name":"method", "kind":"optional", "type":"choices={'pdep','dep'}"},
+         {"name":"report", "kind":"optional", "type":"choices={'yes','no'}"}
+      ]
    }
   }

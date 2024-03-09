@@ -1,37 +1,38 @@
 clear
-load('RTarray_Max_20220721.mat')
+load('RTarray_West_20230102.mat')
 fr = 10;
-% there are filenames = { 'datafile001.ns6',  'datafile002.ns6',  'datafile003.ns6'};
-topviews = {
-    '20220721-18-40-35.000.seq' % session 001
-    '20220721-19-20-20.000.seq' % session 002
-    '20220721-20-27-38.000.seq' % session 003
-    };
- 
-sideviews ={
-    '20220721-18-40-46.000.seq' % session 001
-    '20220721-19-20-17.000.seq' % session 002
-    '20220721-20-27-26.000.seq' % session 003
-    };
- 
-%% this is the function to extract time stamps from a seq file
-ts_top = struct('ts', [], 'skipind', []);
-for i = 1:length(topviews)
-    ts_top(i) = findts(topviews{i});
-end
- 
-ts_side = struct('ts', [], 'skipind', []);
-for i = 1:length(sideviews)
-    ts_side(i) = findts(sideviews{i});
-end
-clear ts
-ts.top = ts_top;
-ts.topviews = topviews;
-ts.side = ts_side;
-ts.sideviews = sideviews;
 
-save timestamps ts
+dir_out = dir('./*.seq');
+vid_filenames = {dir_out.name};
+% sort by top/side and time
+topviews = {};
+sideviews = {};
+for k = 1:length(vid_filenames)
+    for j = k+1:length(vid_filenames)
+        if get_seq_time(vid_filenames{k}) > get_seq_time(vid_filenames{j})
+            temp = vid_filenames{k};
+            vid_filenames{k} = vid_filenames{j};
+            vid_filenames{j} = temp;
+        end
+    end
+end
 
+% check the angle is from top / side
+for k = 1:length(vid_filenames)
+    img = ReadJpegSEQ2(vid_filenames{k},1);
+    if size(img, 1) == 530 || size(img, 1) == 704 || size(img, 1) == 752
+        topviews{end+1} = vid_filenames{k};
+    elseif size(img, 1) == 800 || size(img, 1) == 900
+        sideviews{end+1} = vid_filenames{k};
+    else
+        disp('wrong video!');
+    end
+end
+
+disp('Sideviews:');
+disp(sideviews)
+disp('Topviews:');
+disp(topviews)
 %% get trigger times from videos
 load timestamps.mat
 step_slow = 5;
@@ -63,6 +64,23 @@ if ~isfield(ts, 'mask')
     ts.mask = mask;
     save timestamps ts
 end
+%% this is the function to extract time stamps from a seq file
+ts_top = struct('ts', [], 'skipind', []);
+for i = 1:length(topviews)
+    ts_top(i) = findts(topviews{i});
+end
+ 
+ts_side = struct('ts', [], 'skipind', []);
+for i = 1:length(sideviews)
+    ts_side(i) = findts(sideviews{i});
+end
+clear ts
+ts.top = ts_top;
+ts.topviews = topviews;
+ts.side = ts_side;
+ts.sideviews = sideviews;
+
+save timestamps ts
 %% Extract intensity
 sample_interval = 20; % shorter than the LED-on duration
 
@@ -98,21 +116,28 @@ if ~isfield(ts, 'intensity')
     save timestamps ts
 end
 %% set threshold
-figure;
-plot(ts.intensity,'x-');
-xlabel('Frame number');
-ylabel('Intensity');
-disp('Please set the threshold')
-p = drawpoint();    
-yline(p.Position(2));
-threshold = p.Position(2);
+% Manually set the threshold
+% figure;
+% plot(ts.intensity,'x-');
+% xlabel('Frame number');
+% ylabel('Intensity');
+% disp('Please set the threshold')
+% p = drawpoint();    
+% yline(p.Position(2));
+
+% Automatically set the threshold
+temp = sort(ts.intensity(~isnan(ts.intensity)), 'descend');
+th1 = mean(temp(1:10));
+th2 = mode(round(temp));
+
+ts.threshold = p.Position(2);
 
 % refine the unsampled points
 count = 0;
 for k = 1:length(ts.sideviews)
     for j = 1:length(ts.side(k).ts)
         count = count+1;
-        if isnan(ts.intensity(count)) || ts.intensity(count)<threshold
+        if isnan(ts.intensity(count)) || ts.intensity(count)<ts.threshold
             continue
         end
         
@@ -135,13 +160,24 @@ for k = 1:length(ts.sideviews)
         end
     end
 end
-    
+
+save timestamps ts
+%% Save the threshold figure
+h = figure;
+plot(ts.intensity, 'x-');
+hold on;
+yline(ts.threshold);
+yline(th1); yline(th2);
+xlabel('Frame number');
+ylabel('Intensity');
+
+print(h, 'Threshold.png', '-dpng', '-r600');
 %% get trigger times from videos
 trigger_times_start_idx = [];
 trigger_times_end_idx = [];
 flag = false;
 for k = 1:length(ts.intensity)-24
-    if all(ts.intensity(k:k+24)>threshold)
+    if all(ts.intensity(k:k+24)>ts.threshold)
         if ~flag
             trigger_times_start_idx = [trigger_times_start_idx, k];
         end
@@ -183,7 +219,7 @@ end
 
 trigger_times = press_times + FPs;
 trigger_times = trigger_times(sort([r.Behavior.CorrectIndex,r.Behavior.LateIndex]));
-%%  
+%% Align
 idx_out = findseqmatch(trigger_times,trigger_times_start_vid);
 
 figure;
@@ -207,10 +243,12 @@ frames_times_top = align_times(t_top_all, time_maps);
 time_diff_corrected = trigger_times(idx_out)-frames_times_side(trigger_times_start_idx);
 time_diff_corrected = time_diff_corrected-time_diff_corrected(1);
 
-figure;
+h = figure;
 plot(time_diff ,'bx-')
 hold on
 plot(time_diff_corrected ,'ro-')
+
+print(h, 'Alignment.png', '-dpng', '-r600');
 
 %% save to r
 r.Video.t_frameon_side = frames_times_side;
@@ -224,13 +262,21 @@ disp('Top frame intervals in top-view videos:')
 disp(frame_intervals_top(frame_intervals_top>1000));
 disp();
 
+if sum(frame_intervals_top>1000) > length(ts.topviews)-1
+    disp([num2str(sum(frame_intervals_top>1000)) ' Intervals found!']);
+    error('Too many intervals. Please set larger "min_frame_interval"');
+end
+
 frame_intervals_side = diff(frames_times_side);
 frame_intervals_side = sort(frame_intervals_side, 'descend');
 disp('Frame intervals that is higher than 1000 in top-view videos:')
 disp(frame_intervals_side(frame_intervals_side>1000));
 disp();
 
-% if the number is not equal to num_segment-1, the min_frame_interval below should be modified
+if sum(frame_intervals_side>1000) > length(ts.sideviews)-1
+    disp([num2str(sum(frame_intervals_side>1000)) ' Intervals found!']);
+    error('Too many intervals. Please set larger "min_frame_interval"');
+end
 
 %% Make video clips
 load timestamps.mat
@@ -290,3 +336,14 @@ elseif strcmp(camview,'side')
 end
 
 save('RTarrayAll.mat','r')
+
+%%
+function t = get_seq_time(seqname)
+    year = str2double(seqname(1:4));
+    month = str2double(seqname(5:6));
+    date = str2double(seqname(7:8));
+    hour = str2double(seqname(10:11));
+    min = str2double(seqname(13:14));
+    sec = str2double(seqname(16:17));
+    t = sec+60*min+60*60*hour+date*60*60*24+month*60*60*24*30+year*60*60*24*30*365;
+end

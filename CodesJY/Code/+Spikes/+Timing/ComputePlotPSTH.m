@@ -929,7 +929,7 @@ plot(ts_late_trigger, psth_late_trigger, 'color', late_col, 'linewidth', 1.5);
 line([0 0], get(gca, 'ylim'), 'color', trigger_col, 'linewidth', 1);
 xlabel('Time from trigger stimulus (ms)')
 ylabel ('Spks per s')
-FRMax = max([FRMax max(psth_late_trigger)]);
+% FRMax = max([FRMax max(psth_late_trigger)]);
 xlim = max(get(gca, 'xlim'));
 axis 'auto y'
 
