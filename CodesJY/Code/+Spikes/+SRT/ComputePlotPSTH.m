@@ -1064,7 +1064,6 @@ if isfield(r.Units.SpikeTimes(ku), 'wave_mean')
         else
             ch_selected = ch_largest-15:ch_largest+16;
         end
-
     end
     n_sample = size(wave_form, 2); % sample size per spike
     n_cols = 8;

@@ -304,8 +304,8 @@ for i =1:length(Pop.IndSort)
 end;
 
 tab = table(Name, Session, Unit_Sorted, Chs, Ch_Units, Unit_Quality_Num, SignificantMod);
-% aGoodName = ['PopOut', Pop.Name, '_' Pop.Session '.csv'];
-% writetable(tab, aGoodName)
+aGoodName = ['PopOut', Pop.Name, '_' Pop.Session '.csv'];
+writetable(tab, aGoodName)
 % % open this table
 % try
 %     winopen(aGoodName)

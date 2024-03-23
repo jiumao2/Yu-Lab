@@ -1,5 +1,5 @@
 clear
-load('RTarray_West_20230102.mat')
+load('RTarray_Fountain_20230717.mat')
 fr = 10;
 
 dir_out = dir('./*.seq');
@@ -28,6 +28,12 @@ for k = 1:length(vid_filenames)
         disp('wrong video!');
     end
 end
+
+clear ts;
+ts.topviews = topviews;
+ts.sideviews = sideviews;
+
+save timestamps.mat ts;
 
 disp('Sideviews:');
 disp(sideviews)
@@ -74,14 +80,13 @@ ts_side = struct('ts', [], 'skipind', []);
 for i = 1:length(sideviews)
     ts_side(i) = findts(sideviews{i});
 end
-clear ts
+
 ts.top = ts_top;
-ts.topviews = topviews;
 ts.side = ts_side;
-ts.sideviews = sideviews;
 
 save timestamps ts
-%% Extract intensity
+
+% Extract intensity
 sample_interval = 20; % shorter than the LED-on duration
 
 figure;
@@ -124,13 +129,14 @@ end
 % disp('Please set the threshold')
 % p = drawpoint();    
 % yline(p.Position(2));
+% ts.threshold = p.Position(2);
 
 % Automatically set the threshold
 temp = sort(ts.intensity(~isnan(ts.intensity)), 'descend');
 th1 = mean(temp(1:10));
 th2 = mode(round(temp));
 
-ts.threshold = p.Position(2);
+ts.threshold = th2 + 0.6*(th1-th2);
 
 % refine the unsampled points
 count = 0;
@@ -260,7 +266,7 @@ frame_intervals_top = diff(frames_times_top);
 frame_intervals_top = sort(frame_intervals_top, 'descend');
 disp('Top frame intervals in top-view videos:')
 disp(frame_intervals_top(frame_intervals_top>1000));
-disp();
+disp('');
 
 if sum(frame_intervals_top>1000) > length(ts.topviews)-1
     disp([num2str(sum(frame_intervals_top>1000)) ' Intervals found!']);
@@ -271,7 +277,7 @@ frame_intervals_side = diff(frames_times_side);
 frame_intervals_side = sort(frame_intervals_side, 'descend');
 disp('Frame intervals that is higher than 1000 in top-view videos:')
 disp(frame_intervals_side(frame_intervals_side>1000));
-disp();
+disp('');
 
 if sum(frame_intervals_side>1000) > length(ts.sideviews)-1
     disp([num2str(sum(frame_intervals_side>1000)) ' Intervals found!']);
