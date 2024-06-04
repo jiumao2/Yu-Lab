@@ -30,7 +30,12 @@ end;
 
 %% collect PSTH from all neurons
 Ncell = length(units);
-Fs = double(r.Meta(1).SampleRes); % sampling rate
+
+if isfield(r.Meta(1), 'SampleRes')
+    Fs = double(r.Meta(1).SampleRes); % sampling rate
+else
+    Fs = 30000;
+end
 
 tspk          = tonset - tpre : tonset + tpost; % in ms
 tspk_ct     = -tpre : tpost;

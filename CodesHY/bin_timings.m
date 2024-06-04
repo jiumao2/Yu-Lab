@@ -16,17 +16,18 @@ function [spike_train, t_spike_train] = bin_timings(spike_times, binwidth, varar
             end
         end
     end
-    switch StartFromZero
-        case 'on'
-            tStart = 0;
-        case 'off'
-            if isnan(tStart)
-                tStart = spike_times(1);
-            end
-        otherwise
-            errordlg('unknown argument')   
-    end
+    
     if isnan(t_edges)
+        switch StartFromZero
+            case 'on'
+                tStart = 0;
+            case 'off'
+                if isnan(tStart)
+                    tStart = spike_times(1);
+                end
+            otherwise
+                errordlg('unknown argument')   
+        end
         t_edges = tStart:binwidth:spike_times(end)+binwidth; 
     end
     
@@ -35,7 +36,7 @@ function [spike_train, t_spike_train] = bin_timings(spike_times, binwidth, varar
     spike_train = zeros(1,length(t_edges)-1);
     
     k = 1; j = 1;
-    while j <= length(spike_times)
+    while j <= length(spike_times) && k < length(t_edges)
         if spike_times(j) < t_edges(k+1)
             spike_train(k) = spike_train(k)+1;
             j = j+1;

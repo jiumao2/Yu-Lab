@@ -846,7 +846,7 @@ classdef KilosortOutputClass<handle
                 BehaviorClass.Save()
                 BehaviorClass.Print()
             elseif ProbeStyle
-                [b, BehaviorClass] = Behavior.MED.track_training_probe(MEDFile.name);
+                [b, BehaviorClass] = Behavior.MED.track_training_probe(med_file);
             else
                 [b, BehaviorClass] = Behavior.MED.track_training_progress_advanced(med_file);
                 BehaviorClass.Plot();

@@ -146,11 +146,11 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
     % indrelease = find(strcmp(r.Behavior.Labels, 'LeverRelease'));
     % t_release = r.Behavior.EventTimings(r.Behavior.EventMarkers == indrelease);
 
-    t_spikeson_all = [];
-    for k = 1:length(r.Units.SpikeTimes)
-        t_spikeson_all = [t_spikeson_all,r.Units.SpikeTimes(k).timings];
-    end
-    t_spikeson_all = sort(t_spikeson_all);
+%     t_spikeson_all = [];
+%     for k = 1:length(r.Units.SpikeTimes)
+%         t_spikeson_all = [t_spikeson_all,r.Units.SpikeTimes(k).timings];
+%     end
+%     t_spikeson_all = sort(t_spikeson_all);
 
     ind_break = find(diff(t_frameon)>min_frame_interval);
     t_seg =[];

@@ -427,5 +427,60 @@
          {"name":"method", "kind":"optional", "type":"choices={'pdep','dep'}"},
          {"name":"report", "kind":"optional", "type":"choices={'yes','no'}"}
       ]
+   },
+
+   "permutationTest":
+   {
+      "inputs":
+      [
+         {"name":"x", "kind":"required", "type":"numeric"},
+         {"name":"y", "kind":"required", "type":"numeric"},
+         {"name":"n", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+   "getUnitResponseTime":
+   {
+      "inputs":
+      [
+         {"name":"r", "kind":"required", "type":"struct"},
+         {"name":"unit", "kind":"required", "type":"numeric"},
+         {"name":"t_pre", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_post", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_step", "kind":"namevalue", "type":"numeric"},
+         {"name":"bin_width", "kind":"namevalue", "type":"numeric"},
+         {"name":"rt_window", "kind":"namevalue", "type":"numeric"},
+         {"name":"min_n_trial", "kind":"namevalue", "type":"numeric"},
+         {"name":"p_threshold", "kind":"namevalue", "type":"numeric"},
+         {"name":"n_consequtive_bins", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+
+   "getFractionString":
+   {
+      "inputs":
+      [
+         {"name": "x", "kind":"required", "type":"numeric"}
+      ]
+   },
+
+   "plotSpikesDCZ":
+   {
+      "inputs":
+      [
+         {"name": "r", "kind":"required", "type":"struct"},
+         {"name":"unit_num", "kind":"required", "type":"numeric"},
+         {"name":"dose", "kind":"required", "type":"numeric"},
+         {"name":"drugSegment", "kind":"namevalue", "type":"numeric"},
+         {"name":"recoverySegment", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_pre_press", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_post_press", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_pre_release", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_post_release", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_pre_reward", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_post_reward", "kind":"namevalue", "type":"numeric"},
+         {"name":"ax_width", "kind":"namevalue", "type":"numeric"},
+         {"name":"ax_height", "kind":"namevalue", "type":"numeric"}
+      ]
    }
   }

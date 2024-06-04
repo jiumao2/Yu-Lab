@@ -202,7 +202,7 @@ for n_kernel = 1:length(Kernels.names)
                 D = blkdiag(D,lamvals(jj)*eye(Kernels.n_par{k})+Kernels.l2_lambda{k}*(Dx1')*Dx1);
             end
         end
-        Cinv = blkdiag(1,D); % set inverse prior covariance
+        Cinv = blkdiag(0,D); % set inverse prior covariance
         lossfun = @(prs)neglogposterior(prs,negLtrainfun,Cinv);
         wmap = fminunc(lossfun,wmap,opts);
 

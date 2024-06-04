@@ -8,7 +8,12 @@ function idx_out = findSeq(seqmom,seqson,type)
         case 'normal_equal'
             idx_out = zeros(size(seqson));
             for k = 1:length(seqson)
-                idx_out(k) = find(seqmom==seqson(k), 1);
+                idx_found = find(seqmom==seqson(k), 1);
+                if ~isempty(idx_found)
+                    idx_out(k) = idx_found;
+                else
+                    idx_out(k) = NaN;
+                end
             end
         case 'normal_nearest'
             idx_out = zeros(size(seqson));

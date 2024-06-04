@@ -262,25 +262,27 @@ r.Video.t_frameon_top = frames_times_top;
 save RTarrayAll.mat r
 
 %% Check minimum of frame intervals
+min_frame_interval = 1000;
+
 frame_intervals_top = diff(frames_times_top);
 frame_intervals_top = sort(frame_intervals_top, 'descend');
 disp('Top frame intervals in top-view videos:')
-disp(frame_intervals_top(frame_intervals_top>1000));
+disp(frame_intervals_top(frame_intervals_top>min_frame_interval));
 disp('');
 
-if sum(frame_intervals_top>1000) > length(ts.topviews)-1
-    disp([num2str(sum(frame_intervals_top>1000)) ' Intervals found!']);
+if sum(frame_intervals_top>min_frame_interval) > length(ts.topviews)-1
+    disp([num2str(sum(frame_intervals_top>min_frame_interval)) ' Intervals found!']);
     error('Too many intervals. Please set larger "min_frame_interval"');
 end
 
 frame_intervals_side = diff(frames_times_side);
 frame_intervals_side = sort(frame_intervals_side, 'descend');
 disp('Frame intervals that is higher than 1000 in top-view videos:')
-disp(frame_intervals_side(frame_intervals_side>1000));
+disp(frame_intervals_side(frame_intervals_side>min_frame_interval));
 disp('');
 
-if sum(frame_intervals_side>1000) > length(ts.sideviews)-1
-    disp([num2str(sum(frame_intervals_side>1000)) ' Intervals found!']);
+if sum(frame_intervals_side>min_frame_interval) > length(ts.sideviews)-1
+    disp([num2str(sum(frame_intervals_side>min_frame_interval)) ' Intervals found!']);
     error('Too many intervals. Please set larger "min_frame_interval"');
 end
 
@@ -292,7 +294,7 @@ if isfield(r,'VideoInfos')
 end
 
 ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', camview,...
-    'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1,'min_frame_interval',1000);
+    'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1,'min_frame_interval',min_frame_interval);
 
 mat_dir = ['./VideoFrames_',camview,'/MatFile'];
 output = dir([mat_dir,'/*.mat']);
@@ -321,7 +323,7 @@ if isfield(r,'VideoInfos')
 end
 
 ExtractEventFrameSignalVideo(r, ts, [], 'events', 'Press', 'time_range', [2100 2400], 'makemov', 1, 'camview', camview,...
-    'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1,'min_frame_interval',1000);
+    'make_video_with_spikes',false,'sort_by_unit',true,'frame_rate',10,'start_trial',1,'min_frame_interval',min_frame_interval);
 
 mat_dir = ['./VideoFrames_',camview,'/MatFile'];
 output = dir([mat_dir,'/*.mat']);

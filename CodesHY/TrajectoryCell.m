@@ -9,7 +9,7 @@ function TrajectoryCell(r,unit_num,varargin)
     save_fig = 'on';
     traj = 'All';
     if nargin>2
-        for i=1:2:size(varargin,2)
+        for i = 1:2:size(varargin,2)
             switch varargin{i}
                 case 'save_dir'
                     save_dir = varargin{i+1};

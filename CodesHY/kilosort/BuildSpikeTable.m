@@ -1,8 +1,7 @@
 dir_output = 'kilosort2_5_output';
-addpath(dir_output)
 spikeTable = phy2mat(dir_output);
-load ops.mat
-load Wrot.mat
+load(fullfile(dir_output, 'ops.mat'));
+load(fullfile(dir_output, 'Wrot.mat'));
 %% update spike table
 % channel index start from 1
 spikeTable.ch = spikeTable.ch+1;
@@ -19,8 +18,8 @@ end
 spikeTable = sortrows(spikeTable,{'ch','group'});
 
 % read and add spike times
-spike_times = readNPY('spike_times.npy');
-spike_clusters = readNPY('spike_clusters.npy');
+spike_times = readNPY(fullfile(dir_output, 'spike_times.npy'));
+spike_clusters = readNPY(fullfile(dir_output, 'spike_clusters.npy'));
 
 tbl_spike_times = cell(height(spikeTable),1);
 for k = 1:height(spikeTable)
@@ -150,7 +149,7 @@ spikeTable.spike_times_r = spike_times_r;
 disp(spikeTable)
 
 %%
-chanMap = load('chanMap.mat');
+chanMap = load(fullfile(dir_output, 'chanMap.mat'));
 KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
 KilosortOutput.save();
 

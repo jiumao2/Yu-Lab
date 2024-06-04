@@ -258,7 +258,7 @@ t_rewards = t_rewards_sorted;
 
 % Find out the reward pokes (last poke before valve.)
 % port access, t_portin and t_portout
-ind_portin = find(strcmp(rb.Labels, 'PokeOnset'));
+ind_portin = find(strcmp(rb.Labels, 'ValveOnset'));
 t_portin = rb.EventTimings(rb.EventMarkers == ind_portin);
 % have a look at the difference between poke and trigger (looks like there
 % might be some contamination)
