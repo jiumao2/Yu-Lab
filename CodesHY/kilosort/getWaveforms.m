@@ -34,7 +34,8 @@ dataTypeNBytes = numel(typecast(cast(0, gwfparams.dataType), 'uint8')); % determ
 nSamp = filenamestruct.bytes/(gwfparams.nCh*dataTypeNBytes);  % Number of samples per channel
 wfNSamples = length(gwfparams.wfWin(1):gwfparams.wfWin(end));
 mmf = memmapfile(fileName, 'Format', {gwfparams.dataType, [gwfparams.nCh nSamp], 'x'});
-chMap = readNPY(fullfile(gwfparams.dataDir, 'channel_map.npy'))+1;               % Order in which data was streamed to disk; must be 1-indexed for Matlab
+% chMap = readNPY(fullfile(gwfparams.dataDir, 'channel_map.npy'))+1;               % Order in which data was streamed to disk; must be 1-indexed for Matlab
+chMap = 1:gwfparams.nCh;
 nChInMap = numel(chMap);
 
 % Read spike time-centered waveforms

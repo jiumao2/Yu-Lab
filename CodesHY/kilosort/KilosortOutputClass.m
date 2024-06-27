@@ -721,7 +721,7 @@ classdef KilosortOutputClass<handle
             r.Behavior.EventMarkers = r.Behavior.EventMarkers(index_timing);
             
             %% Add spikes
-            r.Units.Channels = 1:obj.ParamsKilosort.Nchan;
+%             r.Units.Channels = 1:obj.ParamsKilosort.Nchan;
             r.Units.Profile = units;
             r.Units.Definition = {'channel_id cluster_id unit_type polytrode', '1: single unit', '2: multi unit'};
             r.Units.SpikeNotes = [];
@@ -743,7 +743,7 @@ classdef KilosortOutputClass<handle
                 r.Units.SpikeTimes(i).wave_mean = obj.SpikeTable(i,:).waveforms_mean{1};
             
                 % load spike time:
-                r.Units.SpikeTimes(i).timings = obj.SpikeTable(i,:).spike_times_r{1};
+                r.Units.SpikeTimes(i).timings = reshape(obj.SpikeTable(i,:).spike_times_r{1}, 1, []);
                 r.Units.SpikeTimes(i).wave = obj.SpikeTable(i,:).waveforms{1};
 
                 if any(strcmpi(obj.SpikeTable.Properties.VariableNames, 'spike_ID'))
@@ -1300,7 +1300,7 @@ classdef KilosortOutputClass<handle
         function waveforms = getWaveforms(obj, unit_num, n_waveforms)
             % waveforms: NspikesxNchannelxLengthWaveform
             [filepath,name,ext] = fileparts(obj.ParamsKilosort.fproc);
-            gwfparams.dataDir = filepath;    % KiloSort/Phy output folder
+            gwfparams.dataDir = './kilosort2_5_output';    % KiloSort/Phy output folder
             gwfparams.fileName = [name, ext];         % .dat file containing the raw 
             gwfparams.dataType = 'int16';            % Data type of .dat file (this should be BP filtered)
             gwfparams.nCh = obj.ParamsKilosort.Nchan;                      % Number of channels that were streamed to disk in .dat file
@@ -1392,9 +1392,11 @@ classdef KilosortOutputClass<handle
             ylim([min(waveforms_mean)*1.5, max(waveforms_mean)*3])
         end            
         
-        function plotCorrelogram(obj, unit_nums)
+        function plotCorrelogram(obj, unit_nums, window)
+            if nargin < 3
+                window = 50;
+            end
             binwidth = 1; % ms
-            window = 50;
             
             s = cell(length(unit_nums),1);
             for k = 1:length(unit_nums)
@@ -1420,12 +1422,15 @@ classdef KilosortOutputClass<handle
             end
         end
         
-        function plotISI(obj, unit_num)
+        function plotISI(obj, unit_num, limit)
+            if nargin < 3
+                limit = 100;
+            end
             spike_times = obj.SpikeTable(unit_num, :).spike_times_r{1};
             isi = diff(spike_times);
             figure;
-            histogram(isi,'BinLimits',[0,100],'BinWidth',1)
-            xlim([0,100])
+            histogram(isi,'BinLimits',[0,limit],'BinWidth',1)
+            xlim([0,limit])
             xlabel('ISI (ms)')
         end
         

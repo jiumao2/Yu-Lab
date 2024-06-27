@@ -1020,6 +1020,7 @@ line([30 60], min(get(gca, 'ylim')), 'color', 'k', 'linewidth', 2.5)
 PSTH.SpikeWave = mean(allwaves, 1);
 % plot autocorrelation
 kutime = round(r.Units.SpikeTimes(ku).timings);
+kutime = kutime(kutime>0);
 kutime2 = zeros(1, max(kutime));
 kutime2(kutime)=1;
 [c, lags] = xcorr(kutime2, 100); % max lag 100 ms
@@ -1055,12 +1056,12 @@ if isfield(r.Units.SpikeTimes(ku), 'wave_mean')
     n_chs = size(wave_form, 1); % number of channels
     ch_selected = 1:n_chs;
     if n_chs > 32
-        ch_largest = r.Units.SpikeNotes(ku,1);
         n_chs = 32;
+        ch_largest = r.Units.SpikeNotes(ku,1);
         if ch_largest < n_chs/2
             ch_selected = 1:n_chs;
-        elseif ch_largest > size(wave_form, 1) - n_chs/2 + 1
-            ch_selected = size(wave_form, 1)-n_chs/2+1:size(wave_form, 1);
+        elseif ch_largest > size(wave_form, 1) - n_chs/2
+            ch_selected = size(wave_form, 1)-n_chs+1:size(wave_form, 1);
         else
             ch_selected = ch_largest-15:ch_largest+16;
         end

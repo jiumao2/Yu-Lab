@@ -396,34 +396,34 @@ for i = 1:length(all_inds)
     StatOut.CellIndx                     =                 Units(i, :);
     PSTH_TriggerStat.StatOut(i)  =                 StatOut;
 
-    figure(10); clf
-    subplot(3, 2, 1)
-    plot(PSTH_Press{1}(1, :), PSTH_Press{1}(end, :))
-    set(gca, 'xlim', [-2000 2000])
-    line([1000 1000], get(gca, 'Ylim'))
-    legend('Cue Press')
-
-    subplot(3,2, 3)
-    plot(PSTH_Press{2}(1, :), PSTH_Press{2}(end, :))
-    set(gca, 'xlim', [-2000 2000])
-    line([1000 1000], get(gca, 'Ylim'))
-    legend('Uncue Press')
-
-    subplot(3, 2, 2)
-    plot(PSTH_Release{1}(1, :), PSTH_Release{1}(end, :))
-    set(gca, 'xlim', [-2000 2000])    
-    legend('Cue Release')
-
-    subplot(3,2, 4)
-    plot(PSTH_Release{2}(1, :), PSTH_Release{2}(end, :))
-    set(gca, 'xlim', [-2000 2000])
-    legend('Uncue Release')
-
-    subplot(3, 1, 3)
-    plot(PSTH_Trigger(1, :), PSTH_Trigger(end, :))
-    legend('Trigger')
-
-    pause(0.1)
+%     figure(10); clf
+%     subplot(3, 2, 1)
+%     plot(PSTH_Press{1}(1, :), PSTH_Press{1}(end, :))
+%     set(gca, 'xlim', [-2000 2000])
+%     line([1000 1000], get(gca, 'Ylim'))
+%     legend('Cue Press')
+% 
+%     subplot(3,2, 3)
+%     plot(PSTH_Press{2}(1, :), PSTH_Press{2}(end, :))
+%     set(gca, 'xlim', [-2000 2000])
+%     line([1000 1000], get(gca, 'Ylim'))
+%     legend('Uncue Press')
+% 
+%     subplot(3, 2, 2)
+%     plot(PSTH_Release{1}(1, :), PSTH_Release{1}(end, :))
+%     set(gca, 'xlim', [-2000 2000])    
+%     legend('Cue Release')
+% 
+%     subplot(3,2, 4)
+%     plot(PSTH_Release{2}(1, :), PSTH_Release{2}(end, :))
+%     set(gca, 'xlim', [-2000 2000])
+%     legend('Uncue Release')
+% 
+%     subplot(3, 1, 3)
+%     plot(PSTH_Trigger(1, :), PSTH_Trigger(end, :))
+%     legend('Trigger')
+% 
+%     pause(0.1)
 
     %% Reward PSTH
     params.pre = 1000;

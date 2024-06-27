@@ -215,17 +215,17 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
 
     for i = start_trial:length(event_sort)
 
-    %     if n>1
-    %         for temp = 1:n-1
+    %     if idx_vid_file>1
+    %         for temp = 1:idx_vid_file-1
     %             nstart = nstart + length(t_seg{temp});  % frames of previous video segments
     %         end
     %     end
-        n = 1;
+        idx_vid_file = 1;
         nstart = 0;
         for temp = 1:length(t_seg)
             if t_press(i)>t_seg{temp}(end)
                 nstart = nstart + length(t_seg{temp});
-                n = n+1;
+                idx_vid_file = idx_vid_file+1;
             else
                 break
             end
@@ -238,12 +238,37 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
         ind_frame_postevent_all         =          find(t_frameon>t_event_n(i), 1, 'first');
         ind_frame_postevent              =          ind_frame_postevent_all - nstart; % this is the frame position in that movie clip
 
-        if isempty(ind_frame_postevent) || (ind_frame_postevent <= 3*timestep(1)) || (ind_frame_postevent + 3*timestep(2) >= length(t_seg{temp}))
+        if isempty(ind_frame_postevent) ||... % no trial found
+            (ind_frame_postevent <= 3*timestep(1)) ||... % the trial starts before the video 
+            (ind_frame_postevent + 3*timestep(2) >= length(t_seg{temp})) % the trial ends after the video
             continue;
         end
+
+        % compute dt between assumed start time and real start time
+        t_start_assumed = -3*timestep(1);
+        d_frame = -3*timestep(1)/10;
+        t_start_real = t_frameon(round(ind_frame_postevent_all + d_frame)) - t_frameon(ind_frame_postevent_all);
+        dt_start = t_start_real - t_start_assumed;
+
+        t_end_assumed = 3*timestep(2);
+        d_frame = 3*timestep(2)/10;
+        t_end_real = t_frameon(round(ind_frame_postevent_all + d_frame)) - t_frameon(ind_frame_postevent_all);
+        dt_end = t_end_real - t_end_assumed;
+        
+        if abs(dt_start) > 10
+            fprintf('The trial is skipped because the difference of start time > 10 ms\n dt = %f\n', dt_start);
+            continue
+        end
+
+        if abs(dt_end) > 10
+            fprintf('The trial is skipped because the difference of end time > 10 ms\n dt = %f\n', dt_end);
+            continue
+        end
+        
+
     %     for i =1:n_eventn
-    %         RT_ni = RTs_sort{n}(i);
-    %         FP_ni = FPs_sort{n}(i);
+    %         RT_ni = RTs_sort{idx_vid_file}(i);
+    %         FP_ni = FPs_sort{idx_vid_file}(i);
             RT_ni = RTs(i);
             FP_ni = FPs(i);
             if find(i==correct_index)
@@ -274,7 +299,7 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
             frames_to_extract = [(-3:0)*timestep(1) (1:3)*timestep(2)]+ind_frame_postevent;  % voff is the offset between frame and frame signal.
 
             indseq = [(-3:0)*timestep(1) (1:3)*timestep(2)];
-            event_frameindex{n} = ind_frame_postevent;
+            event_frameindex{idx_vid_file} = ind_frame_postevent;
             tframes = t_frameon( [(-3:0)*timestep(1) (1:3)*timestep(2)]+ind_frame_postevent_all); % this is the time of plotted frames, session time, not segment time
 
             xticklabel_new = {};
@@ -282,9 +307,9 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
 
                 switch camview
                     case 'side'
-                        vidfile = ts.sideviews{n};
+                        vidfile = ts.sideviews{idx_vid_file};
                     case 'top'
-                        vidfile = ts.topviews{n};
+                        vidfile = ts.topviews{idx_vid_file};
                     otherwise
                         return
                 end

@@ -19,7 +19,7 @@ if size(trigtimes, 1) ~= 1
     trigtimes = trigtimes';
 end;
 
-spxtimes                 =      round(spxtimes); 
+spxtimes                 =      round(spxtimes(spxtimes>0.5)); 
 tspkall                     =       [1:max([max(spxtimes) max(trigtimes)])+5000];
 spkall                      =      zeros(1, length(tspkall));
 spkall(spxtimes)      =     1; 

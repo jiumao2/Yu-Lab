@@ -1048,6 +1048,7 @@ uicontrol('Style','text','Units','centimeters','Position',[col4-0.5  yshift_row4
     'HorizontalAlignment','Left');
 yshift_row5=yshift_row4+1.2+1.2;
 
+FRMax = max(FRMax, 1);
 FRrange = [0 FRMax*1.5];
 set(ha_press_psth, 'ylim', FRrange);
 line(ha_press_psth, [0 0], FRrange, 'color', press_col, 'linewidth', 1);
@@ -1131,8 +1132,8 @@ legend([f(4),f(5)],'Uncue','Cue', 'Box', 'off', 'Location', 'best')
             n_chs = 32;
             if ch_largest < n_chs/2
                 ch_selected = 1:n_chs;
-            elseif ch_largest > size(wave_form, 1) - n_chs/2 + 1
-                ch_selected = size(wave_form, 1)-n_chs/2+1:size(wave_form, 1);
+            elseif ch_largest > size(wave_form, 1) - n_chs/2
+                ch_selected = size(wave_form, 1)-n_chs+1:size(wave_form, 1);
             else
                 ch_selected = ch_largest-15:ch_largest+16;
             end
