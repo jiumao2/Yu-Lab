@@ -37,7 +37,9 @@ function [spike_train, t_spike_train] = bin_timings(spike_times, binwidth, varar
     
     k = 1; j = 1;
     while j <= length(spike_times) && k < length(t_edges)
-        if spike_times(j) < t_edges(k+1)
+        if spike_times(j) < t_edges(1)
+            j = j+1;
+        elseif spike_times(j) < t_edges(k+1)
             spike_train(k) = spike_train(k)+1;
             j = j+1;
         else

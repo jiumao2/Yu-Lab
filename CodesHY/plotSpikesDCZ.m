@@ -12,6 +12,11 @@ t_post_reward = 10000;
 ax_width = 1/1000;
 ax_height = 3/50;
 
+rat_name = r.Meta(1).Subject;
+session = datestr(r.Meta(1).DateTime, 'yyyymmdd');
+ch = r.Units.SpikeNotes(unit_num, 1);
+save_filename = fullfile('./Fig', [rat_name, '_', session, '_', 'Unit', num2str(unit_num)]);
+
 if nargin > 3
     for k = 1:2:size(varargin, 2)
         if strcmpi(varargin{k}, 'drugSegment')
@@ -34,6 +39,8 @@ if nargin > 3
             ax_width = varargin{k+1};
         elseif strcmpi(varargin{k}, 'ax_height')
             ax_height = varargin{k+1};
+        elseif strcmpi(varargin{k}, 'save_filename')
+            save_filename = varargin{k+1};
         else
             error('wrong argument!');
         end
@@ -101,7 +108,7 @@ EasyPlot.move({ax_waveform, ax_autocorrelogram, ax_firing_rate}, 'dx', 4);
 ax_firing_rate.Position(3) = ax_raster_pre{3}.Position(1)+ax_raster_pre{3}.Position(3)-ax_firing_rate.Position(1);
 
 % waveform
-waveform_mean = mean(r.Units.SpikeTimes(unit_num).wave)./4;
+waveform_mean = mean(r.Units.SpikeTimes(unit_num).wave, 1)./4;
 waveform_mean = waveform_mean-mean(waveform_mean(1:10));
 plot(ax_waveform, waveform_mean, 'k-', 'LineWidth', 2);
 xlim(ax_waveform, [0, length(waveform_mean)]);
@@ -312,9 +319,6 @@ if ~isempty(recoverySegment)
     EasyPlot.setGeneralTitle(ax_raster_recovery, [num2str((postTime-drugTime)/1000/60/60, '%.1f'), ' hour after injection'], 'yShift', -0.2);
 end
 
-rat_name = r.Meta(1).Subject;
-session = datestr(r.Meta(1).DateTime, 'yyyymmdd');
-ch = r.Units.SpikeNotes(unit_num, 1);
 
 EasyPlot.markAxes(fig, ax_waveform, rat_name, 'fontSize', 12,...
     'xShift', 0, 'yShift', -0.5,...
@@ -331,5 +335,5 @@ EasyPlot.markAxes(fig, ax_waveform, ['DCZ ' getFractionString(dose), 'x'] , 'fon
 
 EasyPlot.cropFigure(fig);
 
-EasyPlot.exportFigure(fig, fullfile('./Fig', [rat_name, '_', session, '_', 'Unit', num2str(unit_num)]));
+EasyPlot.exportFigure(fig, save_filename);
 end

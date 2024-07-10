@@ -480,7 +480,8 @@
          {"name":"t_pre_reward", "kind":"namevalue", "type":"numeric"},
          {"name":"t_post_reward", "kind":"namevalue", "type":"numeric"},
          {"name":"ax_width", "kind":"namevalue", "type":"numeric"},
-         {"name":"ax_height", "kind":"namevalue", "type":"numeric"}
+         {"name":"ax_height", "kind":"namevalue", "type":"numeric"},
+         {"name":"save_filename", "kind":"namevalue", "type":"char"}
       ]
    }
   }

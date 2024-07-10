@@ -902,11 +902,11 @@ ind_prepress = find(tspkmat_press_all<0);
 spkmat_prepress =  trialspxmat_press_all(ind_prepress, :);
 dur_prepress = abs(tspkmat_press_all(ind_prepress(1)))/1000; % total time
 rate_prepress = sum(spkmat_prepress, 1)/dur_prepress; % spk rate across time
-plot(ha10, t_presses/1000, rate_prepress, 'k', 'marker', 'o', 'markersize', 3, 'linestyle', 'none');
+plot(ha10, t_correct_presses_all/1000, rate_prepress, 'k', 'marker', 'o', 'markersize', 3, 'linestyle', 'none');
 % linear regression
-Pfit = polyfit(t_presses/1000,rate_prepress,1);
-yfit = Pfit(1)*t_presses/1000+Pfit(2);
-plot(t_presses/1000,yfit,'r:', 'linewidth', 1.5);
+Pfit = polyfit(t_correct_presses_all/1000,rate_prepress,1);
+yfit = Pfit(1)*t_correct_presses_all/1000+Pfit(2);
+plot(t_correct_presses_all/1000,yfit,'r:', 'linewidth', 1.5);
 xlabel('Time (s)')
 ylabel('Spk rate (Hz)')
 yshift_row7 = yshift_row6+3;
