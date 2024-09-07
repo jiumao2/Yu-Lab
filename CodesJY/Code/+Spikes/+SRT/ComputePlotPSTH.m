@@ -7,7 +7,7 @@ function PSTH = ComputePlotPSTH(r, PSTHOut, ku, varargin)
 % Modified by Yue Huang on 6/26/2023
 % Change the way of making raster plots to run faster
 
-close all;
+% close all;
 PSTH.UnitID       = ku;
 ToSave = 'on';
 if nargin>2
@@ -218,8 +218,7 @@ for i =1:nFPs
 end
 
 %% Plot raster and spks
-hf=27;
-figure(hf); clf(hf)
+figure();
 set(gcf, 'unit', 'centimeters', 'position', printsize, 'paperpositionmode', 'auto' ,'color', 'w')
 % PSTH of correct trials
 yshift_row1 = 1;
@@ -1105,7 +1104,7 @@ uicontrol('Style','text','Units','centimeters','Position',[19 yshift_row7 5 1.5]
     'HorizontalAlignment','Left');
 fig_height = max([fig_height, yshift_row7+2]);
 % change the height of the figure
-set(hf, 'position', [2 2 25 fig_height])
+set(gcf, 'position', [2 2 25 fig_height])
 toc;
 
 if strcmpi(ToSave,'on')

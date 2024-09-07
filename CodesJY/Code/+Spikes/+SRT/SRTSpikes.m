@@ -61,11 +61,15 @@ end
 
 rb                            =       r.Behavior;
 % all FPs
-if length(r.BehaviorClass)>1
-    r.BehaviorClass = r.BehaviorClass(1);
+if ~isfield(r, 'BehaviorClass')
+    MixedFPs = [750, 1500];
+else
+    if length(r.BehaviorClass)>1
+        r.BehaviorClass = r.BehaviorClass(1);
+    end
+    
+    MixedFPs                =       r.BehaviorClass.MixedFP; % you have to use BuildR2023 or BuildR4Tetrodes2023 to have this included in r.
 end
-
-MixedFPs                =       r.BehaviorClass.MixedFP; % you have to use BuildR2023 or BuildR4Tetrodes2023 to have this included in r.
 
 nFPs                        =       length(MixedFPs);
 
@@ -234,10 +238,10 @@ move_time                       =           move_time(~isnan(move_time));
 FP_rewards                     =            t_rewards_FP(~isnan(move_time));
 % Check movement time distribution
 Edges =(0:100:5000);
-figure(45); clf;
-histogram(move_time, Edges)
-xlabel('Movement time (ms)')
-ylabel('Count')
+% figure();
+% histogram(move_time, Edges)
+% xlabel('Movement time (ms)')
+% ylabel('Count')
 
 % sort reward according to FP
 % MixedFPs                =       r.BehaviorClass.MixedFP; % you have to use BuildR2023 or BuildR4Tetrodes2023 to have this included in r. 
@@ -294,17 +298,17 @@ end
 % disp(t_reward_pokes);
 
 Edges =(0:1:200);
-figure(46); clf;
-subplot(2, 2, 1)
-histogram(dt1, Edges);
-xlabel('latency from reward to poke (ms)')
-subplot(2, 2, 2)
-histogram(dt, Edges);
-xlabel('latency from poke to reward (ms)')
-ylabel('Count')
-subplot(2, 2, [3 4])
+% figure();
+% subplot(2, 2, 1)
+% histogram(dt1, Edges);
+% xlabel('latency from reward to poke (ms)')
+% subplot(2, 2, 2)
+% histogram(dt, Edges);
+% xlabel('latency from poke to reward (ms)')
+% ylabel('Count')
+% subplot(2, 2, [3 4])
 t_lim = [-500 500];
-set(gca, 'xlim', t_lim, 'ylim', [0 length(t_rewards)], 'nextplot', 'add')
+% set(gca, 'xlim', t_lim, 'ylim', [0 length(t_rewards)], 'nextplot', 'add')
 
 stack = 0;
 for ifp =1:nFPs
@@ -313,10 +317,10 @@ for ifp =1:nFPs
         t_relative = t_portin - t_rewards{ifp}(i);
         t_relative = t_relative(t_relative>t_lim(1) & t_relative<t_lim(2));
         [~, ind] = min(abs(t_rewards{ifp}(i)-t_reward_pokes{ifp}));
-        if ~isempty(t_relative)
-            scatter(t_relative, stack, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
-        end
-        plot(t_reward_pokes{ifp}(ind) -t_rewards{ifp}(i), stack, '+', 'markersize', 4, 'linewidth', 1, 'color', 'c')
+%         if ~isempty(t_relative)
+%             scatter(t_relative, stack, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
+%         end
+%         plot(t_reward_pokes{ifp}(ind) -t_rewards{ifp}(i), stack, '+', 'markersize', 4, 'linewidth', 1, 'color', 'c')
     end
 end
 
@@ -438,26 +442,26 @@ if ~isempty(t_opto_begs)
     % check opto
     % the idea is none of PSTH computing range should fall inside any laser
     % stim periods
-    figure(48); clf(48);
-    axes('nextplot', 'add'); title('Optogenetic stimulation');
-    for i =1:length(t_opto_begs)
-        plotshaded([t_opto_begs(i) t_opto_ends(i)], [0 0; 8 8], 'b', 0.8);
-    end
-    hold on
+%     figure();
+%     axes('nextplot', 'add'); title('Optogenetic stimulation');
+%     for i =1:length(t_opto_begs)
+%         plotshaded([t_opto_begs(i) t_opto_ends(i)], [0 0; 8 8], 'b', 0.8);
+%     end
+%     hold on
     to_remove_press = [];
     for i =1:length(t_presses)
         event_beg = t_presses(i)-PressTimeDomain(1);
         event_end = t_presses(i)+PressTimeDomain(2);
-        line([event_beg event_end], [7.5 7.5 ], 'color', 'k','linewidth', 4)
+%         line([event_beg event_end], [7.5 7.5 ], 'color', 'k','linewidth', 4)
         % event_beg or event_end cannot be inside of any stim epochs.
         % opto_beg or opto_end cannot be inside of any event epochs
         if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
             to_remove_press = [to_remove_press i];
-            plot(event_beg, 7.5, 'ro','markersize', 6)
+%             plot(event_beg, 7.5, 'ro','markersize', 6)
         end
     end
     t_presses(to_remove_press) = [];
-    text(100,7.8, 'Presses (all)', 'fontname', 'Arial', 'fontsize', 8)
+%     text(100,7.8, 'Presses (all)', 'fontname', 'Arial', 'fontsize', 8)
 
     to_remove = cell(1, nFPs);
     for k =1:nFPs
@@ -465,21 +469,21 @@ if ~isempty(t_opto_begs)
         for i =1:length(t_correct_presses_sorted{k})
             event_beg = t_correct_presses_sorted{k}(i)-PressTimeDomain(1);
             event_end = t_correct_presses_sorted{k}(i)+PressTimeDomain(2);
-            line([event_beg event_end], [1 1], 'color', 'k','linewidth', 4)
+%             line([event_beg event_end], [1 1], 'color', 'k','linewidth', 4)
             % event_beg or event_end cannot be inside of any stim epochs.
             % opto_beg or opto_end cannot be inside of any event epochs
             if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
                  to_remove{k}  = [ to_remove{k}  i];
-                plot(event_beg, 1, 'ro','markersize', 6)
+%                 plot(event_beg, 1, 'ro','markersize', 6)
             end
         end
         for i =1:length(t_correct_releases_sorted{k})
             event_beg = t_correct_releases_sorted{k}(i)-ReleaseTimeDomain(1);
             event_end = t_correct_releases_sorted{k}(i)+ReleaseTimeDomain(2);
-            line([event_beg event_end], [2 2], 'color', 'k','linewidth', 4)
+%             line([event_beg event_end], [2 2], 'color', 'k','linewidth', 4)
             if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
                  to_remove{k}  = [ to_remove{k}  i];
-                 plot(event_beg, 2, 'ro','markersize', 6)
+%                  plot(event_beg, 2, 'ro','markersize', 6)
             end
         end
 
@@ -494,30 +498,30 @@ if ~isempty(t_opto_begs)
     for i =1:length(t_premature_presses)
         event_beg =t_premature_presses(i)-PressTimeDomain(1);
         event_end = t_premature_presses(i)+PressTimeDomain(2);
-        line([event_beg event_end], [3 3], 'color', 'm','linewidth', 4)
+%         line([event_beg event_end], [3 3], 'color', 'm','linewidth', 4)
         if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
             to_remove_premature = [to_remove_premature i];
-            plot(event_beg, 3, 'ro','markersize', 6)
+%             plot(event_beg, 3, 'ro','markersize', 6)
         end
     end
 
     for i =1:length(t_premature_releases)
         event_beg =t_premature_releases(i)-ReleaseTimeDomain(1);
         event_end = t_premature_releases(i)+ReleaseTimeDomain(2);
-        line([event_beg event_end], [3.5 3.5], 'color', 'm','linewidth', 4)
+%         line([event_beg event_end], [3.5 3.5], 'color', 'm','linewidth', 4)
         if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
             to_remove_premature = [to_remove_premature i];
-            plot(event_beg, 3.5, 'ro','markersize', 6)
+%             plot(event_beg, 3.5, 'ro','markersize', 6)
         end
     end
 
     to_remove_premature = unique(to_remove_premature);
-    text(100, 3.2, 'Press|Premature', 'fontname', 'Arial', 'fontsize', 8)
+%     text(100, 3.2, 'Press|Premature', 'fontname', 'Arial', 'fontsize', 8)
     t_premature_presses(to_remove_premature)       =       [];
     premature_duration_presses(to_remove_premature)       =       [];
     FPs_premature_presses(to_remove_premature)  =       [];
 
-    text(100, 3.7, 'Release|Premature', 'fontname', 'Arial', 'fontsize', 8)
+%     text(100, 3.7, 'Release|Premature', 'fontname', 'Arial', 'fontsize', 8)
     t_premature_releases(to_remove_premature)       =        [];
     premature_duration_releases(to_remove_premature)     =       [];
     FPs_premature_releases(to_remove_premature)  =       [];
@@ -526,20 +530,20 @@ if ~isempty(t_opto_begs)
     for i =1:length(t_late_presses)
         event_beg =t_late_presses(i)-PressTimeDomain(1);
         event_end = t_late_presses(i)+PressTimeDomain(2);
-        line([event_beg event_end], [4 4], 'color', 'c','linewidth', 4)
+%         line([event_beg event_end], [4 4], 'color', 'c','linewidth', 4)
         if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
             to_remove_late = [to_remove_late i];
-            plot(event_beg, 4, 'ro','markersize', 6)
+%             plot(event_beg, 4, 'ro','markersize', 6)
         end
     end
 
     for i =1:length(t_late_releases)
         event_beg =t_late_releases(i)-ReleaseTimeDomain(1);
         event_end = t_late_releases(i)+ReleaseTimeDomain(2);
-        line([event_beg event_end], [4.5 4.5], 'color', 'c','linewidth', 4)
+%         line([event_beg event_end], [4.5 4.5], 'color', 'c','linewidth', 4)
         if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
             to_remove_late = [to_remove_late i];
-            plot(event_beg, 4.5, 'ro','markersize', 6)
+%             plot(event_beg, 4.5, 'ro','markersize', 6)
         end
     end
 
@@ -559,61 +563,61 @@ if ~isempty(t_opto_begs)
         for i =1:length(t_reward_pokes{ifp})
             event_beg =t_reward_pokes{ifp}(i)-RewardTimeDomain(1);
             event_end = t_reward_pokes{ifp}(i)+RewardTimeDomain(2);
-            line([event_beg event_end], [5 5], 'color', 'g','linewidth', 4)
+%             line([event_beg event_end], [5 5], 'color', 'g','linewidth', 4)
             if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
                 to_remove_rewardpokes = [to_remove_rewardpokes i];
-                plot(event_beg, 5, 'ro','markersize', 6)
+%                 plot(event_beg, 5, 'ro','markersize', 6)
             end
         end
         t_reward_pokes{ifp}(to_remove_rewardpokes) = [];
         move_time{ifp}(to_remove_rewardpokes) = [];
-        text(100, 5.2, 'Reward poke', 'fontname', 'Arial', 'fontsize', 8)
+%         text(100, 5.2, 'Reward poke', 'fontname', 'Arial', 'fontsize', 8)
     end
 
     to_remove_nonrewardpokes = [];
     for i =1:length(t_nonreward_pokes)
         event_beg =t_nonreward_pokes(i)-RewardTimeDomain(1);
         event_end = t_nonreward_pokes(i)+RewardTimeDomain(2);
-        line([event_beg event_end], [5.5 5.5], 'color', 'g','linewidth', 4)
+%         line([event_beg event_end], [5.5 5.5], 'color', 'g','linewidth', 4)
         if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
             to_remove_rewardpokes = [to_remove_rewardpokes i];
-            plot(event_beg, 5.5, 'ro','markersize', 6)
+%             plot(event_beg, 5.5, 'ro','markersize', 6)
         end
     end
     t_nonreward_pokes(to_remove_nonrewardpokes) = [];
     move_time_nonreward(to_remove_nonrewardpokes) = [];
-    text(100, 5.7, 'Nonreward poke', 'fontname', 'Arial', 'fontsize', 8)
+%     text(100, 5.7, 'Nonreward poke', 'fontname', 'Arial', 'fontsize', 8)
 
     for k =1:nFPs
         to_remove_trigger = [];
         for i =1:length(t_triggers_FPs{k})
             event_beg =t_triggers_FPs{k}(i)-TriggerTimeDomain(1);
             event_end = t_triggers_FPs{k}(i)+TriggerTimeDomain(2);
-            line([event_beg event_end], [6 6], 'color', 'r','linewidth', 4)
+%             line([event_beg event_end], [6 6], 'color', 'r','linewidth', 4)
             if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
                 to_remove_trigger = [to_remove_trigger i];
-                plot(event_beg, 6, 'ro','markersize', 6)
+%                 plot(event_beg, 6, 'ro','markersize', 6)
             end
         end
         t_triggers_FPs{k}(to_remove_trigger) = [];
         RT_triggers_FPs{k}(to_remove_trigger) = [];
-        text(100, 6.2, 'Trigger|Short', 'fontname', 'Arial', 'fontsize', 8)
+%         text(100, 6.2, 'Trigger|Short', 'fontname', 'Arial', 'fontsize', 8)
     end
 
     to_remove_trigger_late = [];
     for i =1:length(t_triggers_late)
         event_beg =t_triggers_late(i)-TriggerTimeDomain(1);
         event_end = t_triggers_late(i)+TriggerTimeDomain(2);
-        line([event_beg event_end], [7 7], 'color', 'r','linewidth', 4)
+%         line([event_beg event_end], [7 7], 'color', 'r','linewidth', 4)
         if ~isempty(find((t_opto_begs-event_beg).*(t_opto_ends-event_beg)<0 |  (t_opto_begs-event_end).*(t_opto_ends-event_end)<0 | (t_opto_begs-event_beg).*(t_opto_ends-event_end)<0, 1))
             to_remove_trigger_late = [to_remove_trigger_late i];
-            plot(event_beg, 7, 'ro','markersize', 6)
+%             plot(event_beg, 7, 'ro','markersize', 6)
         end
     end
     t_triggers_late(to_remove_trigger_late) = [];
     triggers_RTs_late(to_remove_trigger_late) = [];
     FP_triggers_late(to_remove_trigger_late) = [];
-    text(100, 7.2, 'Trigger|Late', 'fontname', 'Arial', 'fontsize', 8);
+%     text(100, 7.2, 'Trigger|Late', 'fontname', 'Arial', 'fontsize', 8);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% all events that fall within opto-stim duration are not removed.
@@ -672,6 +676,10 @@ for iku =1:length(ku_all)
         'RewardTimeDomain', RewardTimeDomain,...
         'TriggerTimeDomain', TriggerTimeDomain,...
         'ToSave', ToSave);
+
+    if length(ku_all)>1
+        close all;
+    end
 end
 
 if takeall

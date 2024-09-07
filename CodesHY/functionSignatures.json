@@ -483,5 +483,26 @@
          {"name":"ax_height", "kind":"namevalue", "type":"numeric"},
          {"name":"save_filename", "kind":"namevalue", "type":"char"}
       ]
+   },
+
+   "intersectAll":
+   {
+      "inputs":
+      [
+         {"name":"cell_input", "kind":"required", "type":"cell"}
+      ]
+   },
+   
+   "checkModulationSignificance":
+   {
+      "inputs":
+      [
+         {"name":"spike_times", "kind":"required", "type":"numeric"},
+         {"name":"event_times", "kind":"required", "type":"numeric"},
+         {"name":"t_pre", "kind":"required", "type":"numeric"},
+         {"name":"t_post", "kind":"required", "type":"numeric"},
+         {"name":"binwidth", "kind":"required", "type":"numeric"},
+         {"name":"alpha", "kind":"required", "type":"numeric"}
+      ]
    }
   }

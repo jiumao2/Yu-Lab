@@ -125,10 +125,17 @@ spikeTable.ch = ch_tbl;
 spikeTable.spike_ID = spike_ID_tbl;
 spikeTable = sortrows(spikeTable,{'ch','group'});
 %%
+% https://billkarsh.github.io/SpikeGLX/help/syncEdges/Sync_edges/
+% Loads array spike_times.npy.
+% Parses value imSampRate from the metadata file.
+% Divides the rate into each array element.
+% Writes the times out in same folder as spike_seconds.npy.
+im_sample_rate = str2double(meta.imSampRate);
+
 spike_times_r = cell(height(spikeTable),1);
 
 for k = 1:height(spikeTable)
-    spike_times_r{k} = double(spikeTable(k,:).spike_times{1})/ops.fs*1000;
+    spike_times_r{k} = double(spikeTable(k,:).spike_times{1})/im_sample_rate*1000;
 end
 
 spikeTable.spike_times_r = spike_times_r;
@@ -142,8 +149,8 @@ KilosortOutput.save();
 %% build R
 KilosortOutput.buildRNeuropixels(...
     'KornblumStyle', false,...
-    'ProbeStyle', false,...
-    'Subject', 'Neymar',...
+    'ProbeStyle', true,...
+    'Subject', 'Oscar',...
     'BpodProtocol', 'OptoRecording',...
     'Experimenter', 'HY');
 

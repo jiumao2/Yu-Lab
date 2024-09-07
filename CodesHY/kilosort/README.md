@@ -130,3 +130,8 @@ spikeTable([spikeTable.cluster_id]==cluster_id,:).ch = real_best_channel;
 
 5. No good units after kilosort or missing spikes
 - Try to lower the spike detection threshold. Modify the sorting parameters in `kilosort.ipynb`. For example, add `sorted_params['projection_threshold'] = [8,3]`.
+
+6. Cannot run Kilosort in Vscode  
+- There are 2 options:  
+(1) Run in the jupyter  
+(2) Change the encoding of terminal to `utf-8`: 设置-语言和时间-语言-管理语言设置-更改系统区域设置-Beta版：使用Unicode UTF-8提供全球语言支持-确定-重新启动电脑

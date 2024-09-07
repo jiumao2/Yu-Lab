@@ -41,6 +41,7 @@ reward_col = [237, 43, 42]/255;
 electrode_type = 'Ch';
 rasterheight = 0.02;
 combine_cue_uncue = 0;
+ToSave = true;
 
 if nargin>2
     for i=1:2:size(varargin,2)
@@ -53,6 +54,8 @@ if nargin>2
                 ComputeRange = varargin{i+1};
             case 'CombineCueUncue'
                 combine_cue_uncue = varargin{i+1};
+            case 'ToSave'
+                ToSave = varargin{i+1}; 
             otherwise
                 errordlg('unknown argument')
         end
@@ -82,14 +85,14 @@ t_presses_dark         =        t_presses(isnan(rb.CueIndex(:, 2)));
 sprintf('There are %2.0f cued trials', length(t_presses_cue))
 sprintf('There are %2.0f uncued trials', length(t_presses_uncue))
  
-figure(8); clf
-ha=subplot(1, 2, 1)
-set(ha, 'nextplot', 'add', 'xlim', [0.5 3.5], 'xtick', [1:3], 'xticklabel', {'Cued', 'Uncued', 'Dark'});
-bar(1, length(t_presses_cue), 'FaceColor', 'k')
-bar(2, length(t_presses_uncue), 'FaceColor', 'b')
-bar(3, length(t_presses_dark), 'FaceColor', [0.7 0.7 0.7])
-ylabel('Number of presses')
-ymax =max(get(ha, 'ylim'));
+% figure();
+% ha=subplot(1, 2, 1);
+% set(ha, 'nextplot', 'add', 'xlim', [0.5 3.5], 'xtick', [1:3], 'xticklabel', {'Cued', 'Uncued', 'Dark'});
+% bar(1, length(t_presses_cue), 'FaceColor', 'k')
+% bar(2, length(t_presses_uncue), 'FaceColor', 'b')
+% bar(3, length(t_presses_dark), 'FaceColor', [0.7 0.7 0.7])
+% ylabel('Number of presses')
+% ymax =max(get(ha, 'ylim'));
 
 % release
 ind_release= find(strcmp(rb.Labels, 'LeverRelease'));
@@ -128,11 +131,11 @@ t_rewards_cue = t_rewards_cue(ind_move_cue);
 [move_time_uncue, ind_move_uncue] = sort(move_time_uncue);
 t_rewards_uncue = t_rewards_uncue(ind_move_uncue);
 
-ha2=subplot(1, 2, 2);
-set(ha2, 'nextplot', 'add', 'xlim', [0.5 2.5], 'xtick', [1:3], 'xticklabel', {'Cued', 'Uncued'}, 'ylim', [0 ymax]);
-bar(1, length(t_rewards_cue), 'FaceColor', 'k')
-bar(2, length(t_rewards_uncue), 'FaceColor', 'b')
-ylabel('Number of rewards')
+% ha2=subplot(1, 2, 2);
+% set(ha2, 'nextplot', 'add', 'xlim', [0.5 2.5], 'xtick', [1:3], 'xticklabel', {'Cued', 'Uncued'}, 'ylim', [0 ymax]);
+% bar(1, length(t_rewards_cue), 'FaceColor', 'k')
+% bar(2, length(t_rewards_uncue), 'FaceColor', 'b')
+% ylabel('Number of rewards')
 
 % index and time of correct presses
 if size(rb.Foreperiods, 1)==1
@@ -227,17 +230,17 @@ triggers_types = triggers_types(ind_sort);
 ind_portin = find(strcmp(rb.Labels, 'ValveOnset'));
 t_portin = rb.EventTimings(rb.EventMarkers == ind_portin); % these are all the poke times
 
-figure(45); clf(45)
-subplot(2, 1, 1)
-plot(t_portin, 5, 'ko');
-text(400, 4.9, 'Poke', 'color', 'k')
-hold on
-line([t_correct_releases_cue t_correct_releases_cue], [4 6], 'color', 'b');
-line([t_correct_releases_uncue t_correct_releases_uncue], [4 6], 'color', 'm');
-text(400, 5.9, 'release', 'color', 'k')
-line([t_rewards_cue' t_rewards_cue'], [4.5 5.5], 'color', 'b', 'linewidth', 1);
-line([t_rewards_uncue' t_rewards_uncue'], [4.5 5.5], 'color', 'm', 'linewidth', 1);
-text(400, 5.4, 'reward', 'color', 'k')
+% figure();
+% subplot(2, 1, 1)
+% plot(t_portin, 5, 'ko');
+% text(400, 4.9, 'Poke', 'color', 'k')
+% hold on
+% line([t_correct_releases_cue t_correct_releases_cue], [4 6], 'color', 'b');
+% line([t_correct_releases_uncue t_correct_releases_uncue], [4 6], 'color', 'm');
+% text(400, 5.9, 'release', 'color', 'k')
+% line([t_rewards_cue' t_rewards_cue'], [4.5 5.5], 'color', 'b', 'linewidth', 1);
+% line([t_rewards_uncue' t_rewards_uncue'], [4.5 5.5], 'color', 'm', 'linewidth', 1);
+% text(400, 5.4, 'reward', 'color', 'k')
 
 % Find out reward poke (which must occur after a succesful release. For most bpod protocols, this is the same as valve time)
 t_reward_pokes_uncue = zeros(1, length(t_rewards_uncue));
@@ -263,17 +266,17 @@ for i =1:length(t_reward_pokes_cue)
     end
 end;
   
-subplot(2, 1, 2)
+% subplot(2, 1, 2)
 t_lim = [-500 500];
-set(gca, 'xlim', t_lim, 'ylim', [0 length(t_rewards)], 'nextplot', 'add');
+% set(gca, 'xlim', t_lim, 'ylim', [0 length(t_rewards)], 'nextplot', 'add');
 for i =1:length(t_rewards_cue)
     t_relative = t_portin - t_rewards_cue(i);
     t_relative = t_relative(t_relative>t_lim(1) & t_relative<t_lim(2));
     [~, ind] = min(abs(t_rewards_cue(i)-t_reward_pokes_cue));
-    if ~isempty(t_relative)
-        scatter(t_relative, i, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
-    end
-    plot(t_reward_pokes_cue(ind) - t_rewards_cue(i), i, '+', 'markersize', 4, 'linewidth', 1, 'color', 'b')
+%     if ~isempty(t_relative)
+%         scatter(t_relative, i, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
+%     end
+%     plot(t_reward_pokes_cue(ind) - t_rewards_cue(i), i, '+', 'markersize', 4, 'linewidth', 1, 'color', 'b')
 end
 
 for i =1:length(t_rewards_uncue)
@@ -439,7 +442,8 @@ for iku =1:length(ku_all)
         'PressTimeDomain', PressTimeDomain, ...
         'ReleaseTimeDomain', ReleaseTimeDomain, ...
         'RewardTimeDomain', RewardTimeDomain,...
-        'TriggerTimeDomain', TriggerTimeDomain);
+        'TriggerTimeDomain', TriggerTimeDomain,...
+        'ToSave', ToSave);
 
 end;
 

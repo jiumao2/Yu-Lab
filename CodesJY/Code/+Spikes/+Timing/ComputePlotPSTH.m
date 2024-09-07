@@ -12,6 +12,7 @@ close all;
 PSTH.UnitID       = ku;
 combine_cue_uncue = 0;
 nTypes = 2;
+ToSave = 'on';
 
 if nargin>2
     for i=1:2:size(varargin,2)
@@ -26,6 +27,8 @@ if nargin>2
                 TriggerTimeDomain = varargin{i+1};
             case 'CombineCueUncue'
                 combine_cue_uncue = varargin{i+1};
+            case 'ToSave'
+                ToSave = varargin{i+1};
             otherwise
                 errordlg('unknown argument')
         end
@@ -239,8 +242,7 @@ PSTH.NonrewardPokes =  {psth_nonreward_pokes, ts_nonreward_pokes,...
     trialspxmat_nonreward_pokes, tspkmat_nonreward_pokes, t_nonreward_pokes, movement_time_nonreward_pokes};
 
 %% Plot raster and spks
-hf=27;
-figure(hf); clf(hf)
+figure();
 set(gcf, 'unit', 'centimeters', 'position', printsize, 'paperpositionmode', 'auto' ,'color', 'w')
 % PSTH of correct trials
 yshift_row1 = 1.4;
@@ -1177,33 +1179,36 @@ legend([f(4),f(5)],'Uncue','Cue', 'Box', 'off', 'Location', 'best')
         'HorizontalAlignment','Left');    
     fig_height = max([fig_height, yshift_row7+2]);    
     % change the height of the figure    
-    set(hf, 'position', [2 2 25 fig_height])
+    set(gcf, 'position', [2 2 25 fig_height])
     toc;
-
-    % save to a folder
-    anm_name        =     r.BehaviorClass.Subject;
-    session              =     r.BehaviorClass.Date;
-
-    PSTH.ANM_Session = {anm_name, session};
-    thisFolder = fullfile(pwd, 'Fig');
-    if ~exist(thisFolder, 'dir')
-        mkdir(thisFolder)
-    end
-    tosavename2= fullfile(thisFolder, [anm_name '_' session '_Ch'  num2str(ch) '_Unit' num2str(unit_no) ]);
-    print (gcf,'-dpng', tosavename2)
-
-    % save PSTH as well save(psth_new_name, 'PSTHOut');
-    save([tosavename2 '.mat'], 'PSTH')
-
-    try
-        tic
-        % C:\Users\jiani\OneDrive\00_Work\03_Projects
-        thisFolder = fullfile(findonedrive, '00_Work', '03_Projects', '05_Physiology', 'UnitsCollection', anm_name, session);
+    
+    if ToSave
+        % save to a folder
+        anm_name        =     r.BehaviorClass.Subject;
+        session              =     r.BehaviorClass.Date;
+    
+        PSTH.ANM_Session = {anm_name, session};
+        thisFolder = fullfile(pwd, 'Fig');
         if ~exist(thisFolder, 'dir')
             mkdir(thisFolder)
         end
-        copyfile([tosavename2 '.png'], thisFolder)
-        copyfile([tosavename2 '.mat'], thisFolder)
-
-        toc
+        tosavename2= fullfile(thisFolder, [anm_name '_' session '_Ch'  num2str(ch) '_Unit' num2str(unit_no) ]);
+        print (gcf,'-dpng', tosavename2)
+    
+        % save PSTH as well save(psth_new_name, 'PSTHOut');
+        save([tosavename2 '.mat'], 'PSTH')
+    
+        try
+            tic
+            % C:\Users\jiani\OneDrive\00_Work\03_Projects
+            thisFolder = fullfile(findonedrive, '00_Work', '03_Projects', '05_Physiology', 'UnitsCollection', anm_name, session);
+            if ~exist(thisFolder, 'dir')
+                mkdir(thisFolder)
+            end
+            copyfile([tosavename2 '.png'], thisFolder)
+            copyfile([tosavename2 '.mat'], thisFolder)
+    
+            toc
+        end
     end
+end

@@ -11,6 +11,9 @@ if size(y, 1) ~= 1
     y = y';
 end
 
+x = x(~isnan(x));
+y = y(~isnan(y));
+
 x_len = length(x);
 y_len = length(y);
 dmean = abs(mean(x)-mean(y));

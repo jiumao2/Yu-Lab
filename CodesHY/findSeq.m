@@ -1,4 +1,4 @@
-function idx_out = findSeq(seqmom,seqson,type)
+function idx_out = findSeq(seqmom, seqson, type)
     % eg. seqmom = [1,2,3,5,6,7]; seqson = [2,3,6]; idx_out would be [2,3,5]
     if nargin <= 2
         type = 'normal_equal';
