@@ -1,4 +1,5 @@
 %% you need to change most of the paths in this block
+addpath(genpath('C:\Users\jiumao\Desktop\Kilosort_2_5'));
 rootZ = '.\catgt_Exp_g0'; % the raw data binary file is in this folder
 rootH = '.\catgt_Exp_g0'; % path to temporary binary file (same size as data, should be on fast SSD)
 pathToYourConfigFile = rootZ; % take from Github folder and put it somewhere else (together with the master_file)
@@ -34,7 +35,7 @@ fs          = [dir(fullfile(rootZ, '*.bin')) dir(fullfile(rootZ, '*.dat'))];
 ops.fbinary = fullfile(rootZ, fs(1).name);
 
 % set CAR
-ops.CAR = 1;
+ops.CAR = 0;
 
 % set Filter
 ops.Filter = 0;
