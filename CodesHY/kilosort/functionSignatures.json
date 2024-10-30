@@ -12,5 +12,55 @@
          {"name":"blocks", "kind":"namevalue", "type":"cell"},
          {"name":"Experimenter", "kind":"namevalue", "type":"char"}
       ]
+   },
+
+   "spikeLocation":
+   {
+      "inputs":
+      [
+         {"name":"waveforms_mean", "kind":"required", "type":"numeric"},
+         {"name":"chanMap", "kind":"required", "type":"struct"},
+         {"name":"n_nearest_channels", "kind":"optional", "type":"numeric"},
+         {"name":"algorithm", "kind":"optional", "type":"choices={'center_of_mass', 'monopolar_triangulation'}"}
+      ]
+   },
+
+   "amplitudeCutoffs":
+   {
+      "inputs":
+      [
+         {"name":"amplitudes", "kind":"required", "type":"numeric"},
+         {"name":"num_histogram_bins", "kind":"optional", "type":"numeric"},
+         {"name":"histogram_smoothing_value", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+   "isiViolations":
+   {
+      "inputs":
+      [
+         {"name":"spike_train", "kind":"required", "type":"numeric"},
+         {"name":"isi_threshold", "kind":"optional", "type":"numeric"},
+         {"name":"min_isi", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+   "presenceRatio":
+   {
+      "inputs":
+      [
+         {"name":"spike_train", "kind":"required", "type":"numeric"},
+         {"name":"min_time", "kind":"required", "type":"numeric"},
+         {"name":"max_time", "kind":"required", "type":"numeric"},
+         {"name":"num_bins", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+   "computeQualityMetrics":
+   {
+      "inputs":
+      [
+         {"name":"folder", "kind":"optional", "type":"char"}
+      ]
    }
 }

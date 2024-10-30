@@ -52,7 +52,7 @@
 |spike_times.npy| 		nx1 vector 		                                |Unit: 1/30000 sec (1/sampling_frequency)|
 |templates.npy| 		n_clusterxlength_waveform(82)xn_channel matrix.||
 |templates_ind.npy| 	n_clusterxn_channel matrix 	                    |templates_ind(1,:) -> [0:31]|
-|amplitudes.npy| 		nx1 vector 		                                |Unit: 40*mV?|
+|amplitudes.npy| 		nx1 vector 		                                |Arbitrary unit|
 |channel_map.npy| 		n_channelx1 vector 	                            |0:31|
 |channel_positions.npy| n_channelx2 vector 	                            |Position of each channel. Unit: μm|
 |similar_templates.npy| n_clusterxn_cluster matrix 	                    |Similarity matrix|
