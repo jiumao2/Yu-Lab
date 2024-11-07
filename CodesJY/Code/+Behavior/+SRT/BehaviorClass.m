@@ -104,7 +104,9 @@ classdef BehaviorClass
             obj.FP = bdata.FPs;
 
             uFPs = unique(bdata.FPs);
-            if any(uFPs == 750)
+            if any(uFPs == 2000)
+                obj.MixedFP = [1500, 2000];
+            elseif any(uFPs == 750)
                 obj.MixedFP = [750 1500];
             else
                 obj.MixedFP = [500 1000 1500] ; % default, subject to change though.

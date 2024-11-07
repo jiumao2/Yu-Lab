@@ -75,6 +75,6 @@ for i =1:N_Event
     end;
 end;
 
-IndSig    = [ones(1, length(NewSort)) zeros(length( setdiff(IndSort1, NewSort)))];
+IndSig    = [ones(1, length(NewSort)), zeros(1, length(setdiff(IndSort1, NewSort)))];
 NewSort = [NewSort setdiff(IndSort1, NewSort)]; % put NaN in the end
 

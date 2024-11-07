@@ -136,21 +136,34 @@ PSTH.PrematureReleases =  {psth_premature_release, ts_premature_release,...
     premature_duration_releases, FPs_premature_releases};
 
 % late press PSTH
-t_late_presses                 =         PSTHOut.Presses.Time{nFPs+2};
+if ~isempty(PSTHOut.Presses.FP{3})
+    t_late_presses                 =         PSTHOut.Presses.Time{nFPs+2};
+else
+    t_late_presses = [];
+end
 [psth_late_press, ts_late_press, trialspxmat_late_press, tspkmat_late_press,...
     t_late_presses, ind]        =           Spikes.jpsth(r.Units.SpikeTimes(ku).timings, ...
     t_late_presses, params_press);
 psth_late_press                =             smoothdata (psth_late_press, 'gaussian', 5);
 FPs_late_presses            =              PSTHOut.Presses.FP{3};
-FPs_late_presses             =             FPs_late_presses(ind);
 late_duration_presses      =             PSTHOut.Presses.PressDur.Late;
-late_duration_presses      =             late_duration_presses(ind);
+
+if ~isempty(FPs_late_presses)    
+    FPs_late_presses             =             FPs_late_presses(ind);
+    late_duration_presses      =             late_duration_presses(ind);
+end
+
 PSTH.LatePresses = {psth_late_press, ts_late_press, trialspxmat_late_press,...
     tspkmat_late_press, t_late_presses,late_duration_presses,FPs_late_presses};
 PSTH.LateLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'HoldDuration', 'FP'};
 
 % late release PSTH
-t_late_releases                 =         PSTHOut.Releases.Time{nFPs+2};
+if length(PSTHOut.Releases.Time) >= nFPs+2
+    t_late_releases                 =         PSTHOut.Releases.Time{nFPs+2};
+else
+    t_late_releases = [];
+end
+
 [psth_late_release, ts_late_release, trialspxmat_late_release, tspkmat_late_release,...
     t_late_releases, ind]       =           Spikes.jpsth(r.Units.SpikeTimes(ku).timings,...
     t_late_releases, params);
@@ -193,9 +206,17 @@ PSTH.NonrewardPokes =  {psth_nonreward_pokes, ts_nonreward_pokes,...
 % trigger PSTH
 params.pre = TriggerTimeDomain(1);
 params.post = TriggerTimeDomain(2);
-t_triggers_late = PSTHOut.Triggers.Time{nFPs+1};
-RT_triggers_late = PSTHOut.Triggers.RT{nFPs+1};
-FP_triggers_late = PSTHOut.Triggers.FP{end};
+
+if length(PSTHOut.Triggers.Time) >= nFPs+1
+    t_triggers_late = PSTHOut.Triggers.Time{nFPs+1};
+    RT_triggers_late = PSTHOut.Triggers.RT{nFPs+1};
+    FP_triggers_late = PSTHOut.Triggers.FP{end};
+else
+    t_triggers_late = [];
+    RT_triggers_late = [];
+    FP_triggers_late = [];
+end
+
 [psth_late_trigger, ts_late_trigger, trialspxmat_late_trigger, tspkmat_late_trigger, t_triggers_late,...
     ind] = Spikes.jpsth(r.Units.SpikeTimes(ku).timings,...
     t_triggers_late, params);

@@ -1,6 +1,10 @@
-function p_value = permutationTest(x, y, n)
-if nargin<3
+function p_value = permutationTest(x, y, n, tail)
+if nargin < 3
     n = 10000;
+end
+
+if nargin < 4
+    tail = 'both';
 end
 
 if size(x, 1) ~= 1
@@ -16,7 +20,7 @@ y = y(~isnan(y));
 
 x_len = length(x);
 y_len = length(y);
-dmean = abs(mean(x)-mean(y));
+dmean = mean(x)-mean(y);
 
 data_combined = [x, y];
 
@@ -27,7 +31,14 @@ for k = 1:n
 end
 
 data_rand = data_combined(randmat);
-out = abs(mean(data_rand(:, 1:x_len), 2) - mean(data_rand(:, x_len+1:end), 2));
+out = mean(data_rand(:, 1:x_len), 2) - mean(data_rand(:, x_len+1:end), 2);
 
-p_value = sum(out>=dmean)./n;
+if strcmpi(tail, 'both')
+    p_value = sum(abs(out) >= abs(dmean))./n;
+elseif strcmpi(tail, 'left')
+    p_value = sum(out <= dmean)./n;
+elseif strcmpi(tail, 'right')
+    p_value = sum(out >= dmean)./n;
+end
+
 end

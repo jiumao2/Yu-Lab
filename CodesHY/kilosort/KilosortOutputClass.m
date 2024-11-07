@@ -1066,7 +1066,7 @@ classdef KilosortOutputClass<handle
                         case 'blocks'
                             blocks =  varargin{i+1}; 
                         case 'behavior_blocks'
-                            behavior_blocks = varargin{k+1};
+                            behavior_blocks = varargin{i+1};
                         case 'Experimenter'
                             Experimenter =  varargin{i+1}; 
                         case 'NS6all'
