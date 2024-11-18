@@ -504,5 +504,45 @@
          {"name":"binwidth", "kind":"required", "type":"numeric"},
          {"name":"alpha", "kind":"required", "type":"numeric"}
       ]
+   },
+
+   "getResponseToTrigger":
+   {
+      "inputs":
+      [
+         {"name":"r", "kind":"required"},
+         {"name":"unit", "kind":"required", "type":"numeric"},
+         {"name":"t_pre", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_post", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_step", "kind":"namevalue", "type":"numeric"},
+         {"name":"bin_width", "kind":"namevalue", "type":"numeric"},
+         {"name":"alpha", "kind":"namevalue", "type":"numeric"},
+         {"name":"n_consecutive", "kind":"namevalue", "type":"numeric"},
+         {"name":"min_n_trial", "kind":"namevalue", "type":"numeric"},
+         {"name":"RT_range", "kind":"namevalue", "type":"numeric"},
+         {"name":"algorithm", "kind":"namevalue", "type":"choices={'ranksum','permutation_test','ttest'}"},
+         {"name":"response_type", "kind":"namevalue", "type":"choices={'increased','decreased','both'}"},
+         {"name":"trigger_type", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+
+   "getResponseToTriggerTiming":
+   {
+      "inputs":
+      [
+         {"name":"r", "kind":"required"},
+         {"name":"unit", "kind":"required", "type":"numeric"},
+         {"name":"t_pre", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_post", "kind":"namevalue", "type":"numeric"},
+         {"name":"t_step", "kind":"namevalue", "type":"numeric"},
+         {"name":"bin_width", "kind":"namevalue", "type":"numeric"},
+         {"name":"alpha", "kind":"namevalue", "type":"numeric"},
+         {"name":"n_consecutive", "kind":"namevalue", "type":"numeric"},
+         {"name":"min_n_trial", "kind":"namevalue", "type":"numeric"},
+         {"name":"RT_range", "kind":"namevalue", "type":"numeric"},
+         {"name":"algorithm", "kind":"namevalue", "type":"choices={'ranksum','permutation_test','ttest'}"},
+         {"name":"response_type", "kind":"namevalue", "type":"choices={'increased','decreased','both'}"},
+         {"name":"trigger_type", "kind":"namevalue", "type":"numeric"}
+      ]
    }
-  }
+}
