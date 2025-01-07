@@ -23,6 +23,7 @@ ops.sig        = 20;  % spatial smoothness constant for registration
 ops.fshigh     = 300; % high-pass more aggresively
 ops.nblocks    = 5; % blocks for registration. 0 turns it off, 1 does rigid registration. Replaces "datashift" option. 
 ops.Th = [8, 3];
+ops.fig = 1;
 
 % is there a channel map file in this folder?
 fs = dir(fullfile(rootZ, 'chan*.mat'));
@@ -41,8 +42,19 @@ ops.CAR = 0;
 ops.Filter = 0;
 
 % preprocess data to create temp_wh.dat
+if ops.CAR == 0
+    disp('Skipping CAR!');
+else
+    disp('Performing CAR!');
+end
+
+if ops.Filter == 0
+    disp('Skipping Filter!');
+else
+    disp('Performing Filter!');
+end
 rez = preprocessDataSub(ops);
-%
+
 % NEW STEP TO DO DATA REGISTRATION
 rez = datashift2(rez, 1); % last input is for shifting data
 

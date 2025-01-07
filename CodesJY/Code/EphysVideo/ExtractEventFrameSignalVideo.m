@@ -34,6 +34,7 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
     frame_rate = 10;
     start_trial = 1;
     min_frame_interval = 1000;
+    folder = pwd;
 
     if nargin>3
         for i=1:2:size(varargin,2)
@@ -56,6 +57,8 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
                     start_trial = varargin{i+1}; 
                 case 'min_frame_interval'
                     min_frame_interval = varargin{i+1};
+                case 'folder'
+                    folder = varargin{i+1};
                 otherwise
                     errordlg('unknown argument')
             end
@@ -152,7 +155,7 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
 %     end
 %     t_spikeson_all = sort(t_spikeson_all);
 
-    ind_break = find(diff(t_frameon)>min_frame_interval);
+    ind_break = find(diff(t_frameon)>=min_frame_interval);
     t_seg =[];
     % t_trigger_sort=[];
     % t_press_sort=[];
@@ -160,48 +163,16 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
     % 
     if isempty(ind_break)
         t_seg{1} = t_frameon;
-    %     t_trigger_sort{1} = t_trigger;
-    %     RTs_sort{1} = RTs;
-    %     FPs_sort{1} = FPs;
-    %     if ~isempty(t_press)
-    %         t_press_sort{1} = t_press;
-    %     end
-    %     if ~isempty(t_release)
-    %         t_release_sort{1} = t_release;
-    %     end
-    %     
     else
         ind_break = [1 ind_break+1];
-    %     
         for i =1:length(ind_break)
             if i<length(ind_break)
                 t_seg{i}=t_frameon(ind_break(i):ind_break(i+1)-1);
-    %             t_trigger_sort{i} = t_trigger(t_trigger>=t_seg{i}(1) & t_trigger<=t_seg{i}(end));
-    %             
-    %             if ~isempty(t_press)
-    %                 t_press_sort{i} = t_press(t_press>=t_seg{i}(1) & t_press<=t_seg{i}(end));
-    %             end
-    %             if ~isempty(t_release)
-    %                 t_release_sort{i} = t_release(t_release>=t_seg{i}(1) & t_release<=t_seg{i}(end));
-    %             end
-    %             RTs_sort{i} = RTs(t_press>=t_seg{i}(1) & t_press<=t_seg{i}(end));
-    %             FPs_sort{i} = FPs(t_press>=t_seg{i}(1) & t_press<=t_seg{i}(end));
             else
                 t_seg{i}=t_frameon(ind_break(i):end);
-    %             t_trigger_sort{i} = t_trigger(t_trigger>=t_seg{i}(1));
-    %             if ~isempty(t_press)
-    %                 t_press_sort{i} = t_press(t_press>=t_seg{i}(1));
-    %             end
-    %             if ~isempty(t_release)
-    %                 t_release_sort{i} = t_release(t_release>=t_seg{i}(1));
-    %             end
-    %             RTs_sort{i} = RTs(t_press>=t_seg{i}(1));
-    %             FPs_sort{i} = FPs(t_press>=t_seg{i}(1));
             end
         end
     end
-
-
 
     %% press
     switch events
@@ -214,12 +185,6 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
     end
 
     for i = start_trial:length(event_sort)
-
-    %     if idx_vid_file>1
-    %         for temp = 1:idx_vid_file-1
-    %             nstart = nstart + length(t_seg{temp});  % frames of previous video segments
-    %         end
-    %     end
         idx_vid_file = 1;
         nstart = 0;
         for temp = 1:length(t_seg)
@@ -232,8 +197,6 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
         end
 
         t_event_n = event_sort;
-    %     n_event_n = length(t_event_n);
-
 
         ind_frame_postevent_all         =          find(t_frameon>t_event_n(i), 1, 'first');
         ind_frame_postevent              =          ind_frame_postevent_all - nstart; % this is the frame position in that movie clip
@@ -502,12 +465,12 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
                 tic
                 img_seq = cell(length(frames_to_extract),1);
                 for frame_index = 1:length(frames_to_extract)
-%                     try
+                    try
                         img_seq{frame_index} = ReadJpegSEQ2(vidfile, frames_to_extract(frame_index)); % ica is image cell array
-%                     catch
-%                         img_seq{frame_index} = img_seq{frame_index-1};
-%                         disp(['[', events, ' ', num2str(i),'] error on read No. ',num2str(frame_index),' frame']);
-%                     end
+                    catch
+                        img_seq{frame_index} = img_seq{frame_index-1};
+                        disp(['[', events, ' ', num2str(i),'] error on read No. ',num2str(frame_index),' frame']);
+                    end
                 end
                 toc
 
@@ -516,9 +479,10 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
     %             F       =   struct('cdata', [], 'colormap', []);
     %             F2      =   struct('cdata', [], 'colormap', []);
 
-                thisFolder = fullfile(pwd, ['VideoFrames_',camview], 'Video');
-                thisFolder2 = fullfile(pwd, ['VideoFrames_',camview], 'RawVideo');
-                mat_dir = fullfile(pwd, ['VideoFrames_',camview], 'MatFile');
+                thisFolder = fullfile(folder, ['VideoFrames_',camview], 'Video');
+                thisFolder2 = fullfile(folder, ['VideoFrames_',camview], 'RawVideo');
+                mat_dir = fullfile(folder, ['VideoFrames_',camview], 'MatFile');
+
                 if ~exist(thisFolder, 'dir')
                     mkdir(thisFolder)
                 end
@@ -673,7 +637,7 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
 
             end
             VideoInfo.AnimalName = r.Meta(1).Subject;
-            temp_time = datetime(r.Meta(1).DateTime);
+            temp_time = datetime(r.Meta(1).DateTime, 'Locale', 'en_US');
             VideoInfo.SessionName = [num2str(temp_time.Year,'%04d'),num2str(temp_time.Month,'%02d'),num2str(temp_time.Day,'%02d')];
             VideoInfo.Event = events;
             VideoInfo.Index = i;
@@ -691,19 +655,19 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
             VideoInfo.VideoFilename = vidfile;
             VideoInfo.VideoFrameIndex = frames_to_extract + nstart;
             VideoInfo.VideoFrameTime = tframes_to_extract;
-            if isfield(r.Units,'Channels')
-                VideoInfo.Units.Channels = r.Units.Channels;
-            end
-            VideoInfo.Units.Profile = r.Units.Profile;
-            VideoInfo.Units.Definition = r.Units.Definition;
-            VideoInfo.Units.SpikeNotes = r.Units.SpikeNotes;
-
-            t1 = tframes_to_extract(1);
-            t2 = tframes_to_extract(end);
-            for temp = 1:length(r.Units.SpikeTimes)
-                VideoInfo.Units.SpikeTimes(temp).timings = r.Units.SpikeTimes(temp).timings(r.Units.SpikeTimes(temp).timings>=t1 & r.Units.SpikeTimes(temp).timings<=t2);
-                VideoInfo.Units.SpikeTimes(temp).wave = r.Units.SpikeTimes(temp).timings(r.Units.SpikeTimes(temp).timings>=t1 & r.Units.SpikeTimes(temp).timings<=t2);
-            end
+%             if isfield(r.Units,'Channels')
+%                 VideoInfo.Units.Channels = r.Units.Channels;
+%             end
+%             VideoInfo.Units.Profile = r.Units.Profile;
+%             VideoInfo.Units.Definition = r.Units.Definition;
+%             VideoInfo.Units.SpikeNotes = r.Units.SpikeNotes;
+% 
+%             t1 = tframes_to_extract(1);
+%             t2 = tframes_to_extract(end);
+%             for temp = 1:length(r.Units.SpikeTimes)
+%                 VideoInfo.Units.SpikeTimes(temp).timings = r.Units.SpikeTimes(temp).timings(r.Units.SpikeTimes(temp).timings>=t1 & r.Units.SpikeTimes(temp).timings<=t2);
+%                 VideoInfo.Units.SpikeTimes(temp).wave = r.Units.SpikeTimes(temp).timings(r.Units.SpikeTimes(temp).timings>=t1 & r.Units.SpikeTimes(temp).timings<=t2);
+%             end
 
             save([mat_dir,'/',events,num2str(i,'%03d'),'.mat'],'VideoInfo')
             close all;

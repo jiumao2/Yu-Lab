@@ -68,14 +68,14 @@ n_cluster = length(cluster_ids);
 % spike_locations = zeros(n_cluster, 2);
 isi_violations = zeros(n_cluster, 1);
 amplitude_cutoffs = zeros(n_cluster, 1);
-precence_ratio = zeros(n_cluster, 1);
+presence_ratio = zeros(n_cluster, 1);
 amplitude_median = zeros(n_cluster, 1);
 
 disp('Computing Non-PC features...');
 for k = 1:n_cluster
     spike_time_this = double(spike_times(spike_clusters==cluster_ids(k)))./30000*1000; % in ms
     amplitude_this = double(amplitudes(spike_clusters==cluster_ids(k)));
-    amplitude_this = rmoutliers(amplitude_this);
+    amplitude_this = rmoutliers(amplitude_this, 'median', 'ThresholdFactor', 5);
 
     t_begin = 0;
     t_end = double(max(spike_times))./30000*1000;
@@ -83,7 +83,7 @@ for k = 1:n_cluster
     isi_violations(k) = isiViolations(spike_time_this);
     amplitude_cutoffs(k) = amplitudeCutoffs(amplitude_this);
     amplitude_median(k) = median(amplitude_this);
-    precence_ratio(k) = presenceRatio(spike_time_this, t_begin, t_end);
+    presence_ratio(k) = presenceRatio(spike_time_this, t_begin, t_end);
     
     if mod(k, 10) == 1
         fprintf('%d / %d done!\n', k, n_cluster);
@@ -146,11 +146,11 @@ for idx = 1:length(cluster_ids)
 end
 
 %% save to file
-metric_names = {'ISI violations', 'Amplitude cutoffs', 'Precence ratio', 'Median Amplitude', 'Isolation distance', 'D prime', 'Nearest-neighbor miss rate', 'Nearest-neighbor hit rate', 'L ratio'};
-metrics = {isi_violations, amplitude_cutoffs, precence_ratio, amplitude_median, isolation_distance, d_prime, nn_miss_rate, nn_hit_rate, l_ratio};
+metric_names = {'ISI violations', 'Amplitude cutoffs', 'Presence ratio', 'Median Amplitude', 'Isolation distance', 'D prime', 'Nearest-neighbor miss rate', 'Nearest-neighbor hit rate', 'L ratio'};
+metrics = {isi_violations, amplitude_cutoffs, presence_ratio, amplitude_median, isolation_distance, d_prime, nn_miss_rate, nn_hit_rate, l_ratio};
 
 save(fullfile(folder, 'QualityMetrics.mat'),...
-    'cluster_ids', 'isi_violations', 'amplitude_cutoffs', 'precence_ratio', 'labels', 'amplitude_median',...
+    'cluster_ids', 'isi_violations', 'amplitude_cutoffs', 'presence_ratio', 'labels', 'amplitude_median',...
     'isolation_distance', 'd_prime', 'nn_miss_rate', 'nn_hit_rate', 'l_ratio',...
     'metrics', 'metric_names');
 

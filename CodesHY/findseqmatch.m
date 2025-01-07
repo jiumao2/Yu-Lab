@@ -7,7 +7,7 @@ function indout = findseqmatch(seq_mom,seq_son)
 indout = zeros(1,length(seq_son));
 
 % for each point in t1, find the corresponding point in t2
-min_error = 1e8;
+min_error = Inf;
 min_k = 0;
 for k = 1:length(seq_mom)-length(seq_son)+1
     tmp_t1 = seq_son;
