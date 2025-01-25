@@ -1392,11 +1392,14 @@ classdef KilosortOutputClass<handle
             ylim([min(waveforms_mean)*1.5, max(waveforms_mean)*3])
         end            
         
-        function plotCorrelogram(obj, unit_nums, window)
+        function plotCorrelogram(obj, unit_nums, window, binwidth)
             if nargin < 3
                 window = 50;
             end
-            binwidth = 1; % ms
+
+            if nargin < 4
+                binwidth = 1; % ms
+            end
             
             s = cell(length(unit_nums),1);
             for k = 1:length(unit_nums)

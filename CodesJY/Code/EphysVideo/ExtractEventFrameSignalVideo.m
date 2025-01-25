@@ -265,37 +265,37 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
             event_frameindex{idx_vid_file} = ind_frame_postevent;
             tframes = t_frameon( [(-3:0)*timestep(1) (1:3)*timestep(2)]+ind_frame_postevent_all); % this is the time of plotted frames, session time, not segment time
 
-            xticklabel_new = {};
-            for j=1:length(frames_to_extract)
-
-                switch camview
-                    case 'side'
-                        vidfile = ts.sideviews{idx_vid_file};
-                    case 'top'
-                        vidfile = ts.topviews{idx_vid_file};
-                    otherwise
-                        return
-                end
-
-                img = ReadJpegSEQ2(vidfile,frames_to_extract(j)); % ica is image cell array
-
-    %             axes(ha(j)); cla
-    %             imagesc(img, [0 200]);
-    %             title(num2str(indseq(j)))
-    %             colormap('gray')
-    %             
-    %             if j ~= 4
-    %                 relative_frametime = tframes(j) - tframes(4);
-    %                 time_of_frame = sprintf('%1.0d', round(relative_frametime));
-    %                 text(700, 50, [time_of_frame], 'color', [246 233 35]/255, 'fontsize', 12)
-    %                 xticklabel_new{j} = sprintf('%1.0d', round(relative_frametime));
-    %             else
-    %                 time_of_frame = sprintf('%1.0d', round(tframes(4)));
-    %                 text(400, 50, [time_of_frame ' ms'], 'color', [246 233 35]/255, 'fontsize', 12)
-    %                 xticklabel_new{j} =  sprintf('%1.0d', round(tframes(4)));
-    %             end
-
-            end
+%             xticklabel_new = {};
+%             for j=1:length(frames_to_extract)
+% 
+%                 switch camview
+%                     case 'side'
+%                         vidfile = ts.sideviews{idx_vid_file};
+%                     case 'top'
+%                         vidfile = ts.topviews{idx_vid_file};
+%                     otherwise
+%                         return
+%                 end
+% 
+%                 img = ReadJpegSEQ2(vidfile,frames_to_extract(j)); % ica is image cell array
+% 
+%     %             axes(ha(j)); cla
+%     %             imagesc(img, [0 200]);
+%     %             title(num2str(indseq(j)))
+%     %             colormap('gray')
+%     %             
+%     %             if j ~= 4
+%     %                 relative_frametime = tframes(j) - tframes(4);
+%     %                 time_of_frame = sprintf('%1.0d', round(relative_frametime));
+%     %                 text(700, 50, [time_of_frame], 'color', [246 233 35]/255, 'fontsize', 12)
+%     %                 xticklabel_new{j} = sprintf('%1.0d', round(relative_frametime));
+%     %             else
+%     %                 time_of_frame = sprintf('%1.0d', round(tframes(4)));
+%     %                 text(400, 50, [time_of_frame ' ms'], 'color', [246 233 35]/255, 'fontsize', 12)
+%     %                 xticklabel_new{j} =  sprintf('%1.0d', round(tframes(4)));
+%     %             end
+% 
+%             end
     %         drawnow;
     %         
     %         uicontrol('style', 'text', 'unit', 'centimeters', 'position', [0.1 10.5+6, 10, 0.5],...
@@ -308,20 +308,20 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
     %         haspk= axes; cla;
     %         set(haspk, 'units', 'centimeters', 'position', [1 1+6 28 4.5], 'nextplot', 'add', 'xlim',[0 1000], 'ylim', [0 1000])
 
-            tcenter = tframes(4);
-            tpre = tframes(4) - tframes(1)+(tframes(2)-tframes(1));
-            tpost = tframes(7) - tframes(4)+(tframes(2)-tframes(1));
-
-            spkout = ExtractPhasicPopulationEvents(r, 't', tcenter, 'tpre', tpre , 'tpost', tpost);
-
-    %         figure(hfig);
-    %         axes(haspk);
-
-            ch_included = unique(spkout.spk_chs);
-            colorcodes = varycolor(length(ch_included)); % color denotes channel address
-            tspk = spkout.time+tcenter;
-            spkmat = spkout.raster;
-            Ncell = spkout.Ncell;
+%             tcenter = tframes(4);
+%             tpre = tframes(4) - tframes(1)+(tframes(2)-tframes(1));
+%             tpost = tframes(7) - tframes(4)+(tframes(2)-tframes(1));
+% 
+%             spkout = ExtractPhasicPopulationEvents(r, 't', tcenter, 'tpre', tpre , 'tpost', tpost);
+% 
+%     %         figure(hfig);
+%     %         axes(haspk);
+% 
+%             ch_included = unique(spkout.spk_chs);
+%             colorcodes = varycolor(length(ch_included)); % color denotes channel address
+%             tspk = spkout.time+tcenter;
+%             spkmat = spkout.raster;
+%             Ncell = spkout.Ncell;
 
     %         for nc=1:Ncell
     %             ispktime = tspk(find(spkmat(nc, :)));
@@ -462,7 +462,7 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
                 frames_to_extract = frames_to_extract(1):frames_to_extract(end); % now let's extract all frames
 
                 tframes_to_extract = t_frameon((-3*timestep(1):3*timestep(2))+ind_frame_postevent_all); % this is the time of plotted frames, session time, not segment time
-                tic
+
                 img_seq = cell(length(frames_to_extract),1);
                 for frame_index = 1:length(frames_to_extract)
                     try
@@ -472,7 +472,6 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
                         disp(['[', events, ' ', num2str(i),'] error on read No. ',num2str(frame_index),' frame']);
                     end
                 end
-                toc
 
     %             img_seq = img_seq(:, 1); % now we have a bunch of cell,each one corresponding to a single frame
 
@@ -669,8 +668,10 @@ function r = ExtractEventFrameSignalVideo(r, ts, PSTHOut, varargin)
 %                 VideoInfo.Units.SpikeTimes(temp).wave = r.Units.SpikeTimes(temp).timings(r.Units.SpikeTimes(temp).timings>=t1 & r.Units.SpikeTimes(temp).timings<=t2);
 %             end
 
-            save([mat_dir,'/',events,num2str(i,'%03d'),'.mat'],'VideoInfo')
+            save([mat_dir,'/',events,num2str(i,'%03d'),'.mat'],'VideoInfo');
             close all;
+
+            fprintf('[%d / %d] %s done!\n', i, length(event_sort), moviename);
     end
     
     
