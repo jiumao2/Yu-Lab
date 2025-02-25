@@ -544,5 +544,14 @@
          {"name":"response_type", "kind":"namevalue", "type":"choices={'increased','decreased','both'}"},
          {"name":"trigger_type", "kind":"namevalue", "type":"numeric"}
       ]
+   },
+
+   "computeVelocity":
+   {
+      "inputs":
+      [
+         {"name":"x", "kind":"required"},
+         {"name":"y", "kind":"required"}
+      ]
    }
 }
