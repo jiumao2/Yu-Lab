@@ -130,7 +130,11 @@ classdef GLMmodel < handle
             elseif strcmpi(obj.Regularization, 'L2')
                 obj.fit_L2();
             elseif strcmpi(obj.Regularization, 'L2_smooth')
-                obj.fit_L2_smooth();
+                if obj.CV <= 1
+                    obj.fit_L2_smooth_no_CV();
+                else
+                    obj.fit_L2_smooth();
+                end
             elseif strcmpi(obj.Regularization, 'L2_and_L2_smooth')
                 obj.fit_ridge_with_L2_smooth();
             else
@@ -150,7 +154,7 @@ classdef GLMmodel < handle
 
             yhat = obj.Link.Inverse(obj.B(2:end)'*X' + obj.B(1));
             log_likelihood = obj.compute_log_likelihood(obj.B, X, y);
-            residues = y - yhat;
+            residues = y - yhat';
         end
 
         function deviance = compute_deviance(obj, B, X, y)
@@ -317,6 +321,57 @@ classdef GLMmodel < handle
             obj.Deviance = obj.compute_deviance();
         end
 
+        function fit_L2_smooth_no_CV(obj)
+            opts = optimoptions('fminunc',...
+                'algorithm', 'trust-region',...
+                'SpecifyObjectiveGradient', true,...
+                'HessianFcn', 'objective',...
+                'display', 'none',...
+                'MaxIterations', obj.MaxIter);
+
+            if isnan(obj.KernelGroups)
+                error('Kernel Groups are not set!');
+            end
+
+            if length(obj.LambdaSmoothInput) > 1
+                error('More than 1 LambdaSmooth found!');
+            end
+
+            D = [];
+            for k = 1:obj.nGroup
+                kernel_size = sum(obj.KernelGroups == k);
+                Dx = spdiags(ones(kernel_size,1)*[-1 1], 0:1, kernel_size-1, kernel_size); 
+                D = blkdiag(D,Dx'*Dx);
+            end
+    
+            % Embed Dx matrix in matrix with one extra row/column for constant coeff
+            D = blkdiag(0,D);
+
+            % Allocate space for train and test errors
+            Cinv = obj.LambdaSmoothInput*D; % set inverse prior covariance
+           
+            % set the training function and test function
+            % add the constant
+            negLtrainfun = @(prs)obj.neglogli_poissGLM(prs, [ones(size(obj.X,1), 1), obj.X], obj.y);
+
+            % Compute ridge-penalized MAP estimate
+            lossfun = @(prs)obj.neglogposterior(prs, negLtrainfun, Cinv);
+            wmap0 = zeros(size(obj.X, 2)+1, 1);
+            wmap = fminunc(lossfun, wmap0, opts);
+            
+            % Compute negative logli
+            negLtrain = negLtrainfun(wmap); % training loss
+            
+            obj.FitInfo = struct();
+            obj.FitInfo.LambdaSmooth = obj.LambdaSmoothInput;
+            obj.FitInfo.negL_Train = negLtrain;
+            obj.LambdaSmooth = obj.LambdaSmoothInput;
+            
+            % get the final output
+            obj.B = wmap;
+            obj.Deviance = obj.compute_deviance();       
+        end
+
         function fit_L2_smooth(obj)
             opts = optimoptions('fminunc',...
                 'algorithm', 'trust-region',...
@@ -394,7 +449,7 @@ classdef GLMmodel < handle
             [~, idx_min] = min(devianceValidation_mean);
             
             obj.FitInfo = struct();
-            obj.FitInfo.Lambda = obj.LambdaSmoothInput;
+            obj.FitInfo.LambdaSmooth = obj.LambdaSmoothInput;
             obj.FitInfo.Deviance = devianceValidation_mean;
             obj.FitInfo.DevianceFold = devianceValidation;
             obj.FitInfo.negL = negLvalidation_mean;
