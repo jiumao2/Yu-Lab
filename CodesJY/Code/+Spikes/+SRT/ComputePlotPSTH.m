@@ -1019,25 +1019,29 @@ line(ha_trigger, [0 0], FRrange, 'color', trigger_col, 'linewidth', 1);
 %% plot spks
 col5=19.5;
 thiscolor = [0 0 0];
-Lspk = size(r.Units.SpikeTimes(ku).wave, 2);
-ha0=axes('unit', 'centimeters', 'position', [col5 yshift_row5 1.5 1.5], ...
-    'nextplot', 'add', 'xlim', [0 Lspk], 'ytick', -500:100:200, 'xticklabel', []);
-set(ha0, 'nextplot', 'add');
-ylabel('uV')
-allwaves = r.Units.SpikeTimes(ku).wave/4;
-if size(allwaves, 1)>100
-    nplot = randperm(size(allwaves, 1), 100);
-else
-    nplot=1:size(allwaves, 1);
+
+if isfield(r.Units.SpikeTimes(ku), 'wave')
+    Lspk = size(r.Units.SpikeTimes(ku).wave, 2);
+    ha0=axes('unit', 'centimeters', 'position', [col5 yshift_row5 1.5 1.5], ...
+        'nextplot', 'add', 'xlim', [0 Lspk], 'ytick', -500:100:200, 'xticklabel', []);
+    set(ha0, 'nextplot', 'add');
+    ylabel('uV')
+    allwaves = r.Units.SpikeTimes(ku).wave/4;
+    if size(allwaves, 1)>100
+        nplot = randperm(size(allwaves, 1), 100);
+    else
+        nplot=1:size(allwaves, 1);
+    end
+    wave2plot = allwaves(nplot, :);
+    plot(1:Lspk, wave2plot, 'color', [0.8 .8 0.8]);
+    plot(1:Lspk, mean(allwaves, 1), 'color', thiscolor, 'linewidth', 2)
+    axis([0 Lspk min(wave2plot(:)) max(wave2plot(:))])
+    set (gca, 'ylim', [min(mean(allwaves, 1))*1.25 max(mean(allwaves, 1))*1.25])
+    axis tight
+    line([30 60], min(get(gca, 'ylim')), 'color', 'k', 'linewidth', 2.5)
+    PSTH.SpikeWave = mean(allwaves, 1);
 end
-wave2plot = allwaves(nplot, :);
-plot(1:Lspk, wave2plot, 'color', [0.8 .8 0.8]);
-plot(1:Lspk, mean(allwaves, 1), 'color', thiscolor, 'linewidth', 2)
-axis([0 Lspk min(wave2plot(:)) max(wave2plot(:))])
-set (gca, 'ylim', [min(mean(allwaves, 1))*1.25 max(mean(allwaves, 1))*1.25])
-axis tight
-line([30 60], min(get(gca, 'ylim')), 'color', 'k', 'linewidth', 2.5)
-PSTH.SpikeWave = mean(allwaves, 1);
+
 % plot autocorrelation
 kutime = round(r.Units.SpikeTimes(ku).timings);
 kutime = kutime(kutime>0);

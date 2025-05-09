@@ -553,5 +553,41 @@
          {"name":"x", "kind":"required"},
          {"name":"y", "kind":"required"}
       ]
+   },
+
+   "computeWarpedPETH":
+   {
+      "inputs":
+      [
+         {"name":"spike_times", "kind":"required", "type":"cell"},
+         {"name":"t_pre", "kind":"required", "type":"numeric"},
+         {"name":"t_post", "kind":"required", "type":"numeric"},
+         {"name":"gaussian_kernel", "kind":"optional", "type":"numeric"},
+         {"name":"binwidth", "kind":"optional", "type":"numeric"},
+         {"name":"nboot", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+   "kilomatchOutput2r_all":
+   {
+      "inputs":
+      [
+         {"name":"Output", "kind":"required", "type":"struct"},
+         {"name":"spikeInfo", "kind":"required", "type":"struct"},
+         {"name":"folder_data", "kind":"required", "type":"char"},
+         {"name":"depth_range", "kind":"namevalue", "type":"numeric"},
+         {"name":"min_firing_rate", "kind":"namevalue", "type":"numeric"},
+         {"name":"included_sessions", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+
+   "gaussianSmoothCausal":
+   {
+      "inputs":
+      [
+         {"name":"data", "kind":"required", "type":"numeric"},
+         {"name":"sigma", "kind":"required", "type":"numeric"},
+         {"name":"truncation", "kind":"optional", "type":"numeric"}
+      ]
    }
 }

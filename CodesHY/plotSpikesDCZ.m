@@ -1,7 +1,9 @@
 function plotSpikesDCZ(r, unit_num, dose, varargin)
 
-drugSegment = 2;
-recoverySegment = length(r.Meta);
+drugSegment = 2; % the recording segment after injection
+recoverySegment = length(r.Meta); % set to [] if none
+
+% parameters for plot PETHs
 t_pre_press = -2500;
 t_pre_release = -500;
 t_pre_reward = -1000;

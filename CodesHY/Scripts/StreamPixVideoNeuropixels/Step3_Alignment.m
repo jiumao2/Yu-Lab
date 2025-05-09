@@ -21,12 +21,9 @@ end
 
 disp(folder_data)
 
-bad_folders = {'20241106_videos'};
-
 %%
-for i_folder = 1:length(bad_folders)
-%     folder_this = folder_data{i_folder};
-    folder_this = bad_folders{i_folder};
+for i_folder = 1:length(folder_data)
+    folder_this = folder_data{i_folder};
     session = folder_this(1:8);
     load(fullfile(folder_video, folder_this, 'timestamps.mat'));    
     r_file = fullfile(folder_r, session, ['RTarray_', rat_name, '_', session, '.mat']);

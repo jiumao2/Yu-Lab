@@ -55,20 +55,6 @@ function PlotComparing(r, unit_num, comparing_type_indexes, comparing_type_names
         bg{k} = vid_this.read(-r.VideoInfos_side(1).t_pre/10);
     end 
     
-    % color settings
-    frame_short = 100;
-    frame_long = 175;
-    color1_all = hot(r.VideoInfos_side(1).total_frames-frame_short);
-    color1_short = [color1_all(1:210,:);repmat(color1_all(210,:),[frame_short,1]);color1_all(211:end,:)];
-    color1_long = [color1_all(1:210,:);repmat(color1_all(210,:),[frame_long,1]);color1_all(211:end-frame_long+frame_short,:)];
-
-    color2_all = winter(r.VideoInfos_side(1).total_frames-frame_short);
-    color2_short = [color2_all(1:210,:);repmat(color2_all(210,:),[frame_short,1]);color2_all(211:end,:)];
-    color2_long = [color2_all(1:210,:);repmat(color2_all(210,:),[frame_long,1]);color2_all(211:end-frame_long+frame_short,:)];
-
-    colors_short = {color1_short,color2_short};
-    colors_long = {color1_long,color2_long};
-
     % markersize, linewidth ...
     markersize_top = 0.1;
     markersize_side = 1;

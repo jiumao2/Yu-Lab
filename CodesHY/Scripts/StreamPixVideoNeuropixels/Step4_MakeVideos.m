@@ -29,9 +29,9 @@ for i_folder = 1:length(folder_data)
     folder_this = folder_data{i_folder};
     session = folder_this(1:8);
 
-    if str2double(session) <= 20241130
-        continue
-    end
+%     if str2double(session) <= 20241130
+%         continue
+%     end
 
     load(fullfile(folder_video, folder_this, 'timestamps.mat'));    
     r_file = fullfile(folder_video, folder_this, 'RTarrayAll.mat');

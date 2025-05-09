@@ -38,24 +38,29 @@ function idx_out = getIndexVideoInfos(r, varargin)
             errordlg('unknown argument');
     end
     
-    switch Hand
-        case 'All'
-            Hand_idx = idx_all;
-        case 'Left'
-            Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Left'));
-        case 'Right'
-            Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Right'));
-        case 'Both'
-            Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Both'));
-        case 'Right_Both'
-            Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Right') | strcmp({r.VideoInfos_side.Hand},'Both'));
-        case 'Left_Both'
-            Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Left') | strcmp({r.VideoInfos_side.Hand},'Both'));
-        case 'Left_Right'
-            Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Left') | strcmp({r.VideoInfos_side.Hand},'Right'));
-        otherwise
-            errordlg('unknown argument');
-    end    
+    if ~isfield(r.VideoInfos_side, 'Hand')
+        warning('Hand is not labelled!');
+        Hand_idx = idx_all;
+    else
+        switch Hand
+            case 'All'
+                Hand_idx = idx_all;
+            case 'Left'
+                Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Left'));
+            case 'Right'
+                Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Right'));
+            case 'Both'
+                Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Both'));
+            case 'Right_Both'
+                Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Right') | strcmp({r.VideoInfos_side.Hand},'Both'));
+            case 'Left_Both'
+                Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Left') | strcmp({r.VideoInfos_side.Hand},'Both'));
+            case 'Left_Right'
+                Hand_idx = idx_all(strcmp({r.VideoInfos_side.Hand},'Left') | strcmp({r.VideoInfos_side.Hand},'Right'));
+            otherwise
+                errordlg('unknown argument');
+        end    
+    end
 
     switch Performance
         case 'All'

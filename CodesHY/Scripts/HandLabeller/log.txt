@@ -1,0 +1,12 @@
+E:\Lesion\UniDLS\Carlos\20221207 只有三段视频
+BiM1 Kaoru 20221208没有trigger信号
+
+BiDLS Waku 20230117 trigger信号只有100ms，对齐失败
+BiDLS Waku 20230118 trigger信号只有100ms
+
+BiM1 Lemonade 20220107缺少视频数据，只用了前30min视频，已标数据存在data.mat里
+
+E:\Video\Jaya\20231019 灯不亮
+E:\Video\Jaya\20231102 和 E:\Video\Jaya\20231102 没有trigger信号，Med显示没有按杆
+E:\Video\Jalan\20231017 有两个med文件
+E:\Video\Putra\20231103 ERROR？

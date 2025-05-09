@@ -216,7 +216,7 @@ classdef GLMmodel < handle
             end
 
             r = obj.Link.Inverse(obj.B(2:end)'*X' + obj.B(1));
-            SSres = sum((y-r).^2);
+            SSres = sum((y'-r).^2);
             SStot = sum((y-mean(y)).^2);
 
             R2 = 1 - SSres./SStot;
@@ -229,11 +229,17 @@ classdef GLMmodel < handle
             % For computing the log likelihood of saturated models LLsaturated, y was set to be equal to y.
             % For computing the log likelihood of null models LLnull, y was set to a single repeated value, namely the mean of y.
             % Goodman, James M., Gregg A. Tabot, Alex S. Lee, Aneesha K. Suresh, Alexander T. Rajan, Nicholas G. Hatsopoulos, and Sliman Bensmaia. "Postural Representations of the Hand in the Primate Sensorimotor Cortex." Neuron 104, no. 5 (December 2019): 1000-1009.e7. https://doi.org/10.1016/j.neuron.2019.09.004.
+            if nargin<2
+                X = obj.X;
+            end
+            if nargin<3
+                y = obj.y;
+            end
 
             r_mean = mean(y);
-            LLnull = y*log(r_mean) - sum(r_mean);
+            LLnull = sum(y*log(r_mean)) - sum(r_mean);
             LLmodel = obj.compute_log_likelihood(obj.B, X, y);
-            LLsaturated = (y+eps)*log(y+eps) - sum(y);
+            LLsaturated = (y+eps)'*log(y+eps) - sum(y);
 
             psuedo_R2 = 1 - (LLsaturated - LLmodel) ./ (LLsaturated - LLnull);
         end

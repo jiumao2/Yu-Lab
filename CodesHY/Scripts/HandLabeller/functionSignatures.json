@@ -1,0 +1,780 @@
+{
+   "_schemaVersion": "1.0.0",
+
+   "EasyPlot.figure":
+   {
+      "inputs":
+      [
+         {"name":"Position", "kind":"namevalue", "type":"numeric"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"Width", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginLeft", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginRight", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginTop", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginBottom", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+   "EasyPlot.axes":
+   {
+      "inputs":
+      [
+         {"name":"figure", "kind":"required"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"Width", "kind":"namevalue", "type":"numeric"},
+         {"name":"Position", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginLeft", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginRight", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginTop", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginBottom", "kind":"namevalue", "type":"numeric"},
+         {"name":"XDir", "kind":"namevalue", "type":"choices={'reverse','normal'}"},
+         {"name":"YDir", "kind":"namevalue", "type":"choices={'reverse','normal'}"},
+         {"name":"XAxisVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YAxisVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"},
+         {"name":"XLabel", "kind":"namevalue", "type":"char"},
+         {"name":"YLabel", "kind":"namevalue", "type":"char"},
+         {"name":"XLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XTickLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YTickLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XTick", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTick", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabel", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabel", "kind":"namevalue", "type":"char"},
+         {"name":"XTickLabelRotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTickLabelRotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabelHorizontalAlignment", "kind":"namevalue", "type":"choices={'left','center','right'}"},
+         {"name":"YTickLabelHorizontalAlignment", "kind":"namevalue", "type":"choices={'left','center','right'}"},
+         {"name":"XTickLabelVerticalAlignment", "kind":"namevalue", "type":"choices={'top','middle','bottom'}"},
+         {"name":"YTickLabelVerticalAlignment", "kind":"namevalue", "type":"choices={'top','middle','bottom'}"},
+         {"name":"XTickLabelFontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTickLabelFontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabelFontWeight", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabelFontWeight", "kind":"namevalue", "type":"char"},
+         {"name":"XTickLabelFontName", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabelFontName", "kind":"namevalue", "type":"char"},
+         {"name":"XGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XMinorGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YMinorGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XMinorTick", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YMinorTick", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XScale", "kind":"namevalue", "type":"choices={'linear','log'}"},
+         {"name":"YScale", "kind":"namevalue", "type":"choices={'linear','log'}"},
+         {"name":"XLim", "kind":"namevalue", "type":"numeric"},
+         {"name":"YLim", "kind":"namevalue", "type":"numeric"},
+         {"name":"XColor", "kind":"namevalue", "type":"char"},
+         {"name":"YColor", "kind":"namevalue", "type":"char"}
+
+      ]
+   },
+
+   "EasyPlot.annotation":
+   {
+      "inputs":
+      [
+         {"name":"figure", "kind":"required"},
+         {"name":"type", "kind":"required", "type":"choices={'line','arrow','doublearrow','textarrow','rectangle','ellipse','textbox'}"},
+         {"name":"Position", "kind":"namevalue", "type":"numeric"},
+         {"name":"X", "kind":"namevalue", "type":"numeric"},
+         {"name":"Y", "kind":"namevalue", "type":"numeric"},
+         {"name":"Units", "kind":"namevalue", "type":"choices={'centimeters','normalized','inches','pixels','points','characters'}"},
+         {"name":"MarginLeft", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginRight", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginTop", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginBottom", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"},
+         {"name":"HorizontalAlignment","kind":"namevalue","type":"choices={'left','center','right'}"},
+         {"name":"VerticalAlignment","kind":"namevalue","type":"choices={'top','middle','bottom'}"},
+         {"name":"Color", "kind":"namevalue", "type":"char"},
+         {"name":"BackgroundColor", "kind":"namevalue", "type":"char"},
+         {"name":"EdgeColor", "kind":"namevalue", "type":"char"},
+         {"name":"LineWidth", "kind":"namevalue", "type":"numeric"},
+         {"name":"LineStyle", "kind":"namevalue", "type":"char"},
+         {"name":"Margin", "kind":"namevalue", "type":"numeric"},
+         {"name":"String", "kind":"namevalue", "type":"char"},
+         {"name":"Interpreter", "kind":"namevalue", "type":"choices={'tex','latex','none'}"},
+         {"name":"FitBoxToText", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"Rotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"EdgeAlpha", "kind":"namevalue", "type":"numeric"}
+      ]
+   },  
+
+   "EasyPlot.truncAxis":
+   {
+      "inputs":
+      [
+         {"name":"axes", "kind":"required"},
+         {"name":"X", "kind":"namevalue", "type":"numeric"},
+         {"name":"Y", "kind":"namevalue", "type":"numeric"},
+         {"name":"Xratio", "kind":"namevalue", "type":"numeric"},
+         {"name":"Yratio", "kind":"namevalue", "type":"numeric"},
+         {"name":"truncRatio", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+
+   "EasyPlot.setGeneralXLabel":
+   {
+      "inputs":
+      [
+         {"name":"axes_all", "kind":"required"},
+         {"name":"label", "kind":"required", "type":"char"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"xShift", "kind":"namevalue", "type":"numeric"},
+         {"name":"yShift", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"} 
+      ]
+   },
+
+   "EasyPlot.setGeneralYLabel":
+   {
+      "inputs":
+      [
+         {"name":"axes_all", "kind":"required"},
+         {"name":"label", "kind":"required", "type":"char"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"xShift", "kind":"namevalue", "type":"numeric"},
+         {"name":"yShift", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"} 
+      ]
+   },
+
+   "EasyPlot.setGeneralTitle":
+   {
+      "inputs":
+      [
+         {"name":"axes_all", "kind":"required"},
+         {"name":"label", "kind":"required", "type":"char"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"xShift", "kind":"namevalue", "type":"numeric"},
+         {"name":"yShift", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"} 
+      ]
+   },
+
+   "EasyPlot.Utils.getSideAxes":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"position", "kind":"required", "type":"choices={'left','right','top','bottom'}"}
+      ]
+   },
+   "EasyPlot.setXLabelRow":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"label", "kind":"required", "type":"char"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"} 
+      ]
+   },
+   "EasyPlot.setYLabelRow":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"label", "kind":"required", "type":"char"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"} 
+      ]
+   },
+   "EasyPlot.setXLabelColumn":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"label", "kind":"required", "type":"char"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"} 
+      ]
+   },
+   "EasyPlot.setYLabelColumn":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"label", "kind":"required", "type":"char"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"} 
+      ]
+   },   
+   "EasyPlot.setXLim":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"mode", "kind":"required", "type":"choices={'largestOne','largest','smallestOne'}"}
+      ]
+   },     
+   "EasyPlot.setYLim":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"mode", "kind":"required", "type":"choices={'largestOne','largest'}"}
+      ]
+   },
+   "EasyPlot.exportFigure":
+   {
+      "inputs":
+      [
+         {"name":"fig", "kind":"required"},
+         {"name":"filename", "kind":"required", "type":"char"},
+         {"name":"type", "kind":"namevalue", "type":"choices={'png','jpg','tiff','tiffRaw','eps','bmp','pdf'}"},
+         {"name":"dpi", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+
+   "EasyPlot.createAxesAgainstAxes":
+   {
+      "inputs":
+      [
+         {"name":"fig", "kind":"required"},
+         {"name":"axes", "kind":"required"},
+         {"name":"location", "kind":"required", "type":"choices={'top','left','bottom','right','leftTop','leftBottom','rightTop','rightBottom'}"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"Width", "kind":"namevalue", "type":"numeric"},
+         {"name":"Position", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginLeft", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginRight", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginTop", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginBottom", "kind":"namevalue", "type":"numeric"},
+         {"name":"XDir", "kind":"namevalue", "type":"choices={'reverse','normal'}"},
+         {"name":"YDir", "kind":"namevalue", "type":"choices={'reverse','normal'}"},
+         {"name":"XAxisVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YAxisVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"},
+         {"name":"XLabel", "kind":"namevalue", "type":"char"},
+         {"name":"YLabel", "kind":"namevalue", "type":"char"},
+         {"name":"XLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XTickLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YTickLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XTick", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTick", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabel", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabel", "kind":"namevalue", "type":"char"},
+         {"name":"XTickLabelRotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTickLabelRotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabelHorizontalAlignment", "kind":"namevalue", "type":"choices={'left','center','right'}"},
+         {"name":"YTickLabelHorizontalAlignment", "kind":"namevalue", "type":"choices={'left','center','right'}"},
+         {"name":"XTickLabelVerticalAlignment", "kind":"namevalue", "type":"choices={'top','middle','bottom'}"},
+         {"name":"YTickLabelVerticalAlignment", "kind":"namevalue", "type":"choices={'top','middle','bottom'}"},
+         {"name":"XTickLabelFontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTickLabelFontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabelFontWeight", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabelFontWeight", "kind":"namevalue", "type":"char"},
+         {"name":"XTickLabelFontName", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabelFontName", "kind":"namevalue", "type":"char"},
+         {"name":"XGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XMinorGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YMinorGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XMinorTick", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YMinorTick", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XScale", "kind":"namevalue", "type":"choices={'linear','log'}"},
+         {"name":"YScale", "kind":"namevalue", "type":"choices={'linear','log'}"},
+         {"name":"XLim", "kind":"namevalue", "type":"numeric"},
+         {"name":"YLim", "kind":"namevalue", "type":"numeric"},
+         {"name":"XColor", "kind":"namevalue", "type":"char"},
+         {"name":"YColor", "kind":"namevalue", "type":"char"}
+      ]
+   },
+
+   "EasyPlot.createAxesAgainstFigure":
+   {
+      "inputs":
+      [
+         {"name":"fig", "kind":"required"},
+         {"name":"location", "kind":"required", "type":"choices={'leftTop','leftBottom','rightTop','rightBottom'}"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"Width", "kind":"namevalue", "type":"numeric"},
+         {"name":"Position", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginLeft", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginRight", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginTop", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginBottom", "kind":"namevalue", "type":"numeric"},
+         {"name":"XDir", "kind":"namevalue", "type":"choices={'reverse','normal'}"},
+         {"name":"YDir", "kind":"namevalue", "type":"choices={'reverse','normal'}"},
+         {"name":"XAxisVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YAxisVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"},
+         {"name":"XLabel", "kind":"namevalue", "type":"char"},
+         {"name":"YLabel", "kind":"namevalue", "type":"char"},
+         {"name":"XLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XTickLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YTickLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XTick", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTick", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabel", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabel", "kind":"namevalue", "type":"char"},
+         {"name":"XTickLabelRotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTickLabelRotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabelHorizontalAlignment", "kind":"namevalue", "type":"choices={'left','center','right'}"},
+         {"name":"YTickLabelHorizontalAlignment", "kind":"namevalue", "type":"choices={'left','center','right'}"},
+         {"name":"XTickLabelVerticalAlignment", "kind":"namevalue", "type":"choices={'top','middle','bottom'}"},
+         {"name":"YTickLabelVerticalAlignment", "kind":"namevalue", "type":"choices={'top','middle','bottom'}"},
+         {"name":"XTickLabelFontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTickLabelFontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabelFontWeight", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabelFontWeight", "kind":"namevalue", "type":"char"},
+         {"name":"XTickLabelFontName", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabelFontName", "kind":"namevalue", "type":"char"},
+         {"name":"XGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XMinorGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YMinorGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XMinorTick", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YMinorTick", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XScale", "kind":"namevalue", "type":"choices={'linear','log'}"},
+         {"name":"YScale", "kind":"namevalue", "type":"choices={'linear','log'}"},
+         {"name":"XLim", "kind":"namevalue", "type":"numeric"},
+         {"name":"YLim", "kind":"namevalue", "type":"numeric"},
+         {"name":"XColor", "kind":"namevalue", "type":"char"},
+         {"name":"YColor", "kind":"namevalue", "type":"char"}
+      ]
+   },
+
+   "EasyPlot.colorbar":
+   {
+      "inputs":
+      [
+         {"name":"axes", "kind":"required"},
+         {"name":"location", "kind":"namevalue", "type":"choices={'leftTop','leftBottom','rightTop','rightBottom'}"},
+         {"name":"label", "kind":"namevalue", "type":"char"},
+         {"name":"colormap", "kind":"namevalue", "type":"numeric"},
+         {"name":"zeroCenter", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"Width", "kind":"namevalue", "type":"numeric"},
+         {"name":"Position", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginLeft", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginRight", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginTop", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginBottom", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+
+   "EasyPlot.QuickPlot.rasterPlot":
+   {
+      "inputs":
+      [
+         {"name":"spike_times", "kind":"optional"},
+         {"name":"tStart", "kind":"namevalue", "type":"numeric"},
+         {"name":"tEnd", "kind":"namevalue", "type":"numeric"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"Width", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+
+   "EasyPlot.QuickPlot.PSTH":
+   {
+      "inputs":
+      [
+         {"name":"spike_times", "kind":"required"},
+         {"name":"trigger_times", "kind":"required"},
+         {"name":"tPre", "kind":"namevalue", "type":"numeric"},
+         {"name":"tPost", "kind":"namevalue", "type":"numeric"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"Width", "kind":"namevalue", "type":"numeric"},
+         {"name":"binWidth", "kind":"namevalue", "type":"numeric"},
+         {"name":"gaussian_kernel", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+
+   "EasyPlot.Utils.addHandle":
+   {
+      "inputs":
+      [
+         {"name":"fig", "kind":"required"},
+         {"name":"handle", "kind":"required"}
+      ]
+   },
+
+   "EasyPlot.markAxes":
+   {
+      "inputs":
+      [
+         {"name":"fig", "kind":"required"},
+         {"name":"axes_all", "kind":"required"},
+         {"name":"marker", "kind":"required"},
+         {"name":"xShift", "kind":"namevalue", "type":"numeric"},
+         {"name":"yShift", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginLeft", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginRight", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginTop", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginBottom", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"}     
+      ]
+   },
+
+   "EasyPlot.setXTicks":
+   {
+      "inputs":
+      [
+         {"name":"axes_all", "kind":"required"},
+         {"name":"ticks", "kind":"required", "type":"numeric"}   
+      ]
+   },  
+
+   "EasyPlot.setYTicks":
+   {
+      "inputs":
+      [
+         {"name":"axes_all", "kind":"required"},
+         {"name":"ticks", "kind":"required", "type":"numeric"}   
+      ]
+   },
+
+   "EasyPlot.set":
+   {
+      "inputs":
+      [
+         {"name":"axes_all", "kind":"required"},
+         {"name":"Position", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginLeft", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginRight", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginTop", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginBottom", "kind":"namevalue", "type":"numeric"},
+         {"name":"XDir", "kind":"namevalue", "type":"choices={'reverse','normal'}"},
+         {"name":"YDir", "kind":"namevalue", "type":"choices={'reverse','normal'}"},
+         {"name":"XAxisVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YAxisVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"},
+         {"name":"XLabel", "kind":"namevalue", "type":"char"},
+         {"name":"YLabel", "kind":"namevalue", "type":"char"},
+         {"name":"XLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XTickLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YTickLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XTick", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTick", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabel", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabel", "kind":"namevalue", "type":"char"},
+         {"name":"XTickLabelRotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTickLabelRotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabelHorizontalAlignment", "kind":"namevalue", "type":"choices={'left','center','right'}"},
+         {"name":"YTickLabelHorizontalAlignment", "kind":"namevalue", "type":"choices={'left','center','right'}"},
+         {"name":"XTickLabelVerticalAlignment", "kind":"namevalue", "type":"choices={'top','middle','bottom'}"},
+         {"name":"YTickLabelVerticalAlignment", "kind":"namevalue", "type":"choices={'top','middle','bottom'}"},
+         {"name":"XTickLabelFontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTickLabelFontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabelFontWeight", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabelFontWeight", "kind":"namevalue", "type":"char"},
+         {"name":"XTickLabelFontName", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabelFontName", "kind":"namevalue", "type":"char"},
+         {"name":"XGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XMinorGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YMinorGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XMinorTick", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YMinorTick", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XScale", "kind":"namevalue", "type":"choices={'linear','log'}"},
+         {"name":"YScale", "kind":"namevalue", "type":"choices={'linear','log'}"},
+         {"name":"XLim", "kind":"namevalue", "type":"numeric"},
+         {"name":"YLim", "kind":"namevalue", "type":"numeric"},
+         {"name":"XColor", "kind":"namevalue", "type":"char"},
+         {"name":"YColor", "kind":"namevalue", "type":"char"}
+      ]
+   },
+
+   "EasyPlot.createGridAxes":
+   {
+      "inputs":
+      [
+         {"name":"fig", "kind":"required"},
+         {"name":"nRow", "kind":"required", "type":"numeric"},
+         {"name":"nColumn", "kind":"required", "type":"numeric"},
+         {"name":"Height", "kind":"namevalue", "type":"numeric"},
+         {"name":"Width", "kind":"namevalue", "type":"numeric"},
+         {"name":"Position", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginLeft", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginRight", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginTop", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginBottom", "kind":"namevalue", "type":"numeric"},
+         {"name":"XDir", "kind":"namevalue", "type":"choices={'reverse','normal'}"},
+         {"name":"YDir", "kind":"namevalue", "type":"choices={'reverse','normal'}"},
+         {"name":"XAxisVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YAxisVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"},
+         {"name":"XLabel", "kind":"namevalue", "type":"char"},
+         {"name":"YLabel", "kind":"namevalue", "type":"char"},
+         {"name":"XLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XTickLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YTickLabelVisible", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XTick", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTick", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabel", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabel", "kind":"namevalue", "type":"char"},
+         {"name":"XTickLabelRotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTickLabelRotation", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabelHorizontalAlignment", "kind":"namevalue", "type":"choices={'left','center','right'}"},
+         {"name":"YTickLabelHorizontalAlignment", "kind":"namevalue", "type":"choices={'left','center','right'}"},
+         {"name":"XTickLabelVerticalAlignment", "kind":"namevalue", "type":"choices={'top','middle','bottom'}"},
+         {"name":"YTickLabelVerticalAlignment", "kind":"namevalue", "type":"choices={'top','middle','bottom'}"},
+         {"name":"XTickLabelFontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"YTickLabelFontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"XTickLabelFontWeight", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabelFontWeight", "kind":"namevalue", "type":"char"},
+         {"name":"XTickLabelFontName", "kind":"namevalue", "type":"char"},
+         {"name":"YTickLabelFontName", "kind":"namevalue", "type":"char"},
+         {"name":"XGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XMinorGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YMinorGrid", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XMinorTick", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"YMinorTick", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"XScale", "kind":"namevalue", "type":"choices={'linear','log'}"},
+         {"name":"YScale", "kind":"namevalue", "type":"choices={'linear','log'}"},
+         {"name":"XLim", "kind":"namevalue", "type":"numeric"},
+         {"name":"YLim", "kind":"namevalue", "type":"numeric"},
+         {"name":"XColor", "kind":"namevalue", "type":"char"},
+         {"name":"YColor", "kind":"namevalue", "type":"char"}
+      ]
+   },
+
+   "EasyPlot.plotShaded":
+   {
+      "inputs":
+      [
+         {"name":"axes", "kind":"required"},
+         {"name":"x", "kind":"required", "type":"numeric"},
+         {"name":"y", "kind":"required", "type":"numeric"},
+         {"name":"lineColor", "kind":"namevalue"},
+         {"name":"shadedColor", "kind":"namevalue"},
+         {"name":"lineWidth", "kind":"namevalue", "type":"numeric"},
+         {"name":"alpha", "kind":"namevalue", "type":"numeric"},
+         {"name":"axis", "kind":"namevalue", "type":"choices={'X','Y'}"},
+         {"name":"drawLine", "kind":"namevalue", "type":"choices={'on','off'}"},
+         {"name":"marker", "kind":"namevalue", "type": "char"}  
+      ]
+   },  
+
+   "EasyPlot.setCLim":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"mode", "kind":"required", "type":"choices={'largestOne','largest'}"} 
+      ]
+   },
+
+   "EasyPlot.colormap":
+   {
+      "inputs":
+      [
+         {"name":"axes_all", "kind":"required"},
+         {"name":"cmap", "kind":"required", "type":"numeric"},
+         {"name":"zeroCenter", "kind":"namevalue", "type":"choices={'on','off'}"}
+      ]
+   },
+
+   "EasyPlot.move":
+   {
+      "inputs":
+      [
+         {"name":"axes_all", "kind":"required"},
+         {"name":"dx", "kind":"namevalue", "type":"numeric"},
+         {"name":"dy", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+
+   "EasyPlot.boundedLine":
+   {
+      "inputs":
+      [
+         {"name":"axes", "kind":"optional"},
+         {"name":"x", "kind":"required", "type":"numeric"},
+         {"name":"y", "kind":"required", "type":"numeric"},
+         {"name":"bound", "kind":"required", "type":"numeric"},
+         {"name":"lineSpec", "kind":"optional", "type":"char"},
+         {"name":"alpha", "kind": "optional", "type": "choices={'alpha'}"},
+         {"name":"transparency", "kind":"namevalue", "type": "numeric"},
+         {"name":"orientation", "kind":"namevalue", "type":"choices={'vert','horiz'}"},
+         {"name":"nanflag", "kind":"namevalue", "type":"choices={'fill','gap','remove'}"},
+         {"name":"cmap", "kind":"namevalue", "type":"numeric"}
+      ]
+   },
+
+   "EasyPlot.legend":
+   {
+      "inputs":
+      [
+         {"name":"axes", "kind":"required"},
+         {"name":"legendNames", "kind":"required", "type":"cell"},
+         {"name":"location", "kind":"namevalue", "type":"choices={'north','south','east','west','northeast','northwest','southeast','southwest','northoutside','southoutside','eastoutside','westoutside','northeastoutside','northwestoutside','southeastoutside','southwestoutside','best','bestoutside','layout','none'}"},
+         {"name":"selectedPlots", "kind":"namevalue", "type":"Line"},
+         {"name":"Position", "kind":"namevalue", "type":"numeric"},
+         {"name":"Units", "kind":"namevalue", "type":"choices={'centimeters','normalized','inches','pixels','points','characters'}"},
+         {"name":"MarginLeft", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginRight", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginTop", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarginBottom", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"},
+         {"name":"Interpreter", "kind":"namevalue", "type":"choices={'tex','latex','none'}"},
+         {"name":"Box", "kind":"namevalue", "type":"choices={'on','off'}"}
+      ]
+   },
+
+   "EasyPlot.QuickPlot.printChessboard":
+   {
+      "inputs":
+      [
+         {"name": "gridSize", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+   "EasyPlot.xticks":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"ticks", "kind":"required", "type":"numeric"}
+      ]
+   },
+
+   "EasyPlot.yticks":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"ticks", "kind":"required", "type":"numeric"}
+      ]
+   },
+
+   "EasyPlot.xticklabels":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"labels", "kind":"required"}
+      ]
+   },
+
+   "EasyPlot.yticklabels":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"labels", "kind":"required"}
+      ]
+   },
+
+   "EasyPlot.setXTicksAndLabels":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"ticks", "kind":"required", "type":"numeric"},
+         {"name":"labels", "kind":"required"}
+      ]
+   },
+
+   "EasyPlot.setYTicksAndLabels":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"ticks", "kind":"required", "type":"numeric"},
+         {"name":"labels", "kind":"required"}
+      ]
+   },
+
+   "EasyPlot.violinplot":
+   {
+      "inputs":
+      [
+         {"name":"axes", "kind":"required"},
+         {"name":"data", "kind":"required", "type":"numeric"},
+         {"name":"cats", "kind":"required"},
+         {"name":"Width", "kind":"namevalue", "type":"numeric"},
+         {"name":"Bandwidth", "kind":"namevalue", "type":"numeric"},
+         {"name":"ViolinColor", "kind":"namevalue", "type":"numeric"},
+         {"name":"ViolinAlpha", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarkerSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"MedianMarkerSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"EdgeColor", "kind":"namevalue", "type":"numeric"},
+         {"name":"BoxColor", "kind":"namevalue", "type":"numeric"},
+         {"name":"MedianColor", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowData", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowNotches", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowMean", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowBox", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowMedian", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowWhiskers", "kind":"namevalue", "type":"numeric"},
+         {"name":"GroupOrder", "kind":"namevalue", "type":"cell"},
+         {"name":"HalfViolin", "kind":"namevalue", "type":"choices={'left','right','full'}"},
+         {"name":"QuartileStyle", "kind":"namevalue", "type":"choices={'shadow','boxplot','none'}"},
+         {"name":"DataStyle", "kind":"namevalue", "type":"choices={'scatter','histogram','none'}"}
+      ]
+   },
+
+   "EasyPlot.Units.Violin":
+   {
+      "inputs":
+      [
+         {"name":"axes", "kind":"required"},
+         {"name":"data", "kind":"required", "type":"numeric"},
+         {"name":"pos", "kind":"required"},
+         {"name":"Width", "kind":"namevalue", "type":"numeric"},
+         {"name":"Bandwidth", "kind":"namevalue", "type":"numeric"},
+         {"name":"ViolinColor", "kind":"namevalue", "type":"numeric"},
+         {"name":"ViolinAlpha", "kind":"namevalue", "type":"numeric"},
+         {"name":"MarkerSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"MedianMarkerSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"EdgeColor", "kind":"namevalue", "type":"numeric"},
+         {"name":"BoxColor", "kind":"namevalue", "type":"numeric"},
+         {"name":"MedianColor", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowData", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowNotches", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowMean", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowBox", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowMedian", "kind":"namevalue", "type":"numeric"},
+         {"name":"ShowWhiskers", "kind":"namevalue", "type":"numeric"},
+         {"name":"HalfViolin", "kind":"namevalue", "type":"choices={'left','right','full'}"},
+         {"name":"QuartileStyle", "kind":"namevalue", "type":"choices={'shadow','boxplot','none'}"},
+         {"name":"DataStyle", "kind":"namevalue", "type":"choices={'scatter','histogram','none'}"}
+      ]
+   },
+
+   "EasyPlot.title":
+   {
+      "inputs":
+      [
+         {"name":"all_axes", "kind":"required"},
+         {"name":"text", "kind":"required"},
+         {"name":"fontName", "kind":"namevalue", "type":"char"},
+         {"name":"fontSize", "kind":"namevalue", "type":"numeric"},
+         {"name":"fontWeight", "kind":"namevalue", "type":"choices={'bold','normal'}"}
+      ]
+   }
+}
