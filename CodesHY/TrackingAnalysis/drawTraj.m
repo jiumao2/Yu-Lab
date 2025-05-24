@@ -1,7 +1,9 @@
 function drawTraj(r, bodypart)
-    if nargin <= 2
-        bodypart = 'right_ear';
-    end
+
+if nargin < 2
+    bodypart = 'right_ear';
+end
+
 vid_dir = './VideoFrames_top/RawVideo/';
 colors = {...
     {[62,84,172]/255,[191,172,226]/255},...

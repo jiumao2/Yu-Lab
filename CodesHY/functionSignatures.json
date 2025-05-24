@@ -589,5 +589,15 @@
          {"name":"sigma", "kind":"required", "type":"numeric"},
          {"name":"truncation", "kind":"optional", "type":"numeric"}
       ]
+   },
+
+   "plotWaveform":
+   {
+      "inputs":
+      [
+         {"name":"waveforms", "kind":"required", "type":"numeric"},
+         {"name":"channel_locations", "kind":"required", "type":"numeric"},
+         {"name":"n_channels", "kind":"optional", "type":"numeric"}
+      ]
    }
 }

@@ -195,7 +195,7 @@ function r = ExtractFramesR(r, ts, varargin)
             if isfield(r.Behavior,'CueIndex') && ~isempty(r.Behavior.CueIndex)
                 VideoInfo.Cue = r.Behavior.CueIndex(i,2);
             end
-            VideoInfo.Time = t_frameon(ind_frame_event_all);
+            VideoInfo.Time = t_event_n(i);
             VideoInfo.Foreperiod = FP_ni;
             VideoInfo.ReactTime = RT_ni;
             VideoInfo.t_pre = time_range(1);
