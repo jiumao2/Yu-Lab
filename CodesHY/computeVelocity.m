@@ -6,7 +6,7 @@ if nargin < 2
     y = zeros(size(x));
 end
 
-assert(all(~isnan(x)) && all(~isnan(y)));
+assert(all(~isnan(x), 'all') && all(~isnan(y), 'all'));
 
 v_temp = sqrt((x(2:end) - x(1:end-1)).^2 + (y(2:end) - y(1:end-1)).^2);
 

@@ -1,5 +1,5 @@
 function [peth, t_peth, t_median, spike_counts_warped, ci] = computeWarpedPETH(...
-    spike_times, event_times, t_pre, t_post, gaussian_kernel, binwidth, n_boot)
+    spike_times, event_times, t_pre, t_post, gaussian_kernel, binwidth, t_median, n_boot)
 % spike_times: n_neuron x 1 cell, each element is an n x 1 double array
 % event_times: n_trial x n_event double
 if ~iscell(spike_times)
@@ -13,13 +13,19 @@ if nargin < 6
     binwidth = 1;
 end
 if nargin < 7
+    t_median = [];
+end
+if nargin < 8
     n_boot = 1000;
 end
 
 n_trial = size(event_times, 1);
 n_event = size(event_times, 2);
 n_neurons = length(spike_times);
-t_median = median(event_times - event_times(:,1));
+
+if isempty(t_median)
+    t_median = median(event_times - event_times(:,1));
+end
 
 t_warped = t_pre:binwidth:t_median(end)+t_post;
 t_post_border = ceil(t_median(end));

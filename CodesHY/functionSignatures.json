@@ -559,12 +559,27 @@
    {
       "inputs":
       [
-         {"name":"spike_times", "kind":"required", "type":"cell"},
+         {"name":"spike_times", "kind":"required"},
+         {"name":"event_times", "kind":"required", "type":"numeric"},
          {"name":"t_pre", "kind":"required", "type":"numeric"},
          {"name":"t_post", "kind":"required", "type":"numeric"},
          {"name":"gaussian_kernel", "kind":"optional", "type":"numeric"},
          {"name":"binwidth", "kind":"optional", "type":"numeric"},
          {"name":"nboot", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+    "computeWarpedData":
+   {
+      "inputs":
+      [
+         {"name":"data", "kind":"required", "type":"numeric"},
+         {"name":"data_times", "kind":"required", "type":"numeric"},
+         {"name":"event_times", "kind":"required", "type":"numeric"},
+         {"name":"t_pre", "kind":"required", "type":"numeric"},
+         {"name":"t_post", "kind":"required", "type":"numeric"},
+         {"name":"binwidth", "kind":"optional", "type":"numeric"},
+         {"name":"t_median", "kind":"optional", "type":"numeric"}
       ]
    },
 
@@ -598,6 +613,15 @@
          {"name":"waveforms", "kind":"required", "type":"numeric"},
          {"name":"channel_locations", "kind":"required", "type":"numeric"},
          {"name":"n_channels", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+   "graphEditNumber":
+   {
+      "inputs":
+      [
+         {"name":"matA", "kind":"required", "type":"numeric"},
+         {"name":"matB", "kind":"required", "type":"numeric"}
       ]
    }
 }

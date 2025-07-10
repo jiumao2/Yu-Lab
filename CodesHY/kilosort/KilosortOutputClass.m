@@ -722,6 +722,18 @@ classdef KilosortOutputClass<handle
             
             %% Add spikes
 %             r.Units.Channels = 1:obj.ParamsKilosort.Nchan;
+            % process chanMap
+            field_names = {'chanMap', 'chanMap0ind', 'xcoords', 'ycoords', 'kcoords'};
+            chanMap = obj.ChanMap;
+            for i = 1:length(field_names)
+                if isfield(chanMap, field_names{i})
+                    chanMap.(field_names{i}) = chanMap.(field_names{i})(chanMap.connected);
+                end
+            end
+            chanMap.connected = chanMap.connected(chanMap.connected);
+
+            r.Units.ChanMap = chanMap;
+
             r.Units.Profile = units;
             r.Units.Definition = {'channel_id cluster_id unit_type polytrode', '1: single unit', '2: multi unit'};
             r.Units.SpikeNotes = [];
