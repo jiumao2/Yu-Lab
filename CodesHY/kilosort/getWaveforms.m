@@ -56,7 +56,7 @@ for curUnitInd=1:numUnits
         waveForms(curUnitInd,curSpikeTime,:,:) = tmpWf(chMap,:);
     end
     waveFormsMean(curUnitInd,:,:) = squeeze(nanmean(waveForms(curUnitInd,:,:,:),2));
-    disp(['Completed ' int2str(curUnitInd) ' units of ' int2str(numUnits) '.']);
+%     disp(['Completed ' int2str(curUnitInd) ' units of ' int2str(numUnits) '.']);
 end
 
 
