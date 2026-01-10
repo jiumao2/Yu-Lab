@@ -1,0 +1,204 @@
+folder_raw_data = 'J:\Punch';
+folder_NI_data = 'K:\Ephys\Punch\Sessions';
+dir_out = dir(folder_raw_data);
+folder_names = {dir_out.name};
+folder_data = [];
+for k = 1:length(folder_names)
+    folder_this = folder_names{k};
+
+    if ~exist(fullfile(folder_raw_data, folder_this), 'dir')
+        continue
+    end
+
+    if length(folder_this) ~= 8
+        continue
+    end
+
+%     if exist(fullfile(folder_raw_data, folder_this, 'catgt_Exp_g0/events.csv'), 'file')
+%         continue
+%     end
+
+    chanMapFile = 'J:\Punch\slicedChanMap.mat';
+    copyfile(chanMapFile, fullfile(folder_raw_data, folder_this, 'catgt_Exp_g0/chanMap.mat'));
+
+    folder_data{end+1} = folder_this;
+end
+
+disp(folder_data)
+
+%%
+
+for i_folder = 1:length(folder_data)
+%     binName_ap = 'Exp_g0_tcat.imec0.ap.bin';
+%     path_ap = fullfile(folder_raw_data, folder_data{i_folder}, 'catgt_Exp_g0');
+
+    binName_nidq = 'Exp_g0_t0.nidq.bin';
+    path_nidq = fullfile(folder_NI_data, folder_data{i_folder}, 'Exp_g0');
+    
+    % Parse the corresponding metafile of nidq data
+    meta_nidq = SGLX_readMeta.ReadMeta(binName_nidq, path_nidq);
+    
+    nChan_nidq = str2double(meta_nidq.nSavedChans);
+    nFileSamp_nidq = str2double(meta_nidq.fileSizeBytes) / (2 * nChan_nidq);
+    
+    dataArray = SGLX_readMeta.ReadBin(0, nFileSamp_nidq, meta_nidq, binName_nidq, path_nidq);
+    dataArray = SGLX_readMeta.GainCorrectNI(dataArray, 1, meta_nidq);
+    
+    sample_rate_nidq = str2double(meta_nidq.niSampRate);
+
+    % Parse the corresponding metafile of ap data 
+%     meta_ap = SGLX_readMeta.ReadMeta(binName_ap, path_ap);
+%     nChan_ap = str2double(meta_ap.nSavedChans);
+%     nFileSamp_ap = str2double(meta_ap.fileSizeBytes) / (2 * nChan_ap);
+    
+%     sample_rate_ap = str2double(meta_ap.imSampRate);
+
+    %% Extract sequence of sync data
+
+%     % ap
+%     mmap_ap = memmapfile(fullfile(path_ap, binName_ap), 'Format', {'int16', [nChan_ap, nFileSamp_ap], 'x'});
+%     thres_ap = int16(32);
+%     sample_sync_ap = find(diff(mmap_ap.Data.x(end,:)) > thres_ap);
+% 
+%     % nidq
+%     mmap_nidq = memmapfile(fullfile(path_nidq, binName_nidq), 'Format', {'int16', [nChan_nidq, nFileSamp_nidq], 'x'});
+%     thres_nidq = int16(2^14);
+% 
+%     sample_sync_nidq = find(diff(mmap_nidq.Data.x(1,:)) > thres_nidq);
+% 
+%     % save to npy file
+%     t_sync_ap = reshape(double(sample_sync_ap)./sample_rate_ap, [], 1);
+%     t_sync_nidq = reshape(double(sample_sync_nidq)./sample_rate_nidq, [], 1);
+
+    filename_sync_ap = fullfile(folder_raw_data, folder_data{i_folder}, 'catgt_Exp_g0/Exp_g0_tcat.imec0.ap.xd_384_6_500.txt');
+    filename_sync_nidq = fullfile(folder_raw_data, folder_data{i_folder}, 'catgt_Exp_g0/Exp_g0_tcat.nidq.xa_0_500.txt');
+
+%     fid = fopen(filename_sync_ap, 'w');
+%     for k = 1:length(t_sync_ap)
+%         fprintf(fid, '%.6f\n', t_sync_ap(k));
+%     end
+%     fclose(fid);
+% 
+%     fid = fopen(filename_sync_nidq, 'w');
+%     for k = 1:length(t_sync_nidq)
+%         fprintf(fid, '%.6f\n', t_sync_nidq(k));
+%     end
+%     fclose(fid);
+%     writeNPY(t_sync_ap, filename_sync_ap);
+%     writeNPY(t_sync_nidq, filename_sync_nidq);
+
+    %%
+    TimeEvents = double(SGLX_readMeta.ExtractDigital(dataArray, meta_nidq, 1, 0:6));
+    
+    %%
+    event_labels = {'LeverPress', 'Poke', 'Valve', 'GoodRelease', 'Frame', 'BadPoke', 'Trigger'};
+    n_events = length(event_labels);
+    
+    EventOnset_sec = cell(1, n_events);
+    EventOffset_sec = cell(1, n_events);
+    for k = 1:n_events
+        rising = find(diff(TimeEvents(k,:))>0.5)+1; % index of rising
+        falling = find(diff(TimeEvents(k,:))<-0.5)+1; % index of falling
+        
+        EventOnset_sec{k} = rising./sample_rate_nidq;  % in sec
+        EventOffset_sec{k} = falling./sample_rate_nidq;  % in sec
+        if ~isempty(EventOnset_sec{k}) && ~isempty(EventOffset_sec{k}) && EventOnset_sec{k}(1)>EventOffset_sec{k}(1)  % caught after onset
+            EventOffset_sec{k}(1)=[];
+        end
+    end
+    
+    % in some protocols, 'MEDTTL' sends two pulses to Bpod to trigger low or
+    % high rewards (low, one pulse; high, two pulses). It is necessary to
+    % remove the second pulses. 
+    ind_MEDTTL = find(strcmpi(event_labels, 'GoodRelease')); % 'GoodRelease',
+    IndShortPulses = 1+find(diff(EventOnset_sec{ind_MEDTTL})<23);
+    
+    EventOnset_sec{ind_MEDTTL}(IndShortPulses) = [];
+    EventOffset_sec{ind_MEDTTL}(IndShortPulses) = [];
+    
+    %%
+%     dir_out = dir('./Exp_*_tcat.imec0.ap.xd_384_*_500.txt');
+%     if isempty(dir_out)
+%         error('Sync file in Imec not found!');
+%     end
+%     filename_imec = dir_out.name;
+%     
+%     dir_out = dir('.\Exp_*_tcat.nidq.xa_*_500.txt');
+%     if isempty(dir_out)
+%         error('Sync file in NI not found!');
+%     end
+%     filename_NI = dir_out.name;
+    
+    cmd = ['TPrime -syncperiod=1.0 -tostream='...
+        filename_sync_ap, ...
+        ' -fromstream=1,',...
+        filename_sync_nidq,...
+        ' '];
+    
+    for k = 1:length(event_labels)
+        writeNPY(EventOnset_sec{k},...
+            fullfile(folder_raw_data, folder_data{i_folder}, ['event',num2str(k),'_onset.npy']));
+        writeNPY(EventOffset_sec{k},...
+            fullfile(folder_raw_data, folder_data{i_folder}, ['event',num2str(k),'_offset.npy']));
+        cmd = [cmd, '-events=1,',...
+            fullfile(folder_raw_data, folder_data{i_folder}, ['event',num2str(k),'_onset.npy']), ',' ,...
+            fullfile(folder_raw_data, folder_data{i_folder}, ['event',num2str(k),'_onset_Tprime.npy']), ' '];
+        cmd = [cmd, '-events=1,',...
+            fullfile(folder_raw_data, folder_data{i_folder}, ['event',num2str(k),'_offset.npy']), ',',...
+            fullfile(folder_raw_data, folder_data{i_folder}, ['event',num2str(k),'_offset_Tprime.npy']), ' '];
+    end
+    %%
+    system(cmd);
+    %% save the output for phy
+    event_labels_for_phy = {'LeverPress', 'Valve', 'GoodRelease', 'Trigger'};
+    idx_for_phy = zeros(1, length(event_labels_for_phy));
+    for k = 1:length(idx_for_phy)
+        idx_for_phy(k) = find(strcmpi(event_labels, event_labels_for_phy{k}));
+    end
+    
+    events_onset_Tprime_ms = cell(n_events, 1);
+    events_offset_Tprime_ms = cell(n_events, 1);
+    for k = 1:length(event_labels)
+        events_onset_Tprime_ms{k} = readNPY(...
+            fullfile(folder_raw_data, folder_data{i_folder}, ['event',num2str(k),'_onset_Tprime.npy']))*1000;
+        events_offset_Tprime_ms{k} = readNPY(...
+            fullfile(folder_raw_data, folder_data{i_folder}, ['event',num2str(k),'_offset_Tprime.npy']))*1000;
+    end
+    
+    event_onset_sec = events_onset_Tprime_ms(idx_for_phy);
+    for k = 1:length(event_onset_sec)
+        event_onset_sec{k} = event_onset_sec{k}./1000;
+    end
+    
+    writecell(event_onset_sec, fullfile(folder_raw_data, folder_data{i_folder}, 'catgt_Exp_g0/events.csv'));
+    writecell(event_labels(idx_for_phy)', fullfile(folder_raw_data, folder_data{i_folder}, 'catgt_Exp_g0/event_labels.csv'));
+    
+    %% save EventOut
+    EventOut.Meta = meta_nidq;
+    EventOut.TimeEvents = TimeEvents';
+    EventOut.EventsLabels = event_labels;
+    EventOut.Onset = events_onset_Tprime_ms';
+    EventOut.Offset = events_offset_Tprime_ms';
+    
+    save(fullfile(folder_raw_data, folder_data{i_folder}, 'EventOut.mat'), 'EventOut');
+    %% Clear all .npy files
+    dir_out = dir(fullfile(folder_raw_data, folder_data{i_folder}, 'event*.npy'));
+    filenames_npy = {dir_out.name};
+    for k = 1:length(filenames_npy)
+        delete(fullfile(folder_raw_data, folder_data{i_folder}, filenames_npy{k}));
+    end
+
+    fprintf('%d / %d done!\n', i_folder, length(folder_data));
+end
+
+
+
+
+
+
+
+
+
+
+
+

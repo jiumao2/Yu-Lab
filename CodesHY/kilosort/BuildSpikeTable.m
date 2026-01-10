@@ -225,3 +225,11 @@ load(output.name);
 % % For Kornblum:
 % Spikes.Timing.KornblumSpikes(r,[], 'CombineCueUncue', false);
 % Spikes.Timing.KornblumSpikesPopulation(r);
+
+if isfield(r, 'PSTH')
+    r = rmfield(r, 'PSTH');
+end
+if isfield(r, 'PopPSTH')
+    r = rmfield(r, 'PopPSTH');
+end
+save(output.name, 'r', '-nocompression');

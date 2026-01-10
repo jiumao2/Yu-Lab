@@ -1,0 +1,91 @@
+{
+    "detectNoiseClusters":{
+        "n_random_spikes": 100, // Number of random spikes to find the channel with the largest amplitude
+        "min_firing_rate": 0.05, // Minimum firing rate to include a cluster
+        "min_signal_to_noise_ratio": 3, // Minimum signal to noise ratio to include a cluster
+        "waveform_window": [-48, 31], // Window to extract the waveform
+        "baseline_window": [-48, -32] // Window to calculate the baseline
+    },
+    
+    "removeNoiseInsideCluster":{
+        "verbose": false, // Plot the removed spikes
+        "n_pc_feature": 2, // Number of principal components to use
+        "n_random_spikes": 100, // Number of random spikes to find the channel with the largest amplitude
+        "threshold": 5, // Threshold to remove spikes, isoutlier(pc_features, 'median', 'ThresholdFactor', threshold)`;
+        "waveform_window": [-31, 32] // Window to extract the waveform
+    },
+
+    "rasterMetric":{
+        "t_pre_ms": -1000, // Time before the event
+        "t_post_ms": 1000, // Time after the event
+        "binwidth_ms": 20, // Bin width for the PETH
+        "temporal_corr_thres": -0.3, // Temporal correlation threshold. The value should be less than 0 because of the assumption of complementarity
+        "peth_corr_thres": 0.3 // PETH correlation threshold
+    },
+
+    "merging":{
+        "verbose": true, // Plot the potential merges
+        "n_random_spikes": 100, // Number of random spikes to find the channel with the largest amplitude
+        "waveform_window": [-31, 32], // Window to extract the waveform
+        "max_distance_um": 40, // Maximum distance to merge clusters
+        "binwidth_firing_rate_sec": 60, // Bin width for the firing rate
+        "min_mean_cross_corr": 10, // Minimum mean cross correlogram value to enter the test. The result from low mean value will be unreliable
+        "cross_corr_range": [2, 100], // Range of the cross correlogram to compare. Spikes from different clusters and the same channel will not be detected at the same time.
+        "cross_corr_gaussian_kernel": 2, // Gaussian kernel for smoothing the cross correlogram
+        "rasterMetric": true, // Whether to use the raster metric to merge clusters
+        "eventsIncluded": ["LeverPress", "Valve", "Trigger"] // Events to include in the raster metric. The values should be found in 'event_labels.csv'.
+    },
+
+    "splitting":{
+        "verbose": true, // Plot the potential splits
+        "min_cluster_percentage": 10, // Minimum percentage of spikes to form a subcluster
+        "n_random_spikes": 200, // Number of random spikes for detecting the potential splits
+        "waveform_window": [-10, 20], // Window to extract the waveform
+        "n_channels_included": 4, // Number of channels to include in the split detection
+        "hartigans_dip_test_alpha": 0.05 // Alpha value for the Hartigan's dip test
+    },
+
+    "duplicatedClusters":{
+        "verbose": true, // Plot the clusters that have a lot of spikes close in time
+        "dt": 0.5, // Time window to consider two spikes as duplicated
+        "overlap_percentage": 10, // Percentage of overlapping spikes to consider a cluster as duplicated
+        "n_random_spikes": 100, // Number of random spikes to find the channel with the largest amplitude
+        "waveform_window": [-31, 32] // Window to extract the waveform
+    },
+
+    "qualityMetrics":{
+        "metricNames": ["ISI violations", "Amplitude cutoffs", "Presence ratio", "Median Amplitude", "Isolation distance", "D prime", "Nearest-neighbor miss rate",
+            "Nearest-neighbor hit rate", "L ratio"], // Names of the metrics
+        "metricFieldNames": ["isi_violations", "amplitude_cutoffs", "presence_ratio", "amplitude_median", "isolation_distance", "d_prime", "nn_miss_rate",
+        "nn_hit_rate", "l_ratio"], // Field names of the metrics because the names contain spaces and cannot be used as field names
+        "metricTypes": ["less", "less", "greater", "greater", "greater", "greater", "less", "greater", "less"], // Good units should have a value less or greater than the threshold
+
+        "goodCriteria": { // The field names and the threshold values for good units
+            "isi_violations": 0.05,
+            "presence_ratio": 0.95,
+            "amplitude_cutoffs": 0.05,
+            "nn_hit_rate": 0.80
+        },
+
+        "muaCriteria": { // The field names and the threshold values for multi unit
+            "isi_violations": 0.50,
+            "presence_ratio": 0.90,
+            "amplitude_cutoffs": 0.10
+        },
+
+        // The parameters for computing the PC-related quality metrics
+        "num_channels_to_compare": 7, 
+        "max_spikes_for_unit": 500,
+        "max_spikes_for_nn": 10000,
+        "n_neighbors": 4,
+        "n_silhouette": 10000
+    },
+
+    "realignSpikeTimes":{
+        "n_random_spikes": 100, // Number of random spikes to find the channel with the largest amplitude
+        "waveform_window": [-64, 63], // Window to extract the waveform
+        "baseline_window": [-64, -33], // Window to calculate the baseline
+        "n_channels_included": 4, // Number of channels to include for the alignment
+        "verbose": false // Plot the alignment
+    }
+}

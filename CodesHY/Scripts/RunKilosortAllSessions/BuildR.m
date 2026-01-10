@@ -1,5 +1,5 @@
 %% you need to change most of the paths in this block
-dir_output = './catgt_Exp_g0';
+% dir_output = './catgt_Exp_g0';
 
 if exist(fullfile(dir_output, 'ops.mat'), 'file') && exist(fullfile(dir_output, 'chanMap.mat'), 'file')
     disp('ops.mat and chanMap.mat found!');
@@ -69,13 +69,13 @@ waveforms_mean_tbl = cell(height(spikeTable),1);
 ch_tbl = cell(height(spikeTable),1);
 spike_ID_tbl = cell(height(spikeTable),1);
 
-n_waveform_max = 1000;
+n_waveform_max = 100;
 for k = 1:height(spikeTable)
     tic
     n_waveform = length(spikeTable(k,:).spike_times{1});
     spikeID = 1:n_waveform;
 
-    % only extract 1000 waveforms to save time and space
+    % only extract 100 waveforms to save time and space
     if n_waveform > n_waveform_max
         rnd = sort(randperm(n_waveform, n_waveform_max));
         spikeID = spikeID(rnd);
@@ -141,41 +141,47 @@ end
 spikeTable.spike_times_r = spike_times_r;
 disp(spikeTable)
 
-%%
-chanMap = load(fullfile(dir_output, 'chanMap.mat'));
-KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
-KilosortOutput.save();
-
-%% build R
-KilosortOutput.buildRNeuropixels(...
-    'KornblumStyle', false,...
-    'ProbeStyle', true,...
-    'Subject', 'Oscar',...
-    'BpodProtocol', 'OptoRecording',... % 'OptoRecordingSelfTimed' for KB sessions
-    'Experimenter', 'HY');
-
-KilosortOutput.plotChannelActivity();
-
-output = dir("*RTarray*.mat");
-load(output.name);
-
-% For SRT:
-Spikes.SRT.SRTSpikes(r,[]);
-load(output.name);
-Spikes.SRT.PopulationActivity(r);
-
-% % For Kornblum:
-% Spikes.Timing.KornblumSpikes(r,[], 'CombineCueUncue', false);
+% %%
+% chanMap = load(fullfile(dir_output, 'chanMap.mat'));
+% KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
+% KilosortOutput.save();
+% 
+% %% build R
+% KilosortOutput.buildRNeuropixels(...
+%     'KornblumStyle', false,...
+%     'ProbeStyle', true,...
+%     'Subject', 'Gavi',...
+%     'BpodProtocol', 'OptoRecording',... % 'OptoRecordingSelfTimed' for KB sessions
+%     'Experimenter', 'HY');
+% 
+% KilosortOutput.plotChannelActivity();
+% 
+% output = dir("*RTarray*.mat");
 % load(output.name);
-% Spikes.Timing.KornblumSpikesPopulation(r);
-
-if isfield(r, 'PSTH')
-    r = rmfield(r, 'PSTH');
-end
-if isfield(r, 'PSTHs')
-    r = rmfield(r, 'PSTHs');
-end
-if isfield(r, 'PopPSTH')
-    r = rmfield(r, 'PopPSTH');
-end
-save(output.name, 'r', '-nocompression');
+% %%
+% % % For Autoshaping
+% % Spikes.AutoShaping.SpikesPSTH(r,[]);
+% % load(output.name);
+% % Spikes.AutoShaping.PopulationActivity(r);
+% 
+% % % For LeverPress/Release:
+% % Spikes.LeverPress.SpikesPSTH(r,[]);
+% % load(output.name);
+% % Spikes.LeverPress.PopulationActivity(r);
+% 
+% % % For Wait:
+% % Spikes.Wait.SRTSpikes(r,[]);
+% % load(output.name);
+% % Spikes.Wait.PopulationActivity(r,[]);
+% 
+% % For SRT:
+% Spikes.SRT.SRTSpikes(r,[]);
+% load(output.name);
+% Spikes.SRT.PopulationActivity(r);
+% 
+% % % For Kornblum:
+% % Spikes.Timing.KornblumSpikes(r,[], 'CombineCueUncue', false);
+% % load(output.name);
+% % Spikes.Timing.KornblumSpikesPopulation(r);
+% 
+% 

@@ -1,8 +1,30 @@
-dir_output = 'kilosort2_5_output';
+%% you need to change most of the paths in this block
+% dir_output = './catgt_Exp_g0';
+
+if exist(fullfile(dir_output, 'ops.mat'), 'file') && exist(fullfile(dir_output, 'chanMap.mat'), 'file')
+    disp('ops.mat and chanMap.mat found!');
+    load(fullfile(dir_output, 'ops.mat'));
+else
+    disp('ops.mat not found. Extracting ops from rez.mat...');
+    load(fullfile(dir_output, 'rez.mat'));
+    ops = rez.ops;
+    
+    save(fullfile(dir_output, 'ops.mat'), 'ops');
+    
+    disp('Extracting chanMap from rez.mat...');
+    kcoords = ops.kcoords;
+    xcoords = rez.xcoords;
+    ycoords = rez.ycoords;
+    chanMap = ops.chanMap;
+    chanMap0ind = chanMap-1;
+    connected = ones(1, length(chanMap));
+
+    save(fullfile(dir_output, 'chanMap.mat'), 'chanMap', 'chanMap0ind', 'connected', 'kcoords', 'xcoords', 'ycoords');
+
+    clear rez
+end
+
 spikeTable = phy2mat(dir_output);
-load(fullfile(dir_output, 'ops.mat'));
-load(fullfile(dir_output, 'Wrot.mat'));
-load(fullfile(dir_output, 'chanMap.mat'));
 %% update spike table
 % channel index start from 1
 spikeTable.ch = spikeTable.ch+1;
@@ -29,10 +51,16 @@ end
 spikeTable.spike_times = tbl_spike_times;
 
 %% extract waveform from temp_wh.dat
+if exist('./Wrot.mat', 'file')
+    load('./Wrot.mat');
+else
+    load(fullfile(dir_output, 'Wrot.mat'));
+end
+
+%% extract waveform from temp_wh.dat
 waveforms_tbl = cell(height(spikeTable),1);
 waveforms_mean_tbl = cell(height(spikeTable),1);
 ch_tbl = cell(height(spikeTable),1);
-ch_tetrodes = cell(height(spikeTable),1);
 for k = 1:height(spikeTable)
     tic
     [~,name,ext] = fileparts(ops.fproc);
@@ -40,7 +68,7 @@ for k = 1:height(spikeTable)
     gwfparams.fileName = [name, ext];         % .dat file containing the raw 
     gwfparams.dataType = 'int16';            % Data type of .dat file (this should be BP filtered)
     gwfparams.nCh = ops.Nchan;                      % Number of channels that were streamed to disk in .dat file
-    gwfparams.wfWin = [-30 30];              % Number of samples before and after spiketime to include in waveform
+    gwfparams.wfWin = [-31 32];              % Number of samples before and after spiketime to include in waveform
     gwfparams.nWf = length(spikeTable(k,:).spike_times{1});                    % Number of waveforms per unit to pull out
     gwfparams.spikeTimes =    spikeTable(k,:).spike_times{1}; % Vector of cluster spike times (in samples) same length as .spikeClusters
     gwfparams.spikeClusters = ones(length(spikeTable(k,:).spike_times{1}),1); % Vector of cluster IDs (Phy nomenclature)   same length as .spikeTimes
@@ -57,24 +85,19 @@ for k = 1:height(spikeTable)
     
     amp_ch = max(raw_waveforms_mean,[],2)-min(raw_waveforms_mean,[],2);
     [~, ch_amp_largest] = max(amp_ch);
-
-    y = ycoords(ch_amp_largest);
-    ch_tetrodes{k} = find(ycoords==y);
-    ch_tbl{k} = round(y/10000);
+    ch_tbl{k} = ch_amp_largest;
     
-    waveforms_tbl{k} = squeeze(raw_waveforms(ch_tetrodes{k},:,:));
-    waveforms_tbl{k} = permute(waveforms_tbl{k},[2,3,1]);
-    waveforms_tbl{k} = reshape(waveforms_tbl{k},length(spikeTable(k,:).spike_times{1}),[]);
+    waveforms_tbl{k} = squeeze(raw_waveforms(ch_amp_largest,:,:));
     waveforms_mean_tbl{k} = squeeze(raw_waveforms_mean);
-    
+
     toc
 end
 
 spikeTable.waveforms = waveforms_tbl;
 spikeTable.waveforms_mean = waveforms_mean_tbl;
 spikeTable.ch = ch_tbl;
-spikeTable.ch_tetrodes = ch_tetrodes;
 spikeTable = sortrows(spikeTable,{'ch','group'});
+
 %% Get real spike time
 if exist('NS6all.mat', 'file') && exist('index.mat','file') 
     load NS6all.mat;
@@ -95,7 +118,6 @@ else
     else
         error('No .ns6 files!')
     end
-    %%
     
     % Define channels
     EphysChs = 1:ops.Nchan;
@@ -134,14 +156,15 @@ else
         end
     end
     
-    savefile = 'index.mat'; % name of raw data files
+    savefile = './index.mat'; % name of raw data files
     save(savefile, 'index');
-    %% save NS6all
+
+    % save NS6all
     for k = 1:length(NS6all)
         NS6all(k).Data = [];
     end
     
-    save NS6all NS6all
+    save ./NS6all.mat NS6all
 end
 %%
 % first 102 frame in Kilosort is skipped (Blackrock zeropad the data)
@@ -156,88 +179,47 @@ end
 spikeTable.spike_times_r = spike_times_r;
 disp(spikeTable)
 
-
-%%
-load(fullfile(dir_output, 'chanMap.mat'));
-KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
-KilosortOutput.save();
-
-%% Uncommenented correspoding segment to build R
-
-% KilosortOutput.buildRMultiSessions( ...
-%     {'Max_MedOptoRecording_20220726_153709.mat','Max_MedOptoRecording_20220726_204005.mat'},...
-%     {'2022-07-26_15h32m_Subject Max.txt','2022-07-26_20h34m_Subject Max.txt'},...
-%     {[1,2],3},...
+% %%
+% chanMap = load(fullfile(dir_output, 'chanMap.mat'));
+% KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
+% KilosortOutput.save();
+% 
+% %% build R
+% KilosortOutput.buildRNeuropixels(...
 %     'KornblumStyle', false,...
-%     'Subject', 'Max',...
-%     'blocks', {'datafile001.nev','datafile002.nev','datafile003.nev'},...
-%     'Version', 'Version4',...
-%     'BpodProtocol', 'OptoRecording',...
-%     'Experimenter', 'ZQ',...
-%     'NS6all', NS6all,...
-%     'saveWaveMean', false);
+%     'ProbeStyle', true,...
+%     'Subject', 'Gavi',...
+%     'BpodProtocol', 'OptoRecording',... % 'OptoRecordingSelfTimed' for KB sessions
+%     'Experimenter', 'HY');
 % 
-% % For 2FPs (750/1500): 
-% KilosortOutput.buildR(...
-%     'KornblumStyle', false,...
-%     'Subject', 'Frank',...
-%     'blocks', {'datafile001.nev','datafile002.nev','datafile003.nev'},...
-%     'Version', 'Version5',...
-%     'BpodProtocol', 'OptoRecording',...
-%     'Experimenter', 'HY',...
-%     'NS6all', NS6all,...
-%     'saveWaveMean', false);
+% KilosortOutput.plotChannelActivity();
 % 
-% % For 2FPs (500/1000): 
-% KilosortOutput.buildR(...
-%     'KornblumStyle', false,...
-%     'Subject', 'West',...
-%     'blocks', {'datafile001.nev','datafile002.nev'},...
-%     'Version', 'Version5',...
-%     'BpodProtocol', 'OptoRecording',...
-%     'Experimenter', 'HY',...
-%     'NS6all', NS6all,...
-%     'saveWaveMean', false);
+% output = dir("*RTarray*.mat");
+% load(output.name);
+% %%
+% % % For Autoshaping
+% % Spikes.AutoShaping.SpikesPSTH(r,[]);
+% % load(output.name);
+% % Spikes.AutoShaping.PopulationActivity(r);
 % 
-% % For Kormblum: 
-% KilosortOutput.buildR(...
-%     'KornblumStyle', true,...
-%     'Subject', 'West',...
-%     'blocks', {'datafile001.nev','datafile002.nev'},...
-%     'Version', 'Version5',...
-%     'BpodProtocol', 'OptoRecording',...
-%     'Experimenter', 'HY',...
-%     'NS6all', NS6all,...
-%     'saveWaveMean', false);
+% % % For LeverPress/Release:
+% % Spikes.LeverPress.SpikesPSTH(r,[]);
+% % load(output.name);
+% % Spikes.LeverPress.PopulationActivity(r);
 % 
-% % For Self time: 
-% KilosortOutput.buildR(...
-%     'KornblumStyle', true,...
-%     'Subject', 'West',...
-%     'blocks', {'datafile001.nev','datafile002.nev','datafile003.nev','datafile004.nev'},...
-%     'Version', 'Version5',...
-%     'BpodProtocol', 'OptoRecordingSelfTimed',...
-%     'Experimenter', 'HY',...
-%     'NS6all', NS6all,...
-%     'saveWaveMean', false);
-
-%% Uncommenented correspoding segment to plot PSTHs
-clear
-output = dir("*RTarray*.mat");
-load(output.name);
-
+% % % For Wait:
+% % Spikes.Wait.SRTSpikes(r,[]);
+% % load(output.name);
+% % Spikes.Wait.PopulationActivity(r,[]);
+% 
 % % For SRT:
 % Spikes.SRT.SRTSpikes(r,[]);
+% load(output.name);
 % Spikes.SRT.PopulationActivity(r);
-
-% % For Kornblum:
-% Spikes.Timing.KornblumSpikes(r,[], 'CombineCueUncue', false);
-% Spikes.Timing.KornblumSpikesPopulation(r);
-
-if isfield(r, 'PSTH')
-    r = rmfield(r, 'PSTH');
-end
-if isfield(r, 'PopPSTH')
-    r = rmfield(r, 'PopPSTH');
-end
-save(output.name, 'r', '-nocompression');
+% 
+% % % For Kornblum:
+% % Spikes.Timing.KornblumSpikes(r,[], 'CombineCueUncue', false);
+% % load(output.name);
+% % Spikes.Timing.KornblumSpikesPopulation(r);
+% 
+% 

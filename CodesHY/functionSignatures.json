@@ -565,6 +565,7 @@
          {"name":"t_post", "kind":"required", "type":"numeric"},
          {"name":"gaussian_kernel", "kind":"optional", "type":"numeric"},
          {"name":"binwidth", "kind":"optional", "type":"numeric"},
+         {"name":"t_median", "kind":"optional", "type":"numeric"},
          {"name":"nboot", "kind":"optional", "type":"numeric"}
       ]
    },
@@ -622,6 +623,54 @@
       [
          {"name":"matA", "kind":"required", "type":"numeric"},
          {"name":"matB", "kind":"required", "type":"numeric"}
+      ]
+   },
+
+   "autoCorr":
+   {
+      "inputs":
+      [
+         {"name":"spike_times", "kind":"required", "type":"numeric"},
+         {"name":"window", "kind":"optional", "type":"numeric"},
+         {"name":"binwidth", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+   "crossCorr":
+   {
+      "inputs":
+      [
+         {"name":"st1", "kind":"required", "type":"numeric"},
+         {"name":"st2", "kind":"required", "type":"numeric"},
+         {"name":"window", "kind":"optional", "type":"numeric"},
+         {"name":"binwidth", "kind":"optional", "type":"numeric"}
+      ]
+   },
+
+   "getCoincidentSpikeTimes":
+   {
+      "inputs":
+      [
+         {"name": "st1", "kind": "required", "type": "numeric"},
+         {"name": "st2", "kind": "required", "type": "numeric"},
+         {"name": "coincident_range", "kind": "required", "type": "numeric"}
+      ]
+   },
+
+   "combinePvaluesFisher":
+   {
+      "inputs":
+      [
+         {"name": "p_vals", "kind": "required", "type": "numeric"}
+      ]
+   },
+
+   "plotOmittedReward":
+   {
+      "inputs":
+      [
+         {"name": "r", "kind": "required", "type": "struct"},
+         {"name": "unit", "kind": "required", "type": "numeric"}
       ]
    }
 }
