@@ -1,0 +1,74 @@
+function EventOut = UpdatePokeFromBpodEventsAutoshaping(EventOut, BpodEvents)
+% revised 4/2/2023 Jianing Yu
+% Update Poke events in EventOut based on BpodEvents
+
+N_events = length(EventOut.EventsLabels);
+% bad poke in bpod
+% events.BadPokeInFirst = bad_pokein;
+% events.BadPokeOutFirst = bad_pokeout;
+badpokein_time_bpod = BpodEvents.BadPokeIn*1000;
+badpokeout_time_bpod = BpodEvents.BadPokeOut*1000;
+
+% all pokes in bpod
+allpokein_time_bpod = BpodEvents.AllPokeIns*1000;
+allpokeout_time_bpod = BpodEvents.AllPokeOuts*1000;
+
+% good release (medttl) in bpod
+trigger_bpod = BpodEvents.GoodWait(2,:)*1000; % in ms
+trigger_ephys = EventOut.Onset{strcmp(EventOut.EventsLabels, 'Trigger')}; % in ms
+
+% align release_time_blackrock and relese_time_bpod
+seqmom = trigger_bpod;
+seqson = trigger_ephys;
+% 
+% seqmom = trigger_ephys;
+% seqson = trigger_bpod;
+
+if length(seqson)>=3
+    Indout = findseqmatch(seqmom, seqson);
+    trigger_ephys_new                 =   seqson(~isnan(Indout)); % trigger in ephys not including nan
+    trigger_ephys_new_toBpod    =   seqmom(Indout(~isnan(Indout)));
+else
+    trigger_ephys_new                    =            [];
+    trigger_ephys_new_toBpod      =             [];
+end
+
+% seqmom2      =       BpodEvents.Reward(1, :)*1000;
+% seqson2         =       EventOut.Onset{5};
+% Indout2 = findseqmatchrev(seqmom2, seqson2, man, toprint, toprintname);
+
+% everything in bpod time domain can now be mapped to ephys domain using
+% the one-to-one relationship between 'trigger_ephys_to_bpod' and 'trigger_ephys_matched'
+% Update poke time
+
+allpokein_time_mapped2blackrock = to_align(allpokein_time_bpod, trigger_ephys_new_toBpod, trigger_ephys_new);
+allpokein_time_mapped2blackrock = allpokein_time_mapped2blackrock(allpokein_time_mapped2blackrock>0 & allpokein_time_mapped2blackrock < trigger_ephys(end)+1000);
+allpokeout_time_mapped2blackrock = to_align(allpokeout_time_bpod, trigger_ephys_new_toBpod, trigger_ephys_new);
+allpokeout_time_mapped2blackrock = allpokeout_time_mapped2blackrock(allpokeout_time_mapped2blackrock>0 & allpokeout_time_mapped2blackrock < trigger_ephys(end)+1000);
+
+reward_in_fromBpod =  to_align(BpodEvents.Reward(1, :)*1000, trigger_ephys_new_toBpod, trigger_ephys_new);
+reward_in_fromBpod = reward_in_fromBpod(reward_in_fromBpod>0 & reward_in_fromBpod < trigger_ephys(end)+2000);
+reward_out_fromBpod =  to_align(BpodEvents.Reward(2, :)*1000, trigger_ephys_new_toBpod, trigger_ephys_new);
+reward_out_fromBpod = reward_out_fromBpod(reward_out_fromBpod>0 & reward_out_fromBpod < trigger_ephys(end)+2000);
+
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'Poke')} = allpokein_time_mapped2blackrock;
+EventOut.Offset{strcmp(EventOut.EventsLabels, 'Poke')} = allpokeout_time_mapped2blackrock;
+
+% EventOut.Onset{strcmp(EventOut.EventsLabels, 'Valve')} = reward_in_fromBpod;
+% EventOut.Offset{strcmp(EventOut.EventsLabels, 'Valve')} = reward_out_fromBpod;
+
+% add bad poke (may not be that useful)
+EventOut.EventsLabels{N_events+1} = 'BadPoke';
+EventOut.Onset{N_events+1} = to_align(badpokein_time_bpod, trigger_ephys_new_toBpod, trigger_ephys_new);
+EventOut.Offset{N_events+1} = to_align(badpokeout_time_bpod, trigger_ephys_new_toBpod, trigger_ephys_new);
+
+function alignout = to_align(t_domain1, t_domain1_ref, t_domain2_ref)
+% map time in domain 1 to time in domain 2 using the reference time
+alignout = zeros(length(t_domain1), 1);
+for i =1:length(t_domain1)
+    it = t_domain1(i);
+    % nearest ref
+    [~, indref] = min(abs(it - t_domain1_ref));
+    alignout(i) = it - t_domain1_ref(indref) + t_domain2_ref(indref);
+end
+

@@ -7,7 +7,6 @@ function PSTH = ComputePlotPSTH(r, PSTHOut, ku, varargin)
 % Modified by Yue Huang on 6/26/2023
 % Change the way of making raster plots to run faster
 
-% close all;
 PSTH.UnitID       = ku;
 ToSave = 'on';
 if nargin>2
@@ -36,16 +35,42 @@ press_col = [5 191 219]/255;
 trigger_col = [242 182 250]/255;
 release_col = [87, 108, 188]/255;
 reward_col = [164, 208, 164]/255;
-MixedFPs = PSTHOut.Presses.FP{1};
-nFPs = length(MixedFPs);
-if nFPs == 2
-    FP_cols = [192, 127, 0; 76, 61, 61]/255;
+if isfield(r, 'BehaviorClass')
+    MixedFPs = r.BehaviorClass.MixedFP;
 else
-    FP_cols = [255, 217, 90; 192, 127, 0; 76, 61, 61]/255;
+    MixedFPs = Spikes.findFP(r);
 end
+
+nFPs = length(MixedFPs);
+FP_cols = [0.7373    0.7412    0.1333];
+% if nFPs == 2
+    FP_cols(2,:) = [0.1725    0.6275    0.1725];%[ 76, 61, 61]/255;
+% else
+%     FP_cols = [255, 217, 90; 192, 127, 0; 76, 61, 61]/255;
+% end
+% wait_cols =[
+%     0.1216    0.4667    0.7059;  % 深蓝
+%     0.6824    0.7804    0.9098;  % 浅蓝
+%     1.0000    0.4980    0.0549;  % 橙色
+%     1.0000    0.7333    0.4706;  % 浅橙
+%     0.1725    0.6275    0.1725;  % 深绿
+%     0.5961    0.8745    0.5412;  % 浅绿
+%     0.8392    0.1529    0.1569;  % 深红
+%     1.0000    0.6000    0.6000;  % 浅红
+%     0.5804    0.4039    0.7412;  % 紫色
+%     0.7725    0.6902    0.8353;  % 浅紫
+%     0.5490    0.3373    0.2941;  % 棕色
+%     0.7686    0.6118    0.5804;  % 浅棕
+%     0.8902    0.4667    0.7608;  % 粉色
+%     0.9608    0.8039    0.8824;  % 浅粉
+%     0.4980    0.4980    0.4980;  % 中灰
+%     0.7804    0.7804    0.7804;  % 浅灰
+%     0.7373    0.7412    0.1333;  % 橄榄绿
+%     0.8588    0.8588    0.5529   % 浅橄榄
+% ];
 premature_col = [0.9 0.4 0.1];
 late_col = [0.6 0.6 0.6];
-printsize = [2 2 25 25];
+printsize = [2 2 25 27];
 
 %% PSTHs for press and release
 params_press.pre            =             5000; % take a longer pre-press activity so we can compute z score easily later.
@@ -68,34 +93,42 @@ ts_press=[];
 trialspxmat_press=[];
 tspkmat_press=[];
 
-
 % Press PSTH (corrected, sorted)
-for i =1:nFPs
-    t_presses_correct{i} = PSTHOut.Presses.Time{i};
+for i =1:nFPs+1
+    t_presses_correct{i} = PSTHOut.Presses.Time{i}; % sorted by RT already
     [psth_presses_correct{i}, ts_press{i}, trialspxmat_press{i}, tspkmat_press{i},   t_presses_correct{i}, ind] = Spikes.jpsth(r.Units.SpikeTimes(ku).timings,...
         t_presses_correct{i}, params_press);
     psth_presses_correct{i} = smoothdata (psth_presses_correct{i}, 'gaussian', 5);
     rt_presses_sorted{i}  = PSTHOut.Presses.RT_Correct{i};
     rt_presses_sorted{i}  =  rt_presses_sorted{i}(ind);
+    
     PSTH.Presses{i} =  {psth_presses_correct{i}, ts_press{i}, trialspxmat_press{i},...
         tspkmat_press{i}, t_presses_correct{i}, rt_presses_sorted{i}};
 end
 PSTH.PressesLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT'};
 
 % Release PSTH
-params.pre =  ReleaseTimeDomain(1);
-params.post = ReleaseTimeDomain(2);
-params.binwidth = 20;
+params_release.pre =  ReleaseTimeDomain(1);
+params_release.post = ReleaseTimeDomain(2);
+params_release.binwidth = 20;
+
+t_releases = PSTHOut.Releases.Time{end};
+[psth_releases_all, ts_release_all, trialspxmat_release_all, tspkmat_release_all,  t_correct_releases_all,...
+    ind] = Spikes.jpsth(r.Units.SpikeTimes(ku).timings,...
+    t_releases, params_release);
+psth_releases_all = smoothdata (psth_releases_all, 'gaussian', 5);
+PSTH.ReleasesAll =  {psth_releases_all, ts_release_all, trialspxmat_release_all, tspkmat_release_all,  t_correct_releases_all};
+
 
 psth_release_correct=[];
 ts_release=[];
 trialspxmat_release=[];
 tspkmat_release=[];
 
-for i =1:nFPs
+for i =1:nFPs+1
     t_releases_correct{i} = PSTHOut.Releases.Time{i};
     [psth_release_correct{i}, ts_release{i}, trialspxmat_release{i}, tspkmat_release{i},    t_releases_correct{i}, ind] = Spikes.jpsth(r.Units.SpikeTimes(ku).timings,...
-        t_releases_correct{i}, params);
+        t_releases_correct{i}, params_release);
     psth_release_correct{i} = smoothdata (psth_release_correct{i}, 'gaussian', 5);
     rt_releases_sorted{i}  = PSTHOut.Presses.RT_Correct{i};
     rt_releases_sorted{i}  =  rt_releases_sorted{i}(ind);
@@ -106,12 +139,12 @@ PSTH.ReleassLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT'}
 
 
 % premature press PSTH
-t_premature_presses                 =         PSTHOut.Presses.Time{nFPs+1};
+t_premature_presses                 =         PSTHOut.Presses.Time{nFPs+1+1};
 [psth_premature_press, ts_premature_press, trialspxmat_premature_press, tspkmat_premature_press,...
     t_premature_presses, ind]      =           Spikes.jpsth(r.Units.SpikeTimes(ku).timings,...
     t_premature_presses, params_press);
 psth_premature_press                =             smoothdata (psth_premature_press, 'gaussian', 5);
-FPs_premature_presses            =              PSTHOut.Presses.FP{2};
+FPs_premature_presses            =              PSTHOut.Presses.FP{2+1};
 FPs_premature_presses             =             FPs_premature_presses(ind);
 premature_duration_presses      =             PSTHOut.Presses.PressDur.Premature;
 premature_duration_presses      =             premature_duration_presses(ind);
@@ -122,12 +155,12 @@ PSTH.PrematureLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'Ho
 
 
 % premature release PSTH
-t_premature_releases                =         PSTHOut.Releases.Time{nFPs+1};
+t_premature_releases                =         PSTHOut.Releases.Time{nFPs+1+1};
 [psth_premature_release, ts_premature_release, trialspxmat_premature_release, tspkmat_premature_release,...
     t_premature_releases, ind]      =           Spikes.jpsth(r.Units.SpikeTimes(ku).timings,...
-    t_premature_releases, params);
+    t_premature_releases, params_release);
 psth_premature_release              =           smoothdata (psth_premature_release, 'gaussian', 5);
-FPs_premature_releases            =              PSTHOut.Releases.FP{2};
+FPs_premature_releases            =              PSTHOut.Releases.FP{2+1};
 FPs_premature_releases             =             FPs_premature_releases(ind);
 premature_duration_releases      =             PSTHOut.Releases.PressDur.Premature;
 premature_duration_releases      =             premature_duration_releases(ind);
@@ -136,39 +169,26 @@ PSTH.PrematureReleases =  {psth_premature_release, ts_premature_release,...
     premature_duration_releases, FPs_premature_releases};
 
 % late press PSTH
-if ~isempty(PSTHOut.Presses.FP{3})
-    t_late_presses                 =         PSTHOut.Presses.Time{nFPs+2};
-else
-    t_late_presses = [];
-end
+t_late_presses                 =         PSTHOut.Presses.Time{nFPs+2+1};
 [psth_late_press, ts_late_press, trialspxmat_late_press, tspkmat_late_press,...
     t_late_presses, ind]        =           Spikes.jpsth(r.Units.SpikeTimes(ku).timings, ...
     t_late_presses, params_press);
 psth_late_press                =             smoothdata (psth_late_press, 'gaussian', 5);
-FPs_late_presses            =              PSTHOut.Presses.FP{3};
+FPs_late_presses            =              PSTHOut.Presses.FP{3+1};
+FPs_late_presses             =             FPs_late_presses(ind);
 late_duration_presses      =             PSTHOut.Presses.PressDur.Late;
-
-if ~isempty(FPs_late_presses)    
-    FPs_late_presses             =             FPs_late_presses(ind);
-    late_duration_presses      =             late_duration_presses(ind);
-end
-
+late_duration_presses      =             late_duration_presses(ind);
 PSTH.LatePresses = {psth_late_press, ts_late_press, trialspxmat_late_press,...
     tspkmat_late_press, t_late_presses,late_duration_presses,FPs_late_presses};
 PSTH.LateLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'HoldDuration', 'FP'};
 
 % late release PSTH
-if length(PSTHOut.Releases.Time) >= nFPs+2
-    t_late_releases                 =         PSTHOut.Releases.Time{nFPs+2};
-else
-    t_late_releases = [];
-end
-
+t_late_releases                 =         PSTHOut.Releases.Time{nFPs+2+1};
 [psth_late_release, ts_late_release, trialspxmat_late_release, tspkmat_late_release,...
     t_late_releases, ind]       =           Spikes.jpsth(r.Units.SpikeTimes(ku).timings,...
-    t_late_releases, params);
+    t_late_releases, params_release);
 psth_late_release                =             smoothdata (psth_late_release, 'gaussian', 5);
-FPs_late_releases            =              PSTHOut.Releases.FP{3};
+FPs_late_releases            =              PSTHOut.Releases.FP{3+1};
 FPs_late_releases             =             FPs_late_releases(ind);
 late_duration_releases      =             PSTHOut.Releases.PressDur.Late;
 late_duration_releases      =             late_duration_releases(ind);
@@ -180,7 +200,7 @@ PSTH.LateReleases =  {psth_late_release, ts_late_release, trialspxmat_late_relea
 % reward PSTH
 params.pre = RewardTimeDomain(1);
 params.post = RewardTimeDomain(2);
-
+params.binwidth = 20;
 t_reward_pokes = PSTHOut.Pokes.RewardPoke.Time;
 move_time =  PSTHOut.Pokes.RewardPoke.Move_Time;
 for i =1:length(t_reward_pokes)
@@ -206,17 +226,9 @@ PSTH.NonrewardPokes =  {psth_nonreward_pokes, ts_nonreward_pokes,...
 % trigger PSTH
 params.pre = TriggerTimeDomain(1);
 params.post = TriggerTimeDomain(2);
-
-if length(PSTHOut.Triggers.Time) >= nFPs+1
-    t_triggers_late = PSTHOut.Triggers.Time{nFPs+1};
-    RT_triggers_late = PSTHOut.Triggers.RT{nFPs+1};
-    FP_triggers_late = PSTHOut.Triggers.FP{end};
-else
-    t_triggers_late = [];
-    RT_triggers_late = [];
-    FP_triggers_late = [];
-end
-
+t_triggers_late = PSTHOut.Triggers.Time{nFPs+1+1};
+RT_triggers_late = PSTHOut.Triggers.RT{nFPs+1+1};
+FP_triggers_late = PSTHOut.Triggers.FP{end};
 [psth_late_trigger, ts_late_trigger, trialspxmat_late_trigger, tspkmat_late_trigger, t_triggers_late,...
     ind] = Spikes.jpsth(r.Units.SpikeTimes(ku).timings,...
     t_triggers_late, params);
@@ -226,7 +238,7 @@ psth_late_trigger = smoothdata (psth_late_trigger, 'gaussian', 5);
 PSTH.TriggersLate =  {psth_late_trigger, ts_late_trigger, trialspxmat_late_trigger,...
     tspkmat_late_trigger, t_triggers_late, RT_triggers_late, FP_triggers_late};
 PSTH.TriggerLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT', 'FP'};
-for i =1:nFPs
+for i =1:nFPs+1
     t_triggers_correct{i} = PSTHOut.Triggers.Time{i};
     RT_triggers_correct{i} = PSTHOut.Triggers.RT{i};
     [psth_trigger_correct{i}, ts_trigger_correct{i}, trialspxmat_trigger_correct{i}, tspkmat_trigger_correct{i}, t_triggers_correct{i},...
@@ -234,25 +246,41 @@ for i =1:nFPs
         t_triggers_correct{i}, params);
     RT_triggers_correct{i} = RT_triggers_correct{i}(ind);
     psth_trigger_correct{i} = smoothdata (psth_trigger_correct{i}, 'gaussian', 5);
+    if i ==nFPs+1
+            PSTH.Triggers{i} =  {psth_trigger_correct{i}, ts_trigger_correct{i}, trialspxmat_trigger_correct{i},...
+        tspkmat_trigger_correct{i}, t_triggers_correct{i}, RT_triggers_correct{i}};
+    else
     PSTH.Triggers{i} =  {psth_trigger_correct{i}, ts_trigger_correct{i}, trialspxmat_trigger_correct{i},...
         tspkmat_trigger_correct{i}, t_triggers_correct{i}, RT_triggers_correct{i}, MixedFPs(i)};
+    end
 end
 
 %% Plot raster and spks
-figure();
+hf=27;
+figure(hf); clf(hf)
 set(gcf, 'unit', 'centimeters', 'position', printsize, 'paperpositionmode', 'auto' ,'color', 'w')
 % PSTH of correct trials
 yshift_row1 = 1;
 ha_press_psth =  axes('unit', 'centimeters', 'position', [1.25 yshift_row1 6 2], 'nextplot', 'add', 'xlim', [-PressTimeDomain(1) PressTimeDomain(2)]);
 yshift_row2 = yshift_row1+2+0.25;
 hplot_press= zeros(1, nFPs);
-FRMax = 3;
-for i =1:nFPs
-    hplot_press(i) = plot(ts_press{i}, psth_presses_correct{i}, 'color', FP_cols(i, :),  'linewidth', 1.5);
+FRMax = 10;
+% if nFPs>3
+%     nFPs_new = 3;
+%     indFPs_new = [1 my_median_left(1:nFPs) max(1:nFPs)];
+%     FP_cols_new = wait_cols;
+% else
+%     nFPs_new = nFPs;
+%     indFPs_new = 1:nFPs;
+%     FP_cols_new = FP_cols;
+% end
+for i = nFPs: nFPs+1
+    hplot_press(i) = plot(ts_press{i}, psth_presses_correct{i}, 'color', FP_cols(nFPs+2-i, :),  'linewidth', 1.5);
     FRMax = max([FRMax max(psth_presses_correct{i})]);
 %     disp(FRMax)
 end
 axis 'auto y'
+hline_press = line([0 0], get(gca, 'ylim'), 'color', press_col, 'linewidth', 1);
 xlabel('Time from press (ms)')
 ylabel ('Spks per s')
 
@@ -263,12 +291,12 @@ yshift_row3 = yshift_row2 +2+0.25;
 % plot premature and late as well
 if  size(trialspxmat_premature_press, 2)>3
     plot(ts_premature_press, psth_premature_press, 'color', premature_col, 'linewidth',1.5);
-%     FRMax = max([FRMax max(psth_premature_press)]);
+    FRMax = max([FRMax max(psth_premature_press)]);
 %      disp(FRMax)
 end
 if  size(trialspxmat_late_press, 2)>3
     plot(ts_late_press, psth_late_press, 'color', late_col, 'linewidth', 1.5)
-%     FRMax = max([FRMax max(psth_late_press)]);
+    FRMax = max([FRMax max(psth_late_press)]);
 %     disp(FRMax)
 end
 axis 'auto y'
@@ -334,7 +362,12 @@ for m =1:nFPs
         end
         k = k+1;
     end
-    line(xx_all, yy_all, 'color', FP_cols(m, :), 'linewidth', 1);
+    if m < nFPs
+        line(xx_all, yy_all, 'color', FP_cols(1, :), 'linewidth', 1);
+    else
+        line(xx_all, yy_all, 'color', FP_cols(2, :), 'linewidth', 1);
+    end
+
     line(xxrt_all, yyrt_all, 'color', release_col, 'linewidth', 1.5);
     scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
 end
@@ -452,24 +485,37 @@ uicontrol('Style','text','Units','centimeters','Position',[0.5 yshift_row6  6 1]
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],...
     'HorizontalAlignment','Left');
 
-yshift_row7=yshift_row6+1.25;
+yshift_row7=yshift_row6+0.25;
 ch = r.Units.SpikeNotes(ku, 1);
 unit_no = r.Units.SpikeNotes(ku, 2);
 
 if size(r.Units.SpikeNotes, 2) == 4
     cluster_id = r.Units.SpikeNotes(ku, 4);
-    uicontrol('style', 'text', 'units', 'centimeters', 'position', [1 yshift_row7 6 1.2],...
+    uicontrol('style', 'text', 'units', 'centimeters', 'position', [1 yshift_row7+1.2 6 1.2],...
         'string', (['Unit #' num2str(ku) ' (Ch ' num2str(ch) ' | UnitOnCh ' num2str(unit_no) ' | ' 'Kilosort cluster ' num2str(cluster_id) ')']),...
         'BackgroundColor','w', 'fontsize', 10, 'fontweight','bold',  'FontName','Dejavu Sans')
 else
     cluster_id = [];
-    uicontrol('style', 'text', 'units', 'centimeters', 'position', [1 yshift_row7 6 1.2],...
+    uicontrol('style', 'text', 'units', 'centimeters', 'position', [1 yshift_row7+1.2 6 1.2],...
         'string', (['Unit #' num2str(ku) ' (' num2str(ch) ' | ' num2str(unit_no) ')']),...
         'BackgroundColor','w', 'fontsize', 10, 'fontweight','bold',  'FontName','Dejavu Sans')
 end
-uicontrol('style', 'text', 'units', 'centimeters', 'position', [1 yshift_row7+1.2 4 0.5],...
-    'string', ([r.Meta(1).Subject ' ' r.Meta(1).DateTime(1:11)]), 'BackgroundColor','w',...
+
+anm_brain = [r.Meta(1).Subject, '(', r.Units.SpikeNotesColumn5{r.Units.SpikeNotes(ku, 5)},')'];
+
+if isfield(r, 'BehaviorClass')
+uicontrol('style', 'text', 'units', 'centimeters', 'position', [1 yshift_row7+2.4 10 0.5],...
+    'string', ([anm_brain ' '  r.BehaviorClass.Date ' | ' r.BehaviorClass.Protocol]), 'BackgroundColor','w',...
     'fontsize', 10, 'fontweight', 'bold',  'FontName','Dejavu Sans')
+else
+   uicontrol('style', 'text', 'units', 'centimeters', 'position', [1 yshift_row7+2.4 10 0.5],...
+    'string', ([anm_brain ' '  strrep( r.Meta(1).DateTime(1:11), '-', '_') ' | ' r.BehaviorClass.Protocol]), 'BackgroundColor','w',...
+    'fontsize', 10, 'fontweight', 'bold',  'FontName','Dejavu Sans') 
+end
+
+% uicontrol('style', 'text', 'units', 'centimeters', 'position', [1 yshift_row7+1.1 6 0.5],...
+%     'string', ([r.BehaviorClass.Protocol ]), 'BackgroundColor','w',...
+%     'fontsize', 10, 'fontweight', 'bold',  'FontName','Dejavu Sans')
 
 fig_height = yshift_row7+2;
 
@@ -481,8 +527,8 @@ ha_release_psth =  axes('unit', 'centimeters', 'position', [8.25 yshift_row1 wid
     'xlim', [-ReleaseTimeDomain(1) ReleaseTimeDomain(2)]);
 yshift_row2 = yshift_row1+2+0.25;
 
-for i =1:nFPs
-    hplot_release(i) = plot(ts_release{i}, psth_release_correct{i}, 'color', FP_cols(i, :),  'linewidth', 1.5);
+for i =nFPs : nFPs+1
+    hplot_release(i) = plot(ts_release{i}, psth_release_correct{i}, 'color', FP_cols(nFPs+2-i, :),  'linewidth', 1.5);
     FRMax = max([FRMax max(psth_release_correct{i})]);
 %     disp(FRMax)
 end
@@ -497,12 +543,12 @@ ha_release_psth_error =  axes('unit', 'centimeters', 'position', [8.25 yshift_ro
 yshift_row3 = yshift_row2 +2+0.25;
 if  size(trialspxmat_premature_release, 2)>3
     plot(ts_premature_release, psth_premature_release, 'color', premature_col, 'linewidth', 1.5)
-%     FRMax = max([FRMax max(psth_premature_release)]);
+    FRMax = max([FRMax max(psth_premature_release)]);
 %     disp(FRMax)
 end
 if  size(trialspxmat_late_release, 2)>3
     plot(ts_late_release, psth_late_release, 'color', late_col, 'linewidth', 1.5)
-%     FRMax = max([FRMax max(psth_late_release)]);
+    FRMax = max([FRMax max(psth_late_release)]);
 %     disp(FRMax)
 end
 axis 'auto y'
@@ -563,8 +609,12 @@ for m =1:nFPs
         k = k+1;
     end
     n_start = n_start - nFP_i(m);
-
-    line(xx_all, yy_all, 'color', FP_cols(m, :), 'linewidth', 1);
+    if m < nFPs
+        line(xx_all, yy_all, 'color', FP_cols(1, :), 'linewidth', 1);
+    else
+        line(xx_all, yy_all, 'color', FP_cols(2, :), 'linewidth', 1);
+    end
+    % line(xx_all, yy_all, 'color', FP_cols(2, :), 'linewidth', 1);
     line(xxrt_all, yyrt_all, 'color', press_col, 'linewidth', 1.5);
     scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
 end
@@ -684,8 +734,8 @@ col3 = 13;
 width = 6*sum(RewardTimeDomain)/sum(PressTimeDomain);
 ha_poke =  axes('unit', 'centimeters', 'position', [col3 yshift_row1 width 2], 'nextplot', 'add', ...
     'xlim', [-RewardTimeDomain(1) RewardTimeDomain(2)]);
-for i =1:nFPs
-    plot(ts_reward_pokes{i}, psth_reward_pokes{i}, 'color', FP_cols(i, :), 'linewidth', 1.5);
+for i =nFPs : nFPs+1
+    plot(ts_reward_pokes{i}, psth_reward_pokes{i}, 'color', FP_cols(nFPs+2-i, :), 'linewidth', 1.5);
     FRMax = max([FRMax max(psth_reward_pokes{i})]);
 %     disp(FRMax)
 end
@@ -695,7 +745,7 @@ xlabel('Time from rewarded/nonrewarded poke (ms)')
 ylabel ('Spks per s')
 axis 'auto y'
 hline_poke = line([0 0], get(gca, 'ylim'), 'color', reward_col, 'linewidth', 1);
-% FRMax = max([FRMax max(psth_nonreward_pokes)]);
+FRMax = max([FRMax max(psth_nonreward_pokes)]);
 % disp(FRMax)
 % Raster plot
 
@@ -751,7 +801,12 @@ for m =1:nFPs
         end
         k = k+1;
     end
-    line(xx_all, yy_all, 'color', FP_cols(m,:), 'linewidth', 1)
+    if m < nFPs
+        line(xx_all, yy_all, 'color', FP_cols(1, :), 'linewidth', 1);
+    else
+        line(xx_all, yy_all, 'color', FP_cols(2, :), 'linewidth', 1);
+    end
+    % line(xx_all, yy_all, 'color', FP_cols(m,:), 'linewidth', 1)
     line(x_move_all, y_move_all, 'color', release_col, 'linewidth', 1)
     scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
 end
@@ -864,16 +919,16 @@ width = 6*sum(TriggerTimeDomain)/sum(PressTimeDomain);
 
 ha_trigger =  axes('unit', 'centimeters', 'position', [col4 yshift_row1 width 2], 'nextplot', 'add', ...
     'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)]);
-for i=1:nFPs
-    plot(ts_trigger_correct{i}, psth_trigger_correct{i}, 'color', FP_cols(i, :), 'linewidth', 1.5);
+for i=nFPs : nFPs+1
+    plot(ts_trigger_correct{i}, psth_trigger_correct{i}, 'color', FP_cols(nFPs+2-i, :), 'linewidth', 1.5);
     FRMax = max([FRMax max(psth_trigger_correct{i})]);
 %     disp(FRMax)
 end
-plot(ts_late_trigger, psth_late_trigger, 'color', late_col, 'linewidth', 1.5)
+plot(ts_late_trigger, psth_late_trigger, 'color', late_col, 'linewidth', .5)
 xlabel('Time from trigger stimulus (ms)')
 ylabel ('Spks per s')
 
-% FRMax = max([FRMax max(psth_late_trigger)]);
+FRMax = max([FRMax max(psth_late_trigger)]);
 % disp(FRMax)
 xlim = max(get(gca, 'xlim'));
 axis 'auto y'
@@ -931,7 +986,12 @@ for m =1:nFPs
         end
         k = k+1;
     end
-    line(xx_all, yy_all, 'color', FP_cols(m, :), 'linewidth', 1);
+    if m < nFPs
+        line(xx_all, yy_all, 'color', FP_cols(1, :), 'linewidth', 1);
+    else
+        line(xx_all, yy_all, 'color', FP_cols(2, :), 'linewidth', 1);
+    end
+    % line(xx_all, yy_all, 'color', FP_cols(m, :), 'linewidth', 1);
     line(xxrt_all, yyrt_all, 'color', release_col, 'linewidth', 1.5);
     scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
 end
@@ -1000,9 +1060,8 @@ FRrange = [0 FRMax*1.1];
 set(ha_press_psth, 'ylim', FRrange);
 line(ha_press_psth, [0 0], FRrange, 'color', press_col, 'linewidth', 1);
 
-for k = 1:length(MixedFPs)
-    line(ha_press_psth, [MixedFPs(k) MixedFPs(k)], get(gca, 'ylim'), 'color', trigger_col, 'linestyle', ':', 'linewidth', 1);
-end
+line(ha_press_psth, [MixedFPs(1) MixedFPs(1)], get(gca, 'ylim'), 'color', trigger_col, 'linestyle', ':', 'linewidth', 1);
+line(ha_press_psth, [MixedFPs(2) MixedFPs(2)], get(gca, 'ylim'), 'color', trigger_col, 'linestyle', ':', 'linewidth', 1);
 
 set(ha_press_psth_error, 'ylim', FRrange);
 line(ha_press_psth_error, [0 0], FRrange, 'color', press_col, 'linewidth', 1);
@@ -1020,32 +1079,27 @@ line(ha_trigger, [0 0], FRrange, 'color', trigger_col, 'linewidth', 1);
 %% plot spks
 col5=19.5;
 thiscolor = [0 0 0];
-
-if isfield(r.Units.SpikeTimes(ku), 'wave')
-    Lspk = size(r.Units.SpikeTimes(ku).wave, 2);
-    ha0=axes('unit', 'centimeters', 'position', [col5 yshift_row5 1.5 1.5], ...
-        'nextplot', 'add', 'xlim', [0 Lspk], 'ytick', -500:100:200, 'xticklabel', []);
-    set(ha0, 'nextplot', 'add');
-    ylabel('uV')
-    allwaves = r.Units.SpikeTimes(ku).wave/4;
-    if size(allwaves, 1)>100
-        nplot = randperm(size(allwaves, 1), 100);
-    else
-        nplot=1:size(allwaves, 1);
-    end
-    wave2plot = allwaves(nplot, :);
-    plot(1:Lspk, wave2plot, 'color', [0.8 .8 0.8]);
-    plot(1:Lspk, mean(allwaves, 1), 'color', thiscolor, 'linewidth', 2)
-    axis([0 Lspk min(wave2plot(:)) max(wave2plot(:))])
-    set (gca, 'ylim', [min(mean(allwaves, 1))*1.25 max(mean(allwaves, 1))*1.25])
-    axis tight
-    line([30 60], min(get(gca, 'ylim')), 'color', 'k', 'linewidth', 2.5)
-    PSTH.SpikeWave = mean(allwaves, 1);
+Lspk = size(r.Units.SpikeTimes(ku).wave, 2);
+ha0=axes('unit', 'centimeters', 'position', [col5 yshift_row5 1.5 1.5], ...
+    'nextplot', 'add', 'xlim', [0 Lspk], 'ytick', -500:100:200, 'xticklabel', []);
+set(ha0, 'nextplot', 'add');
+ylabel('uV')
+allwaves = r.Units.SpikeTimes(ku).wave/4;
+if size(allwaves, 1)>100
+    nplot = randperm(size(allwaves, 1), 100);
+else
+    nplot=1:size(allwaves, 1);
 end
-
+wave2plot = allwaves(nplot, :);
+plot(1:Lspk, wave2plot, 'color', [0.8 .8 0.8]);
+plot(1:Lspk, mean(allwaves, 1), 'color', thiscolor, 'linewidth', 2)
+axis([0 Lspk min(wave2plot(:)) max(wave2plot(:))])
+set (gca, 'ylim', [min(mean(allwaves, 1))*1.25 max(mean(allwaves, 1))*1.25])
+axis tight
+line([30 60], min(get(gca, 'ylim')), 'color', 'k', 'linewidth', 2.5)
+PSTH.SpikeWave = mean(allwaves, 1);
 % plot autocorrelation
 kutime = round(r.Units.SpikeTimes(ku).timings);
-kutime = kutime(kutime>0);
 kutime2 = zeros(1, max(kutime));
 kutime2(kutime)=1;
 [c, lags] = xcorr(kutime2, 100); % max lag 100 ms
@@ -1079,18 +1133,6 @@ if isfield(r.Units.SpikeTimes(ku), 'wave_mean')
     wave_form = r.Units.SpikeTimes(ku).wave_mean/4;
     PSTH.SpikeWaveMean = wave_form;
     n_chs = size(wave_form, 1); % number of channels
-    ch_selected = 1:n_chs;
-    if n_chs > 32
-        n_chs = 32;
-        ch_largest = r.Units.SpikeNotes(ku,1);
-        if ch_largest < n_chs/2
-            ch_selected = 1:n_chs;
-        elseif ch_largest > size(wave_form, 1) - n_chs/2
-            ch_selected = size(wave_form, 1)-n_chs+1:size(wave_form, 1);
-        else
-            ch_selected = ch_largest-15:ch_largest+16;
-        end
-    end
     n_sample = size(wave_form, 2); % sample size per spike
     n_cols = 8;
     n_rows = n_chs/n_cols;
@@ -1103,10 +1145,10 @@ if isfield(r.Units.SpikeTimes(ku), 'wave_mean')
 
     t_wave_all = [];
     wave_all = [];
-    for i = 1:n_rows
-        for j = 1:n_cols
+    for i =1:n_rows
+        for j=1:n_cols
             k = j+(i-1)*n_cols;
-            wave_k = wave_form(ch_selected(k), :)+v_sep*(i-1);
+            wave_k = wave_form(k, :)+v_sep*(i-1);
             t_wave = (1:n_sample)+n_sample*(j-1)+4;
             t_wave_all = [t_wave_all, t_wave, NaN];
             wave_all = [wave_all, wave_k, NaN];
@@ -1130,20 +1172,25 @@ uicontrol('Style','text','Units','centimeters','Position',[19 yshift_row7 5 1.5]
     'HorizontalAlignment','Left');
 fig_height = max([fig_height, yshift_row7+2]);
 % change the height of the figure
-set(gcf, 'position', [2 2 25 fig_height])
+set(hf, 'position', [2 2 25 fig_height])
 toc;
 
 if strcmpi(ToSave,'on')
     % save to a folder
-    anm_name        =     r.BehaviorClass.Subject;
-    session              =     r.BehaviorClass.Date;
+    if isfield(r, 'BehaviorClass')
+        anm_name        =     r.BehaviorClass.Subject;
+        session              =     r.BehaviorClass.Date;
+    else
+        anm_name = r.Meta(1).Subject;
+        session = strrep( r.Meta(1).DateTime(1:11), '-', '_');
+    end
     
     PSTH.ANM_Session = {anm_name, session};
-    thisFolder = fullfile(pwd, 'Fig');
+    thisFolder = fullfile(pwd, 'PSTH_Figs');
     if ~exist(thisFolder, 'dir')
         mkdir(thisFolder)
     end
-    tosavename2= fullfile(thisFolder, [anm_name '_' session '_Ch'  num2str(ch) '_Unit' num2str(unit_no) ]);
+    tosavename2= fullfile(thisFolder, [anm_brain '_' session '_Ch'  num2str(ch) '_Unit' num2str(unit_no) ]);
     print (gcf,'-dpng', tosavename2)
     
     % save PSTH as well save(psth_new_name, 'PSTHOut');
@@ -1161,4 +1208,16 @@ if strcmpi(ToSave,'on')
 %     
 %         toc
 %     end
+end
+
+function m = my_median_left(A)
+    sorted_A = sort(A);
+    n = length(sorted_A);
+    if mod(n, 2) == 1
+        m = sorted_A((n + 1) / 2);
+    else
+        m = sorted_A(n / 2);
+    end
+end
+
 end

@@ -48,12 +48,16 @@ for k =1:Ntrials
         events.AllPokeOuts = [events.AllPokeOuts t_trial+sd.RawEvents.Trial{k}.Events.Port1Out];
     end
 
-    if ~isnan(sd.RawEvents.Trial{k}.States.RewardDelivery_RapidReward(1))
-        events.Reward = [events.Reward t_trial+sd.RawEvents.Trial{k}.States.RewardDelivery_RapidReward'];
-    elseif ~isnan(sd.RawEvents.Trial{k}.States.RewardDelivery_MediumReward(1))
-        events.Reward = [events.Reward t_trial+sd.RawEvents.Trial{k}.States.RewardDelivery_MediumReward'];
-    elseif ~isnan(sd.RawEvents.Trial{k}.States.RewardDelivery_SlowReward(1))
-        events.Reward = [events.Reward t_trial+sd.RawEvents.Trial{k}.States.RewardDelivery_SlowReward'];
+    if isfield(sd.RawEvents.Trial{k}.States, 'RewardDelivery_RapidReward')
+        if ~isnan(sd.RawEvents.Trial{k}.States.RewardDelivery_RapidReward(1))
+            events.Reward = [events.Reward t_trial+sd.RawEvents.Trial{k}.States.RewardDelivery_RapidReward'];
+        elseif ~isnan(sd.RawEvents.Trial{k}.States.RewardDelivery_MediumReward(1))
+            events.Reward = [events.Reward t_trial+sd.RawEvents.Trial{k}.States.RewardDelivery_MediumReward'];
+        elseif ~isnan(sd.RawEvents.Trial{k}.States.RewardDelivery_SlowReward(1))
+            events.Reward = [events.Reward t_trial+sd.RawEvents.Trial{k}.States.RewardDelivery_SlowReward'];
+        end
+    else
+        events.Reward = [events.Reward t_trial+sd.RawEvents.Trial{k}.States.RewardDelivery'];
     end
 
 end;

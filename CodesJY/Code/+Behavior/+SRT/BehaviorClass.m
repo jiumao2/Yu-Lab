@@ -104,13 +104,17 @@ classdef BehaviorClass
             obj.FP = bdata.FPs;
 
             uFPs = unique(bdata.FPs);
-            if any(uFPs == 2000)
-                obj.MixedFP = [1500, 2000];
-            elseif any(uFPs == 750)
+            if   strcmp(obj.Protocol, 'ThreeFPsMixedBpod') || strcmp(obj.Protocol, 'ThreeFPsMixedBpodReInf1500ms') || strcmp(obj.Protocol, 'ThreeFPsMixedBpodReInf500ms') || strcmp(obj.Protocol,  'ThreeFPsMixedBpodProbe')
+                obj.MixedFP = [500 1000 1500];
+            elseif strcmp(obj.Protocol, 'ThreeFPsMixedBpod750_1250_1750')
+                obj.MixedFP = [750 1250 1750]; 
+            elseif strcmp(obj.Protocol, 'TwoFPsMixedBpodProbe') || strcmp(obj.Protocol, 'TwoFPsMixedBpod')
                 obj.MixedFP = [750 1500];
-            else
-                obj.MixedFP = [500 1000 1500] ; % default, subject to change though.
-            end;
+            elseif strcmp(obj.Protocol, 'TwoFPsMixedBpodProbeAdd250msFP')
+                obj.MixedFP = [250 750 1500];
+            elseif any(uFPs == 2000)
+                obj.MixedFP = [1500, 2000];
+            end
             obj.Outcome = [];
 
             for i =1:length(bdata.PressTime)

@@ -403,10 +403,10 @@ end;
 tab = table(Name, Session, Unit_Sorted, Chs, Ch_Units, Unit_Quality_Num, SignificantMod);
 aGoodName = ['PSTHOut_', PSTHOut.Name, '_' PSTHOut.Session '.csv'];
 writetable(tab, aGoodName)
-% open this table
-try
-    winopen(aGoodName)
-end;
+% % open this table
+% try
+%     winopen(aGoodName)
+% end;
 
 % Insert table
 table_data = [Unit_Sorted, Chs, Ch_Units, Unit_Quality_Num SignificantMod];

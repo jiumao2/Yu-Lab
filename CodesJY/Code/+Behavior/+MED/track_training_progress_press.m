@@ -1,4 +1,4 @@
-function [bout, b2] =track_training_progress_advanced(filename)
+function [bout, b2] =track_training_progress_press(filename)
 
 % Jianing Yu Oct 30 2019
 
@@ -68,16 +68,18 @@ n_reward = length(ind_reward);
 time_reward= Time_events(ind_reward, 1);
 
 %% find out successful presses
-ind_good_presses = [];
-ind_anticipatory_presses = [];
-
-for i=1:n_leverpress
-    if ~isempty(find(time_reward==time_leverrelease(i)))
-        ind_good_presses=[ind_good_presses i];
-    end;
-end;
-
-ind_bad_presses=setdiff([1:n_leverpress], ind_good_presses);  % bad presses include both early and premature release
+ind_good_presses = 1:n_leverpress;
+ind_bad_presses = [];
+% ind_good_presses = [];
+% ind_anticipatory_presses = [];
+% 
+% for i=1:n_leverpress
+%     if ~isempty(find(time_reward==time_leverrelease(i)))
+%         ind_good_presses=[ind_good_presses i];
+%     end;
+% end;
+% 
+% ind_bad_presses=setdiff([1:n_leverpress], ind_good_presses);  % bad presses include both early and premature release
 
 %% find out premature releases
 time_premature= Time_events(Time_events(:, 2)==50, 1);
@@ -117,33 +119,33 @@ reaction_time = zeros(1, n_tone);
 ind_tone_late = [];
 ind_press_rt =[]; % index to track which presses trigger tone
 
-for i = 1:n_tone
-    if ~isempty(time_leverrelease(find(time_leverrelease>=time_tone(i), 1, 'first')))
-        i_release_time = time_leverrelease(find(time_leverrelease>=time_tone(i), 1, 'first'));
-        reaction_time(i) = 1000*(i_release_time-time_tone(i));
-        if isempty(find(i_release_time == time_late_lever_release))  % not a late release
-            ind_tone_late(i)=0;
-        else
-            ind_tone_late(i)=1;  % lever releases were late in response to these tones
-        end;
-    else
-        reaction_time(i) = NaN;
-        ind_tone_late(i)=NaN;
-    end;
-end;
+% for i = 1:n_tone
+%     if ~isempty(time_leverrelease(find(time_leverrelease>=time_tone(i), 1, 'first')))
+%         i_release_time = time_leverrelease(find(time_leverrelease>=time_tone(i), 1, 'first'));
+%         reaction_time(i) = 1000*(i_release_time-time_tone(i));
+%         if isempty(find(i_release_time == time_late_lever_release))  % not a late release
+%             ind_tone_late(i)=0;
+%         else
+%             ind_tone_late(i)=1;  % lever releases were late in response to these tones
+%         end;
+%     else
+%         reaction_time(i) = NaN;
+%         ind_tone_late(i)=NaN;
+%     end;
+% end;
 
 % find out FP requirement:
 
 FPs=[];
-try
-    fp_events=Behavior.MED.med_to_tec_fp(filename, 100);
-    
-    if size(fp_events, 1) >= length(time_leverpress)  % if this checks out, foreperiod requirement is documented.
-        FPs=fp_events(1: length(time_leverpress), 2)*10;
-    else
-        FPs=NaN*ones(length(time_leverpress), 1);
-    end;
-end;
+% try
+%     fp_events=Behavior.MED.med_to_tec_fp(filename, 100);
+% 
+%     if size(fp_events, 1) >= length(time_leverpress)  % if this checks out, foreperiod requirement is documented.
+%         FPs=fp_events(1: length(time_leverpress), 2)*10;
+%     else
+%         FPs=NaN*ones(length(time_leverpress), 1);
+%     end;
+% end;
 
 figure(10); clf(10)
 set(gcf, 'unit', 'centimeters', 'position',[2 2 20 18], 'paperpositionmode', 'auto' )
@@ -151,9 +153,7 @@ set(gcf, 'unit', 'centimeters', 'position',[2 2 20 18], 'paperpositionmode', 'au
 ha1 = subplot(2, 5, [1 2 3 4 ]);
 set(gca, 'nextplot', 'add', 'ylim', [0 2800], 'xlim', [0 3600])
 line([time_leverlighton time_leverlighton], [0 500], 'color', 'b')
-if ~isempty(time_leverlightoff)
-    line([time_leverlightoff time_leverlightoff], [0 500], 'color', 'b', 'linestyle', ':')
-end
+% line([time_leverlightoff time_leverlightoff], [0 500], 'color', 'b', 'linestyle', ':')
 
 good_col=[0 1 0]*0.75;
 
@@ -245,6 +245,12 @@ bout.ReactionTime    =      reaction_time;
 bout.TimeTone        =      time_tone';           % trigger signal for release 
 bout.IndToneLate     =      ind_tone_late;
 bout.FPs             =      FPs';
+
+% test leverpress first tone
+if bout.TimeTone(1)<bout.PressTime(1)
+    bout.TimeTone = bout.TimeTone(2:end);
+    disp('Delete the first tonetime without press!')
+end
 
 savename = ['B_' upper(bout.Metadata.SubjectName) '_' strrep(bout.Metadata.Date, '-', '_') '_' strrep(bout.Metadata.StartTime, ':', '')];
 b=bout;

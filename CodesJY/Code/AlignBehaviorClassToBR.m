@@ -29,18 +29,39 @@ else
     CueBehavior = ones(1, myclass.TrialNum);
 end
 
+PressIndexEphys    =               ones(1, length(PressEphys));
 % Start to map
 IndMatched                                                       =             findseqmatch(PressBehavior, PressEphys);
-PressEphysIndex2Behavior                              =            PressIndex(IndMatched); %
+IndNaN                                                              =             find(isnan(IndMatched));
+IndValid                                                             =              find(~isnan(IndMatched));
 
-EventOut.OutcomeEphys                                  =           PerformanceBehavior(IndMatched);
-EventOut.CueEphys                                          =           [1:length(PressEphys);  CueBehavior(IndMatched)]';
-EventOut.FP_Ephys                                          =           FP(IndMatched)';
+PressEphysIndex                                              =              [1:length(PressEphys)]; % this is 1 to the total number of press recorded in ephys
+PressEphysIndex(IndNaN)                                 =            NaN;   % only for these presses we can find matching ones in behavior. some ephys-press cannot be mapped. 
+PressEphysIndex(IndValid)                                 =            PressIndex(IndMatched(IndValid));   % only for these presses we can find matching ones in behavior. some ephys-press cannot be mapped. 
+PressEphysIndex2Behavior                              =            PressEphysIndex; %
+% Need to figure out these
+
+PerformanceEphys                                            =           cell(1, length(PressEphys)); % each press corresponds to a behavioral outcome
+PerformanceEphys(IndNaN)                              =           repmat({'NaN'}, 1, length(IndNaN));
+PerformanceEphys(IndValid)                              =           PerformanceBehavior(IndMatched(IndValid));
+
+CueEphys                                                           =           zeros(1, length(PressEphys)); % each press corresponds to a behavioral outcome
+CueEphys(IndNaN)                                            =           NaN;
+CueEphys(IndValid)                                            =           CueBehavior(IndMatched(IndValid));
+
+FPEphys                                                           =           zeros(1, length(PressEphys)); % each press corresponds to a behavioral outcome
+FPEphys(IndNaN)                                            =           NaN;
+if ~isempty(FP)
+FPEphys(IndValid)                                            =           FP(IndMatched(IndValid));
+end
+EventOut.OutcomeEphys                                  =          PerformanceEphys;
+EventOut.CueEphys                                          =           [PressIndexEphys;  CueEphys]';
+EventOut.FP_Ephys                                          =           FPEphys;
 
 % if for some reasons, there is no trigger events in EventOut, we can fill
 % it in
 TriggerTimeMapped = [];
-for i =1: length(PressEphys)
+for i = 1:length(PressEphys)
     iPressTimeEphys             =           PressEphys(i);
     iPressTimeBehavior         =           PressBehavior(PressEphysIndex2Behavior(i));
     if i<length(PressEphys)
@@ -79,21 +100,25 @@ set(gca, 'ylim', [4 6])
 ylabel('Release')
 
 subplot(2, 1, 2)
-plot(TriggerEphys, 5, 'ko');
+if ~isempty(TriggerEphys)
+    plot(TriggerEphys, 5, 'ko');
+end
 hold on
 line([TriggerTimeMapped' TriggerTimeMapped'], [4 6]', 'color', 'm')
 set(gca, 'ylim', [4 6])
 ylabel('Trigger')
 
-IndTrigger2Keep = []; % this is to get rid of trigger events that are not really trigger events (e.g., correct release)
-minD= ones(1, length(TriggerTimeMapped));
-for k =1:length(TriggerTimeMapped)
-    [~, ind_min]= min(abs(TriggerTimeMapped(k) - TriggerEphys));
-    IndTrigger2Keep = [IndTrigger2Keep ind_min];
-    minD(k) = TriggerTimeMapped(k) - TriggerEphys(ind_min);
-    sprintf('Distance is %2.2f ms', minD(k))
+if ~isempty(TriggerEphys)
+    IndTrigger2Keep = []; % this is to get rid of trigger events that are not really trigger events (e.g., correct release)
+    minD= ones(1, length(TriggerTimeMapped));
+    for k =1:length(TriggerTimeMapped)
+        [~, ind_min]= min(abs(TriggerTimeMapped(k) - TriggerEphys));
+        IndTrigger2Keep = [IndTrigger2Keep ind_min];
+        minD(k) = TriggerTimeMapped(k) - TriggerEphys(ind_min);
+        sprintf('Distance is %2.2f ms', minD(k))
+    end
+    TriggerEphys = TriggerEphys(IndTrigger2Keep);
 end
-TriggerEphys = TriggerEphys(IndTrigger2Keep);
 
 minDRelease = ones(1, length(ReleaseTimeMapped));
 for k =1:length(ReleaseTimeMapped)
@@ -103,7 +128,9 @@ end
 
 figure; 
 subplot(2, 1, 1)
-histogram(minD)
+if ~isempty(TriggerEphys)
+    histogram(minD);
+end
 xlabel('Time difference between Blackrock trigger and MED trigger');
 ylabel('Count')
 subplot(2, 1, 2)
@@ -111,6 +138,13 @@ histogram(minDRelease)
 xlabel('Time difference between Blackrock release and MED release');
 ylabel('Count')
 
-TriggerDur = 250; % 250 ms trigger events
-EventOut.Onset{strcmp(EventOut.EventsLabels, 'Trigger')}=TriggerEphys;
-EventOut.Offset{strcmp(EventOut.EventsLabels, 'Trigger')}=TriggerEphys+TriggerDur;
+if isempty(TriggerEphys)
+    EventOut.EventsLabels{end+1}='Trigger';
+    EventOut.Onset{end+1}=TriggerTimeMapped;
+    TriggerDur = 250; % 250 ms trigger events
+    EventOut.Offset{end+1}=TriggerTimeMapped+TriggerDur;
+else
+    TriggerDur = 250; % 250 ms trigger events
+    EventOut.Onset{strcmp(EventOut.EventsLabels, 'Trigger')}=TriggerEphys;
+    EventOut.Offset{strcmp(EventOut.EventsLabels, 'Trigger')}=TriggerEphys+TriggerDur;
+end

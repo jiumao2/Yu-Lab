@@ -1,8 +1,13 @@
-function EventOut = UpdatePokeFromBpodEvents(EventOut, BpodEvents)
+function EventOut = UpdatePokeFromBpodEventsMedLick(EventOut, BpodEvents)
 % revised 4/2/2023 Jianing Yu
 % Update Poke events in EventOut based on BpodEvents
 
 N_events = length(EventOut.EventsLabels);
+% bad poke in bpod
+% events.BadPokeInFirst = bad_pokein;
+% events.BadPokeOutFirst = bad_pokeout;
+badpokein_time_bpod = BpodEvents.BadPokeInFirst*1000;
+badpokeout_time_bpod = BpodEvents.BadPokeOutFirst*1000;
 
 % all pokes in bpod
 allpokein_time_bpod = BpodEvents.AllPokeIns*1000;
@@ -19,20 +24,22 @@ seqson = press_ephys;
 % seqmom = press_ephys;
 % seqson = press_bpod;
 
-seqmom(seqmom>seqmom(end)) = [];
+man = 0;
+toprint = 0;
+toprintname = [];
 
-if length(seqson)>length(seqmom)
-    idx_out = findseqmatch(seqson,seqmom);
-    press_ephys_new = seqson(idx_out);
-    press_ephys_new_toBpod = seqmom;
-elseif length(seqson)>=3
-    Indout = findseqmatch(seqmom, seqson);
+if isempty(seqson)
+    []
+end;
+
+if length(seqson)>=3
+    Indout = findseqmatchrev(seqmom, seqson, man, toprint, toprintname);
     press_ephys_new                 =   seqson(~isnan(Indout)); % press in ephys not including nan
     press_ephys_new_toBpod    =   seqmom(Indout(~isnan(Indout)));
 else
     press_ephys_new                    =            [];
     press_ephys_new_toBpod      =             [];
-end
+end;
 
 % seqmom2      =       BpodEvents.Reward(1, :)*1000;
 % seqson2         =       EventOut.Onset{5};
@@ -55,9 +62,13 @@ reward_out_fromBpod = reward_out_fromBpod(reward_out_fromBpod>0 & reward_out_fro
 EventOut.Onset{strcmp(EventOut.EventsLabels, 'Poke')} = allpokein_time_mapped2blackrock;
 EventOut.Offset{strcmp(EventOut.EventsLabels, 'Poke')} = allpokeout_time_mapped2blackrock;
 
-% EventOut.Onset{strcmp(EventOut.EventsLabels, 'Valve')} = reward_in_fromBpod;
-% EventOut.Offset{strcmp(EventOut.EventsLabels, 'Valve')} = reward_out_fromBpod;
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'Valve')} = reward_in_fromBpod;
+EventOut.Offset{strcmp(EventOut.EventsLabels, 'Valve')} = reward_out_fromBpod;
 
+% add bad poke (may not be that useful)
+EventOut.EventsLabels{N_events+1} = 'BadPoke';
+EventOut.Onset{N_events+1} = to_align(badpokein_time_bpod, press_ephys_new_toBpod, press_ephys_new);
+EventOut.Offset{N_events+1} = to_align(badpokeout_time_bpod, press_ephys_new_toBpod, press_ephys_new);
 
 function alignout = to_align(t_domain1, t_domain1_ref, t_domain2_ref)
 % map time in domain 1 to time in domain 2 using the reference time
