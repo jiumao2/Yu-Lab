@@ -1,0 +1,13 @@
+{
+    "_schemaVersion": "1.0.0",
+    "DANT_OutputToCSV":
+    {
+       "inputs":
+       [
+          {"name":"Output", "kind":"required", "type":"struct"},
+          {"name":"spikeInfo", "kind":"required", "type":"struct"},
+          {"name":"path_csv", "kind":"required", "type":"char"}
+       ]
+    }
+
+}

@@ -672,5 +672,51 @@
          {"name": "r", "kind": "required", "type": "struct"},
          {"name": "unit", "kind": "required", "type": "numeric"}
       ]
+   },
+
+   "plotExtraTriggerResponse":
+   {
+      "inputs":
+      [
+         {"name": "r", "kind": "required", "type": "struct"},
+         {"name": "unit", "kind": "required", "type": "numeric"}
+      ]
+   },
+
+   "plotPureTriggerResponse":
+   {
+      "inputs":
+      [
+         {"name": "r", "kind": "required", "type": "struct"},
+         {"name": "unit", "kind": "required", "type": "numeric"},
+         {"name": "pure_trigger_times", "kind": "required", "type": "numeric"},
+         {"name": "trigger_types", "kind": "required", "type": "numeric"}
+      ]
+   },
+
+   "plotMatchingResults":
+   {
+      "inputs":
+      [
+         {"name": "seq_mom", "kind": "required", "type": "struct"},
+         {"name": "seq_son", "kind": "required", "type": "numeric"},
+         {"name": "idx_match", "kind": "required", "type": "numeric"}
+      ]
+   },
+
+   "clusterID2Mat":
+   {
+      "inputs":
+      [
+         {"name": "idx_clusters", "kind": "required", "type": "numeric"}
+      ]
+   },
+
+   "clusterMat2ID":
+   {
+      "inputs":
+      [
+         {"name": "cluster_matrix", "kind": "required", "type": "numeric"}
+      ]
    }
 }

@@ -32,6 +32,7 @@ t_post_border = ceil(t_median(end));
 t_unwarped = t_pre:binwidth:t_median(end)+t_post+t_post_border;
 t_edges_unwarped = [t_unwarped-binwidth./2, t_unwarped(end)+binwidth./2];
 
+% calculate spike counts in each bin
 spike_counts = NaN(n_neurons, n_trial, length(t_unwarped));
 for k = 1:n_trial
     for j = 1:n_neurons
@@ -41,10 +42,12 @@ for k = 1:n_trial
 end
 assert(all(~isnan(spike_counts(:))));
 
+% time warping
 spike_counts_warped = NaN(n_neurons, n_trial, length(t_warped));
 for k = 1:n_trial
     event_time_this = event_times(k, :);
 
+    % get the warped times for each bin
     t_points_to_warp = event_time_this - event_time_this(1);
     t_dest = t_median;
     t_new = t_unwarped;
@@ -64,22 +67,12 @@ for k = 1:n_trial
         error('t_new is too short!');
     end
     
+    % warped the spike times to the new bins
     for i_unit = 1:n_neurons
-        spike_counts_warped_this = zeros(1, length(t_warped));
-        for j = 1:length(spike_counts_warped_this)
-            i = find(t_new >= t_warped(j), 1);
-            if t_new(i) == t_warped(j)
-                spike_counts_warped_this(j) = spike_counts(i_unit,k,i);
-            elseif t_new(i) > t_warped(j)
-                spike_counts_warped_this(j) = interp1(...
-                    [t_new(i-1), t_new(i)],...
-                    [spike_counts(i_unit,k,i-1), spike_counts(i_unit,k,i)],...
-                    t_warped(j));
-            end
-        end
-    
-        spike_counts_warped(i_unit, k, :) = spike_counts_warped_this;
+        spike_counts_warped(i_unit, k, :) = interp1(t_new, squeeze(spike_counts(i_unit,k,:)), t_warped, 'linear');
     end
+
+%     fprintf('%d / %d trials done!\n', k, n_trial);
 end
 assert(all(~isnan(spike_counts_warped(:))));
 
@@ -89,7 +82,7 @@ for k = 1:n_neurons
 end
 t_peth = t_warped;
 
-if nargout >= 4
+if nargout >= 5
     ci = cell(1, n_neurons);
     for k = 1:n_neurons
         ci{k} = bootci(n_boot,...
