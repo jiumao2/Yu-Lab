@@ -718,5 +718,36 @@
       [
          {"name": "cluster_matrix", "kind": "required", "type": "numeric"}
       ]
+   },
+
+   "checkModulationShuffling":
+   {
+      "inputs":
+      [
+         {"name": "spike_times", "kind": "required", "type": "numeric"},
+         {"name": "event_times", "kind": "required", "type": "numeric"},
+         {"name": "t_pre", "kind": "optional", "type": "numeric"},
+         {"name": "t_post", "kind": "optional", "type": "numeric"},
+         {"name": "binwidth", "kind": "optional", "type": "numeric"}
+      ]
+   },
+
+   "getResponseToTriggerPlain":
+   {
+      "inputs":
+      [
+         {"name": "spike_times", "kind": "required", "type": "numeric"},
+         {"name": "trigger_times", "kind": "required", "type": "numeric"},
+         {"name": "t_pre", "kind": "namevalue", "type": "numeric", "default": -200},
+         {"name": "t_post", "kind": "namevalue", "type": "numeric", "default": 600},
+         {"name": "t_step", "kind": "namevalue", "type": "numeric", "default": 10},
+         {"name": "bin_width", "kind": "namevalue", "type": "numeric", "default": 50},
+         {"name": "alpha", "kind": "namevalue", "type": "numeric", "default": 0.05},
+         {"name": "n_consecutive", "kind": "namevalue", "type": "integer", "default": 5},
+         {"name": "min_n_trial", "kind": "namevalue", "type": "integer", "default": 10},
+         {"name": "algorithm", "kind": "namevalue", "type": "choices={'ranksum','permutation_test','ttest'}", "default": "ranksum"},
+         {"name": "response_type", "kind": "namevalue", "type": "choices={'increased','decreased','both'}", "default": "both"}
+      ]
    }
+   
 }
