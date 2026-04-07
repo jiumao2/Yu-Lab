@@ -728,7 +728,8 @@
          {"name": "event_times", "kind": "required", "type": "numeric"},
          {"name": "t_pre", "kind": "optional", "type": "numeric"},
          {"name": "t_post", "kind": "optional", "type": "numeric"},
-         {"name": "binwidth", "kind": "optional", "type": "numeric"}
+         {"name": "binwidth", "kind": "optional", "type": "numeric"},
+         {"name": "N_shuffle", "kind": "optional", "type": "numeric"}
       ]
    },
 
@@ -747,6 +748,30 @@
          {"name": "min_n_trial", "kind": "namevalue", "type": "integer", "default": 10},
          {"name": "algorithm", "kind": "namevalue", "type": "choices={'ranksum','permutation_test','ttest'}", "default": "ranksum"},
          {"name": "response_type", "kind": "namevalue", "type": "choices={'increased','decreased','both'}", "default": "both"}
+      ]
+   },
+
+   "plotMatchingResults":
+   {
+      "inputs":
+      [
+         {"name": "seq_mom", "kind": "required", "type": "numeric"},
+         {"name": "seq_son", "kind": "required", "type": "numeric"},
+         {"name": "idx_match", "kind": "required", "type": "numeric"}
+      ]
+   },
+
+   "plotResponseLatency":
+   {
+      "inputs":
+      [
+         {"name": "spike_times", "kind": "required", "type": "numeric"},
+         {"name": "event_times", "kind": "required", "type": "numeric"},
+         {"name": "latency", "kind": "required", "type": "numeric"},
+         {"name": "response_type", "kind": "namevalue", "type": "choices={'increased','decreased','both'}"},
+         {"name": "t_pre", "kind": "namevalue", "type": "numeric"},
+         {"name": "t_post", "kind": "namevalue", "type": "numeric"},
+         {"name": "binwidth", "kind": "namevalue", "type": "numeric"}
       ]
    }
    

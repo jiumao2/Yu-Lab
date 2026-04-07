@@ -38,6 +38,7 @@ if nargin < 3
     binwidth = 1;
 end
 
+spike_times = sort(spike_times);
 n_bins = floor(window/binwidth)+1;
 auto_corr_right = zeros(1, n_bins); % the right side of auto_corr
 
@@ -50,7 +51,7 @@ while true
     if isempty(i_bin)
         break
     end
-
+    
     counts = accumarray(i_bin(:), ones(length(i_bin),1))';
 
     auto_corr_right(1:length(counts)) = auto_corr_right(1:length(counts)) + counts;

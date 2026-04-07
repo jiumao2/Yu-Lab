@@ -1,4 +1,4 @@
-function p = checkModulationShuffling(spike_times, event_times, t_pre, t_post, binwidth)
+function p = checkModulationShuffling(spike_times, event_times, t_pre, t_post, binwidth, N_shuffle)
     if nargin < 3
         t_pre = -1000;
     end
@@ -11,9 +11,11 @@ function p = checkModulationShuffling(spike_times, event_times, t_pre, t_post, b
         binwidth = 50;
     end
 
-    t_edges = t_pre:binwidth:t_post;
+    if nargin < 6
+        N_shuffle = 1000;
+    end
 
-    N_shuffle = 1000;
+    t_edges = t_pre:binwidth:t_post;
 
     sc = zeros(length(event_times), length(t_edges)-1);
     for k = 1:length(event_times)

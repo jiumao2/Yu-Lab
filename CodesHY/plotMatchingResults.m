@@ -22,7 +22,7 @@ plot(ax, seq_son_aligned, 1, 'bo');
 plot(ax, x_plot, y_plot, 'k-', 'LineWidth', 0.5);
 
 ylim(ax, [0.8, 2.2]);
-EasyPlot.setYTicksAndLabels(ax, [1,2], {'SeqSon', 'SeqMon'});
+EasyPlot.setYTicksAndLabels(ax, [1,2], {'SeqSon', 'SeqMom'});
 EasyPlot.cropFigure(fig);
 
 EasyPlot.set(ax, 'Units', 'Normalized');
