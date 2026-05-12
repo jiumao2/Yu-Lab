@@ -1,11 +1,21 @@
-function ind_out = findNearestPoint(seq, p)
+function ind_out = findNearestPoint(seq, p, ordered)
 % seq: 1xn double
 % p: 1xm double
+
+if nargin < 3
+    ordered = false;
+end
 
 ind_out = zeros(size(p));
 for ind_p = 1:length(p)
     p_this = p(ind_p);
-    l = 1;
+
+    if ordered && ind_p > 1
+        l = ind_out(ind_p-1);
+    else
+        l = 1;
+    end
+
     r = length(seq);
     m = round((l+r)/2);
     

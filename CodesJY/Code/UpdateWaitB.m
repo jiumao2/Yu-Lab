@@ -25,7 +25,7 @@ for i =1:length(b.PressTime)
             b.FPs(i) = FP2(end);
         end;
     else
-        b.FPs(i) = FP2(IndFP2==i);
+        b.FPs(i) = FP2(find(IndFP2==i, 1));
     end;
     
 end; 
