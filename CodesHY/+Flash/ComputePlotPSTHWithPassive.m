@@ -1,8 +1,8 @@
-function PSTH = ComputePlotPSTH(r, PSTHOut, ku, varargin)
+function PSTH = ComputePlotPSTHWithPassive(r, PSTHOut, ku, varargin)
 
 % Jianing Yu 5/8/2023
-% For plotting PSTHs under SRT condition.
-% Extracted from SRTSpikes
+% For plotting PSTHs under Flash 2x2 condition.
+% Extracted from SRTSpikes and adapted to trigger-type grouping.
 
 % Modified by Yue Huang on 6/26/2023
 % Change the way of making raster plots to run faster
@@ -10,6 +10,8 @@ function PSTH = ComputePlotPSTH(r, PSTHOut, ku, varargin)
 % close all;
 PSTH.UnitID       = ku;
 ToSave = 'on';
+PassiveEvents = [];
+PassiveTimeDomain = [300 700];
 if nargin>2
     for i=1:2:size(varargin,2)
         switch varargin{i}
@@ -23,6 +25,10 @@ if nargin>2
                 RewardTimeDomain = varargin{i+1};
             case 'TriggerTimeDomain'
                 TriggerTimeDomain = varargin{i+1};
+            case 'PassiveEvents'
+                PassiveEvents = varargin{i+1};
+            case 'PassiveTimeDomain'
+                PassiveTimeDomain = varargin{i+1};
             case 'ToSave'
                 ToSave = varargin{i+1};
             otherwise
@@ -36,15 +42,23 @@ press_col = [5 191 219]/255;
 trigger_col = [242 182 250]/255;
 release_col = [87, 108, 188]/255;
 reward_col = [164, 208, 164]/255;
-MixedFPs = PSTHOut.Presses.FP{1};
-nFPs = length(MixedFPs);
-if nFPs == 2
-    FP_cols = [192, 127, 0; 76, 61, 61]/255;
+taskCodes = PSTHOut.TaskTypes.Codes;
+taskLabels = PSTHOut.TaskTypes.Labels;
+toneTimes = PSTHOut.TaskTypes.ToneTimes;
+if isfield(PSTHOut.TaskTypes, 'ConditionFPs')
+    conditionFPs = PSTHOut.TaskTypes.ConditionFPs;
 else
-    FP_cols = [255, 217, 90; 192, 127, 0; 76, 61, 61]/255;
+    conditionFPs = repmat(PSTHOut.TaskTypes.FixedFP, size(taskCodes));
 end
+nFPs = length(taskCodes);
+FP_cols = [0.25 0.25 0.25; 0.16 0.52 0.78; 0.95 0.58 0.22; 0.45 0.33 0.75];
 premature_col = [0.9 0.4 0.1];
 late_col = [0.6 0.6 0.6];
+extra_tone_shade_col = [0.66 0.78 0.92];
+extra_tone_alpha = 0.30;
+reward_ref_lw = 0.8;
+reward_move_lw = 0.8;
+passive_cols = [35, 139, 69; 95, 95, 95]/255;
 printsize = [2 2 25 25];
 
 %% PSTHs for press and release
@@ -118,7 +132,7 @@ premature_duration_presses      =             premature_duration_presses(ind);
 PSTH.PrematurePresses =  {psth_premature_press, ts_premature_press,...
     trialspxmat_premature_press, tspkmat_premature_press,...
     t_premature_presses, premature_duration_presses, FPs_premature_presses};
-PSTH.PrematureLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'HoldDuration', 'FP'};
+PSTH.PrematureLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'HoldDuration', 'TaskType'};
 
 
 % premature release PSTH
@@ -155,7 +169,7 @@ end
 
 PSTH.LatePresses = {psth_late_press, ts_late_press, trialspxmat_late_press,...
     tspkmat_late_press, t_late_presses,late_duration_presses,FPs_late_presses};
-PSTH.LateLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'HoldDuration', 'FP'};
+PSTH.LateLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'HoldDuration', 'TaskType'};
 
 % late release PSTH
 if length(PSTHOut.Releases.Time) >= nFPs+2
@@ -225,7 +239,7 @@ FP_triggers_late=FP_triggers_late(ind);
 psth_late_trigger = smoothdata (psth_late_trigger, 'gaussian', 5);
 PSTH.TriggersLate =  {psth_late_trigger, ts_late_trigger, trialspxmat_late_trigger,...
     tspkmat_late_trigger, t_triggers_late, RT_triggers_late, FP_triggers_late};
-PSTH.TriggerLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT', 'FP'};
+PSTH.TriggerLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT', 'TaskType'};
 for i =1:nFPs
     t_triggers_correct{i} = PSTHOut.Triggers.Time{i};
     RT_triggers_correct{i} = PSTHOut.Triggers.RT{i};
@@ -235,7 +249,31 @@ for i =1:nFPs
     RT_triggers_correct{i} = RT_triggers_correct{i}(ind);
     psth_trigger_correct{i} = smoothdata (psth_trigger_correct{i}, 'gaussian', 5);
     PSTH.Triggers{i} =  {psth_trigger_correct{i}, ts_trigger_correct{i}, trialspxmat_trigger_correct{i},...
-        tspkmat_trigger_correct{i}, t_triggers_correct{i}, RT_triggers_correct{i}, MixedFPs(i)};
+        tspkmat_trigger_correct{i}, t_triggers_correct{i}, RT_triggers_correct{i}, taskCodes(i)};
+end
+
+% Passive tone and flash PSTHs are used for plotting only.
+passiveLabels = {};
+passivePSTH = {};
+passiveTs = {};
+passiveTrialspxmat = {};
+passiveTspkmat = {};
+passiveEventTimes = {};
+passiveFRMax = 3;
+params_passive.pre = PassiveTimeDomain(1);
+params_passive.post = PassiveTimeDomain(2);
+params_passive.binwidth = 20;
+if ~isempty(PassiveEvents) && isfield(PassiveEvents, 'Labels') && isfield(PassiveEvents, 'Time')
+    for i = 1:length(PassiveEvents.Labels)
+        if isempty(PassiveEvents.Time{i})
+            continue
+        end
+        [passivePSTH{end+1}, passiveTs{end+1}, passiveTrialspxmat{end+1}, passiveTspkmat{end+1}, passiveEventTimes{end+1}] = ...
+            Spikes.jpsth(r.Units.SpikeTimes(ku).timings, PassiveEvents.Time{i}, params_passive);
+        passivePSTH{end} = smoothdata(passivePSTH{end}, 'gaussian', 5);
+        passiveLabels{end+1} = PassiveEvents.Labels{i};
+        passiveFRMax = max([passiveFRMax max(passivePSTH{end})]);
+    end
 end
 
 %% Plot raster and spks
@@ -312,8 +350,13 @@ for m =1:nFPs
         xx = t_mat(ap_mat(:, i)==1);
         yy1 = [0 0.8]-k;
         yy2 = [0 1]-k;
-        xxrt = irt+MixedFPs(m);
-        plotshaded([0 MixedFPs(m)],[-k -k; 1-k 1-k], trigger_col);
+        fpThis = conditionFPs(m);
+        xxrt = irt + fpThis;
+        plotshaded([0 fpThis],[-k -k; 1-k 1-k], trigger_col);
+        if ~isnan(toneTimes(m))
+            patch([0 toneTimes(m) toneTimes(m) 0], ...
+                [-k -k 1-k 1-k], extra_tone_shade_col, 'FaceAlpha', extra_tone_alpha, 'EdgeColor', 'none');
+        end
 
         if isempty(find(isnan(ap_mat(:, i)), 1))
             for i_xx = 1:length(xx)
@@ -364,9 +407,14 @@ for i =1:size(ap_mat, 2)
     yy1 = [0 0.8]-k;
     yy2 = [0 1]-k;
     xxrt = ipredur;
-    % plot trigger stimulus FPs_premature_presses
-    itrigger = FPs_premature_presses(i);
-    plotshaded([0 itrigger], [-k -k; 1-k 1-k], trigger_col);
+    iCond = FPs_premature_presses(i);
+    itrigger = toneTimes(iCond);
+    fpThis = conditionFPs(iCond);
+    plotshaded([0 fpThis], [-k -k; 1-k 1-k], trigger_col);
+    if ~isnan(itrigger)
+        patch([0 itrigger itrigger 0], ...
+            [-k -k 1-k 1-k], extra_tone_shade_col, 'FaceAlpha', extra_tone_alpha, 'EdgeColor', 'none');
+    end
 
     for i_xx = 1:length(xx)
         xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
@@ -415,9 +463,14 @@ for i =1:size(ap_mat, 2)
     yy1 = [0 0.8]-k;
     yy2 = [0 1]-k;
     xxrt = ilatedur;
-    % plot trigger stimulus FPs_premature_presses
-    itrigger = FPs_late_presses(i);
-    plotshaded([0 itrigger], [-k -k; 1-k 1-k], trigger_col);
+    iCond = FPs_late_presses(i);
+    itrigger = toneTimes(iCond);
+    fpThis = conditionFPs(iCond);
+    plotshaded([0 fpThis], [-k -k; 1-k 1-k], trigger_col);
+    if ~isnan(itrigger)
+        patch([0 itrigger itrigger 0], ...
+            [-k -k 1-k 1-k], extra_tone_shade_col, 'FaceAlpha', extra_tone_alpha, 'EdgeColor', 'none');
+    end
 
     for i_xx = 1:length(xx)
         xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
@@ -487,7 +540,7 @@ for i =1:nFPs
 %     disp(FRMax)
 end
 axis 'auto y'
-hline_release = line([0 0], get(gca, 'ylim'), 'color', press_col, 'linewidth', 1);
+hline_release = line([0 0], get(gca, 'ylim'), 'color', release_col, 'linewidth', 1);
 xlabel('Time from release (ms)')
 ylabel ('Spks per s')
 
@@ -528,7 +581,6 @@ for m =1:nFPs
     ap_mat = trialspxmat_release{m};
     t_mat = tspkmat_release{m};
     rt = rt_releases_sorted{m};
-    mFP = MixedFPs(m);
     xx_all = [];
     yy_all = [];
     xxrt_all = [];
@@ -542,13 +594,14 @@ for m =1:nFPs
         yy2 = [0 1]-k;
 
         % paint foreperiod
-        plotshaded([-irt-mFP -irt]-n_start, [-k -k; 1-k 1-k], trigger_col);
+        fpThis = conditionFPs(m);
+        plotshaded([-irt-fpThis -irt]-n_start, [-k -k; 1-k 1-k], trigger_col);
 
         for i_xx = 1:length(xx)
             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
             yy_all = [yy_all, yy1, NaN];
         end
-        xxrt_all = [xxrt_all, -irt-mFP, -irt-mFP, NaN];
+        xxrt_all = [xxrt_all, -irt-fpThis, -irt-fpThis, NaN];
         yyrt_all = [yyrt_all, yy2, NaN];
 
         % port access time
@@ -589,7 +642,6 @@ x_portin = [];
 y_portin = [];
 for i =1:size(ap_mat, 2)
     ipredur = premature_duration_releases(i);
-    iFP = FPs_premature_releases(i);
     xx =  t_mat(ap_mat(:, i)==1);
     yy1 = [0 0.8]-k;
     yy = [0 1]-k;
@@ -598,7 +650,9 @@ for i =1:size(ap_mat, 2)
     y_predur_all = [y_predur_all, yy, NaN];
 
     % paint foreperiod
-    plotshaded([-ipredur -ipredur+iFP], [-k -k; 1-k 1-k], trigger_col);
+    iCond = FPs_premature_releases(i);
+    fpThis = conditionFPs(iCond);
+    plotshaded([-ipredur -ipredur+fpThis], [-k -k; 1-k 1-k], trigger_col);
 
     for i_xx = 1:length(xx)
         xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
@@ -641,12 +695,13 @@ x_portin = [];
 y_portin = [];
 for i =1:size(ap_mat, 2)
     ilatedur =late_duration_releases(i);
-    iFP = FPs_late_releases(i);
     xx =  t_mat(ap_mat(:, i)==1);
     yy1 = [0 0.8]-k;
     yy = [0 1]-k;
     % paint foreperiod
-    plotshaded([-ilatedur -ilatedur+iFP], [-k -k; 1-k 1-k], trigger_col);
+    iCond = FPs_late_releases(i);
+    fpThis = conditionFPs(iCond);
+    plotshaded([-ilatedur -ilatedur+fpThis], [-k -k; 1-k 1-k], trigger_col);
     x_latedur_all = [x_latedur_all, -ilatedur, -ilatedur, NaN];
     y_latedur_all = [y_latedur_all, yy, NaN];
 
@@ -694,7 +749,7 @@ plot(ts_nonreward_pokes, psth_nonreward_pokes, 'color', [0.6 0.6 0.6], 'linewidt
 xlabel('Time from rewarded/nonrewarded poke (ms)')
 ylabel ('Spks per s')
 axis 'auto y'
-hline_poke = line([0 0], get(gca, 'ylim'), 'color', reward_col, 'linewidth', 1);
+hline_poke = line([0 0], get(gca, 'ylim'), 'color', reward_col, 'linewidth', reward_ref_lw);
 % FRMax = max([FRMax max(psth_nonreward_pokes)]);
 % disp(FRMax)
 % Raster plot
@@ -719,7 +774,6 @@ for m =1:nFPs
     ap_mat = trialspxmat_reward_pokes{m};
     t_mat = tspkmat_reward_pokes{m};
     move=move_time{m};
-    mFP = MixedFPs(m);
     xx_all = [];
     yy_all = [];
     x_move_all = [];
@@ -752,10 +806,9 @@ for m =1:nFPs
         k = k+1;
     end
     line(xx_all, yy_all, 'color', FP_cols(m,:), 'linewidth', 1)
-    line(x_move_all, y_move_all, 'color', release_col, 'linewidth', 1)
-    scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
+    line(x_move_all, y_move_all, 'color', release_col, 'linewidth', reward_move_lw)
 end
-line([0 0], get(gca, 'ylim'), 'color', release_col, 'linewidth', 1);
+line([0 0], get(gca, 'ylim'), 'color', reward_col, 'linewidth', reward_ref_lw);
 title('Correct', 'fontsize', 7);
 axis off
 
@@ -814,10 +867,9 @@ for i =1:ntrial_nonrewardpoke
 end
 
 line(xx_all, yy_all, 'color', [0.6 0.6 0.6], 'linewidth', 1)
-line(x_move_all, y_move_all, 'color', release_col, 'linewidth', 1)
-scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
+line(x_move_all, y_move_all, 'color', release_col, 'linewidth', reward_move_lw)
 
-line([0 0], get(gca, 'ylim'), 'color', reward_col, 'linewidth', 1)
+line([0 0], get(gca, 'ylim'), 'color', reward_col, 'linewidth', reward_ref_lw)
 axis off
 title('Nonrewarded pokes', 'fontname', 'dejavu sans', 'fontsize', 7)
 
@@ -896,7 +948,6 @@ for m =1:nFPs
     ap_mat = trialspxmat_trigger_correct{m};
     t_mat = tspkmat_trigger_correct{m};
     rt = RT_triggers_correct{m};
-    mFP = MixedFPs(m);
     xx_all = [];
     yy_all = [];
     xxrt_all = [];
@@ -908,8 +959,6 @@ for m =1:nFPs
         xx = t_mat(ap_mat(:, i)==1);
         yy1 = [0 0.8]-k;
         yy = [0 1]-k;
-        % paint foreperiod
-        plotshaded([-mFP 0], [-k -k; 1-k 1-k], trigger_col);
 
         for i_xx = 1:length(xx)
             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
@@ -957,8 +1006,6 @@ for i =1:ntrials_trigger_late
     iFP = FP_triggers_late(i);
     yy1 = [0 0.8]-k;
     yy2 = [0 1]-k;
-    % paint foreperiod
-    plotshaded([-iFP 0], [-k -k; 1-k 1-k], trigger_col);
 
     for i_xx = 1:length(xx)
         xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
@@ -996,17 +1043,71 @@ uicontrol('Style','text','Units','centimeters','Position',[col4-0.5  yshift_row4
     'HorizontalAlignment','Left');
 yshift_row5=yshift_row4+1.2+1.2;
 
+%% plot passive tone and flash activity
+fig_width = 25;
+h_passive_psth = [];
+if ~isempty(passiveLabels)
+    col_passive = col4 + width + 1.5;
+    passive_width = 3.2;
+    passive_col_gap = 1.0;
+    passiveFRrange = [0 passiveFRMax*1.1];
+    for iPassive = 1:length(passiveLabels)
+        this_col = col_passive + (iPassive-1)*(passive_width+passive_col_gap);
+        this_color = passive_cols(min(iPassive, size(passive_cols, 1)), :);
+
+        h_passive_psth(iPassive) = axes('unit', 'centimeters', 'position', [this_col yshift_row1 passive_width 2], ...
+            'nextplot', 'add', 'xlim', [-PassiveTimeDomain(1) PassiveTimeDomain(2)]);
+        plot(passiveTs{iPassive}, passivePSTH{iPassive}, 'color', this_color, 'linewidth', 1.5);
+        xlabel(['Time from ' lower(passiveLabels{iPassive}) ' (ms)'])
+        ylabel('Spks per s')
+
+        ntrials_passive = size(passiveTrialspxmat{iPassive}, 2);
+        axes('unit', 'centimeters', 'position', [this_col yshift_row2 passive_width ntrials_passive*rasterheight], ...
+            'nextplot', 'add', 'xlim', [-PassiveTimeDomain(1) PassiveTimeDomain(2)], ...
+            'ylim', [-ntrials_passive 1], 'box', 'on');
+
+        ap_mat = passiveTrialspxmat{iPassive};
+        t_mat = passiveTspkmat{iPassive};
+        k = 0;
+        xx_all = [];
+        yy_all = [];
+        for i = 1:ntrials_passive
+            xx = t_mat(ap_mat(:, i)==1);
+            yy1 = [0 0.8]-k;
+            for i_xx = 1:length(xx)
+                xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+                yy_all = [yy_all, yy1, NaN];
+            end
+            k = k+1;
+        end
+        line(xx_all, yy_all, 'color', this_color, 'linewidth', 1);
+        line([0 0], get(gca, 'ylim'), 'color', this_color, 'linewidth', 1);
+        title(passiveLabels{iPassive}, 'fontsize', 7);
+        axis off
+
+        uicontrol('Style','text','Units','centimeters','Position',[this_col-0.5  yshift_row4 4 1.2],...
+            'string', [char('F'+iPassive) '. Passive ' lower(passiveLabels{iPassive})], ...
+            'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
+            'HorizontalAlignment','Left');
+    end
+    for iPassive = 1:length(h_passive_psth)
+        set(h_passive_psth(iPassive), 'ylim', passiveFRrange);
+        line('Parent', h_passive_psth(iPassive), 'XData', [0 0], 'YData', passiveFRrange, ...
+            'color', passive_cols(min(iPassive, size(passive_cols, 1)), :), 'linewidth', 1);
+    end
+    fig_width = max(fig_width, col_passive + length(passiveLabels)*passive_width + (length(passiveLabels)-1)*passive_col_gap + 1);
+end
+
 FRrange = [0 FRMax*1.1];
 set(ha_press_psth, 'ylim', FRrange);
 line(ha_press_psth, [0 0], FRrange, 'color', press_col, 'linewidth', 1);
 
-for k = 1:length(MixedFPs)
-    line(ha_press_psth, [MixedFPs(k) MixedFPs(k)], get(gca, 'ylim'), 'color', trigger_col, 'linestyle', ':', 'linewidth', 1);
+for iCond = 1:numel(conditionFPs)
+    line(ha_press_psth, [conditionFPs(iCond) conditionFPs(iCond)], FRrange, 'color', trigger_col, 'linestyle', ':', 'linewidth', 1);
 end
 
 set(ha_press_psth_error, 'ylim', FRrange);
 line(ha_press_psth_error, [0 0], FRrange, 'color', press_col, 'linewidth', 1);
-line(ha_press_psth, [MixedFPs; MixedFPs], FRrange, 'color', trigger_col, 'linewidth', 1);
 set(ha_release_psth, 'ylim', FRrange);
 line(ha_release_psth, [0 0], FRrange, 'color', release_col, 'linewidth', 1);
 set(ha_release_psth_error, 'ylim', FRrange);
@@ -1130,8 +1231,7 @@ uicontrol('Style','text','Units','centimeters','Position',[19 yshift_row7 5 1.5]
     'HorizontalAlignment','Left');
 fig_height = max([fig_height, yshift_row7+2]);
 % change the height of the figure
-set(gcf, 'position', [2 2 25 fig_height])
-toc;
+set(gcf, 'position', [2 2 fig_width fig_height])
 
 if strcmpi(ToSave,'on')
     % save to a folder
@@ -1139,7 +1239,7 @@ if strcmpi(ToSave,'on')
     session              =     r.BehaviorClass.Date;
     
     PSTH.ANM_Session = {anm_name, session};
-    thisFolder = fullfile(pwd, 'Fig');
+    thisFolder = fullfile(pwd, 'Fig', 'Flash', 'PerUnit');
     if ~exist(thisFolder, 'dir')
         mkdir(thisFolder)
     end

@@ -1,4 +1,4 @@
-classdef GLMmodel < handle
+classdef GLMmodelOld < handle
     %GLMMODEL Create and fit all kinds of GLM models
 
     properties
@@ -13,8 +13,10 @@ classdef GLMmodel < handle
         Intersect = true;
         LambdaInput = 0;
         Lambda = NaN;
+        LambdaRange = [];
         LambdaSmoothInput = 0;
         LambdaSmooth = NaN;
+        LambdaSmoothRange = [];
         NumLambdaPoints = NaN;
         Deviance = NaN;
         FitInfo = NaN;
@@ -28,7 +30,7 @@ classdef GLMmodel < handle
     end
 
     methods
-        function obj = GLMmodel(X, y, varargin)
+        function obj = GLMmodelOld(X, y, varargin)
         %GLMMODEL Construct an instance of this class
         
             % check the size of X and y
@@ -65,8 +67,12 @@ classdef GLMmodel < handle
                     obj.Regularization = varargin{k+1};
                 elseif strcmpi(varargin{k}, 'Lambda')
                     obj.LambdaInput = varargin{k+1};
+                elseif strcmpi(varargin{k}, 'LambdaRange')
+                    obj.LambdaRange = varargin{k+1};
                 elseif strcmpi(varargin{k}, 'LambdaSmooth')
                     obj.LambdaSmoothInput = varargin{k+1};
+                elseif strcmpi(varargin{k}, 'LambdaSmoothRange')
+                    obj.LambdaSmoothRange = varargin{k+1};
                 elseif strcmpi(varargin{k}, 'NumLambdaPoints')
                     obj.NumLambdaPoints = varargin{k+1};
                 elseif strcmpi(varargin{k}, 'CV')
@@ -130,11 +136,7 @@ classdef GLMmodel < handle
             elseif strcmpi(obj.Regularization, 'L2')
                 obj.fit_L2();
             elseif strcmpi(obj.Regularization, 'L2_smooth')
-                if obj.CV <= 1
-                    obj.fit_L2_smooth_no_CV();
-                else
-                    obj.fit_L2_smooth();
-                end
+                obj.fit_L2_smooth();
             elseif strcmpi(obj.Regularization, 'L2_and_L2_smooth')
                 obj.fit_ridge_with_L2_smooth();
             else
@@ -154,7 +156,7 @@ classdef GLMmodel < handle
 
             yhat = obj.Link.Inverse(obj.B(2:end)'*X' + obj.B(1));
             log_likelihood = obj.compute_log_likelihood(obj.B, X, y);
-            residues = y - yhat';
+            residues = y - yhat;
         end
 
         function deviance = compute_deviance(obj, B, X, y)
@@ -216,7 +218,7 @@ classdef GLMmodel < handle
             end
 
             r = obj.Link.Inverse(obj.B(2:end)'*X' + obj.B(1));
-            SSres = sum((y'-r).^2);
+            SSres = sum((y-r).^2);
             SStot = sum((y-mean(y)).^2);
 
             R2 = 1 - SSres./SStot;
@@ -229,17 +231,11 @@ classdef GLMmodel < handle
             % For computing the log likelihood of saturated models LLsaturated, y was set to be equal to y.
             % For computing the log likelihood of null models LLnull, y was set to a single repeated value, namely the mean of y.
             % Goodman, James M., Gregg A. Tabot, Alex S. Lee, Aneesha K. Suresh, Alexander T. Rajan, Nicholas G. Hatsopoulos, and Sliman Bensmaia. "Postural Representations of the Hand in the Primate Sensorimotor Cortex." Neuron 104, no. 5 (December 2019): 1000-1009.e7. https://doi.org/10.1016/j.neuron.2019.09.004.
-            if nargin<2
-                X = obj.X;
-            end
-            if nargin<3
-                y = obj.y;
-            end
 
             r_mean = mean(y);
-            LLnull = sum(y*log(r_mean)) - sum(r_mean);
+            LLnull = y*log(r_mean) - sum(r_mean);
             LLmodel = obj.compute_log_likelihood(obj.B, X, y);
-            LLsaturated = (y+eps)'*log(y+eps) - sum(y);
+            LLsaturated = (y+eps)*log(y+eps) - sum(y);
 
             psuedo_R2 = 1 - (LLsaturated - LLmodel) ./ (LLsaturated - LLnull);
         end
@@ -312,9 +308,7 @@ classdef GLMmodel < handle
             obj.FitInfo = struct();
             obj.FitInfo.Lambda = obj.LambdaInput;
             obj.FitInfo.Deviance = devianceValidation_mean;
-            obj.FitInfo.DevianceFold = devianceValidation;
             obj.FitInfo.negL = negLvalidation_mean;
-            obj.FitInfo.negL_Fold = negLvalidation;
             obj.Lambda = obj.LambdaInput(idx_min);
             
             % get the final output
@@ -325,57 +319,6 @@ classdef GLMmodel < handle
             wmap = fminunc(lossfun, wmap0, opts);
             obj.B = wmap;
             obj.Deviance = obj.compute_deviance();
-        end
-
-        function fit_L2_smooth_no_CV(obj)
-            opts = optimoptions('fminunc',...
-                'algorithm', 'trust-region',...
-                'SpecifyObjectiveGradient', true,...
-                'HessianFcn', 'objective',...
-                'display', 'none',...
-                'MaxIterations', obj.MaxIter);
-
-            if isnan(obj.KernelGroups)
-                error('Kernel Groups are not set!');
-            end
-
-            if length(obj.LambdaSmoothInput) > 1
-                error('More than 1 LambdaSmooth found!');
-            end
-
-            D = [];
-            for k = 1:obj.nGroup
-                kernel_size = sum(obj.KernelGroups == k);
-                Dx = spdiags(ones(kernel_size,1)*[-1 1], 0:1, kernel_size-1, kernel_size); 
-                D = blkdiag(D,Dx'*Dx);
-            end
-    
-            % Embed Dx matrix in matrix with one extra row/column for constant coeff
-            D = blkdiag(0,D);
-
-            % Allocate space for train and test errors
-            Cinv = obj.LambdaSmoothInput*D; % set inverse prior covariance
-           
-            % set the training function and test function
-            % add the constant
-            negLtrainfun = @(prs)obj.neglogli_poissGLM(prs, [ones(size(obj.X,1), 1), obj.X], obj.y);
-
-            % Compute ridge-penalized MAP estimate
-            lossfun = @(prs)obj.neglogposterior(prs, negLtrainfun, Cinv);
-            wmap0 = zeros(size(obj.X, 2)+1, 1);
-            wmap = fminunc(lossfun, wmap0, opts);
-            
-            % Compute negative logli
-            negLtrain = negLtrainfun(wmap); % training loss
-            
-            obj.FitInfo = struct();
-            obj.FitInfo.LambdaSmooth = obj.LambdaSmoothInput;
-            obj.FitInfo.negL_Train = negLtrain;
-            obj.LambdaSmooth = obj.LambdaSmoothInput;
-            
-            % get the final output
-            obj.B = wmap;
-            obj.Deviance = obj.compute_deviance();       
         end
 
         function fit_L2_smooth(obj)
@@ -455,11 +398,9 @@ classdef GLMmodel < handle
             [~, idx_min] = min(devianceValidation_mean);
             
             obj.FitInfo = struct();
-            obj.FitInfo.LambdaSmooth = obj.LambdaSmoothInput;
+            obj.FitInfo.Lambda = obj.LambdaSmoothInput;
             obj.FitInfo.Deviance = devianceValidation_mean;
-            obj.FitInfo.DevianceFold = devianceValidation;
             obj.FitInfo.negL = negLvalidation_mean;
-            obj.FitInfo.negL_Fold = negLvalidation;
             obj.LambdaSmooth = obj.LambdaSmoothInput(idx_min);
             
             % get the final output
@@ -483,12 +424,11 @@ classdef GLMmodel < handle
             if isnan(obj.KernelGroups)
                 error('Kernel Groups are not set!');
             end
+            if isempty(obj.LambdaRange) || isempty(obj.LambdaSmoothRange)
+                error('The range of lambda is not set!');
+            end
             if isnan(obj.NumLambdaPoints)
-                if length(obj.LambdaInput) == 1 && length(obj.LambdaSmoothInput) == 1
-                    obj.NumLambdaPoints = 1;
-                else
-                    error('The number of random search points is not set!');
-                end
+                error('The number of random search points is not set!');
             end
 
             D = [];
@@ -505,10 +445,10 @@ classdef GLMmodel < handle
             Imat(1,1) = 0; % remove penalty on the intersect
 
             % choose lambda and lambda_smooth from uniform distribution
-            idx_rand_lambda = randi(length(obj.LambdaInput), 1, obj.NumLambdaPoints);
-            idx_rand_lambda_smooth = randi(length(obj.LambdaSmoothInput), 1, obj.NumLambdaPoints);
-            rand_lambda = obj.LambdaInput(idx_rand_lambda);
-            rand_lambda_smooth = obj.LambdaSmoothInput(idx_rand_lambda_smooth);
+            log_lambda_range = log(obj.LambdaRange);
+            log_lambda_smooth_range = log(obj.LambdaSmoothRange);
+            rand_lambda = exp(unifrnd(log_lambda_range(1), log_lambda_range(2), 1, obj.NumLambdaPoints));
+            rand_lambda_smooth = exp(unifrnd(log_lambda_smooth_range(1), log_lambda_smooth_range(2), 1, obj.NumLambdaPoints));
 
             % Allocate space for train and test errors
             negLtrain = zeros(obj.NumLambdaPoints, obj.CV);  % training error
@@ -571,9 +511,7 @@ classdef GLMmodel < handle
             obj.FitInfo.Lambda = rand_lambda;
             obj.FitInfo.LambdaSmooth = rand_lambda_smooth;
             obj.FitInfo.Deviance = devianceValidation_mean;
-            obj.FitInfo.DevianceFold = negLvalidation;
             obj.FitInfo.negL = negLvalidation_mean;
-            obj.FitInfo.negL_Fold = devianceValidation;
             obj.LambdaInput = rand_lambda;
             obj.LambdaSmoothInput = rand_lambda_smooth;
             obj.Lambda = rand_lambda(idx_min);
