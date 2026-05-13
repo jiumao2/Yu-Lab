@@ -225,13 +225,26 @@ for iUnit = 1:numel(ind)
 end
 
 if takeAll
-    r.PSTH.Events = PSTHOut;
-    r.PSTH.PSTHs = PSTHOut.PSTH;
-    r.FlashPSTH.Events = PSTHOut;
-    r.FlashPSTH.PSTHs = PSTHOut.PSTH;
     session = PSTHOut.ANM_Session{2};
     subject = PSTHOut.ANM_Session{1};
-    save(sprintf('RTarrayFlash_%s_%s.mat', subject, session), 'r', '-v7.3');
+
+    r.PSTH.Events = struct();
+    r.PSTH.Events.ANM_Session = PSTHOut.ANM_Session;
+    r.PSTH.Events.TaskTypes = PSTHOut.TaskTypes;
+    r.PSTH.Events.Presses = PSTHOut.Presses;
+    r.PSTH.Events.Releases = PSTHOut.Releases;
+    r.PSTH.Events.Pokes = PSTHOut.Pokes;
+    r.PSTH.Events.Triggers = PSTHOut.Triggers;
+    r.PSTH.Events.OptoEpochs = PSTHOut.OptoEpochs;
+    r.PSTH.Events.SpikeNotes = PSTHOut.SpikeNotes;
+    r.PSTH.PSTHs = PSTHOut.PSTH;
+    r.FlashPSTH = r.PSTH;
+
+    r_name = Spikes.r_name;
+    if isempty(r_name)
+        r_name = sprintf('RTarray_%s_%s.mat', subject, strrep(session, '_', ''));
+    end
+    save(r_name, 'r', '-v7.3');
     save(sprintf('PSTHOut_Flash_%s_%s.mat', subject, session), 'PSTHOut', '-v7.3');
 end
 end

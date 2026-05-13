@@ -703,6 +703,8 @@ if isfield(rb, 'FlashTimes') && ~isempty(rb.FlashTimes)
     end
 end
 
+PSTHOut.PassiveEvents = PassiveEvents;
+
 %% Check how many units we need to compute
 % derive PSTH from these
 % go through each units if necessary
@@ -732,6 +734,30 @@ for iku =1:length(ku_all)
 end
 
 if takeall
-    disp('SRTSpikesWithPassive does not save top-level r/PSTHOut files.');
+   r.PSTH.Events                       = struct();
+   r.PSTH.Events.ANM_Session       = PSTHOut.ANM_Session;
+   r.PSTH.Events.Presses            = PSTHOut.Presses;
+   r.PSTH.Events.Releases          = PSTHOut.Releases;
+   r.PSTH.Events.Pokes               = PSTHOut.Pokes;
+   r.PSTH.Events.Triggers            = PSTHOut.Triggers;
+   r.PSTH.Events.OptoEpochs     = PSTHOut.OptoEpochs;
+   r.PSTH.Events.SpikeNotes       = PSTHOut.SpikeNotes;
+   r.PSTH.Events.PassiveEvents = PSTHOut.PassiveEvents;
+   r.PSTH.PSTHs                         = PSTHOut.PSTH;
+
+   r_name = Spikes.r_name;
+   if isempty(r_name)
+       r_name = ['RTarray_' r.BehaviorClass.Subject '_' r.BehaviorClass.Date '.mat'];
+   end
+   save(r_name, 'r', '-v7.3');
+   psth_new_name             =      [r.BehaviorClass.Subject, '_', r.BehaviorClass.Date, '_PSTHsWithPassive.mat'];
+   save(psth_new_name, 'PSTHOut', '-v7.3');
+   try
+       thisFolder = fullfile(findonedrive, '00_Work', '03_Projects', '05_Physiology', 'Data', 'PETHs', r.BehaviorClass.Subject);
+       if ~exist(thisFolder, 'dir')
+           mkdir(thisFolder);
+       end
+       copyfile(psth_new_name, thisFolder);
+   end
 end
  

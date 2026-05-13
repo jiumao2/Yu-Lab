@@ -199,7 +199,10 @@ PopOut.TriggerStat           =        PSTH_TriggerStat;
 
 PopOut.IndSort = Flash.VisualizePopPSTH(PopOut);
 r.FlashPopPSTH = PopOut;
-r_name = ['RTarrayFlashPop_' r.PSTH.PSTHs(1).ANM_Session{1} '_' strrep(r.PSTH.PSTHs(1).ANM_Session{2}, '_', '') '.mat'];
+r_name = Spikes.r_name;
+if isempty(r_name)
+    r_name = ['RTarray_' r.PSTH.PSTHs(1).ANM_Session{1} '_' strrep(r.PSTH.PSTHs(1).ANM_Session{2}, '_', '') '.mat'];
+end
 save(r_name, 'r', '-v7.3');
 % Save a copy of PSTHOut to a collector folder
 tosavename = ['PopOut_Flash_' r.PSTH.PSTHs(1).ANM_Session{1} '_' strrep(r.PSTH.PSTHs(1).ANM_Session{2}, '_', '')  '.mat'];

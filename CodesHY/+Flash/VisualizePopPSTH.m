@@ -354,14 +354,3 @@ print (gcf,'-dpdf', tosavename)
 print (gcf,'-dpng', tosavename)
 print (gcf,'-depsc2', tosavename);
 toc
-try
-    thisFolder = fullfile(findonedrive, '00_Work' , '03_Projects', '05_Physiology', 'PopulationPSTH', Pop.Name);
-    if ~exist(thisFolder, 'dir')
-        mkdir(thisFolder)
-    end
-    disp('##########  copying figure ########## ')
-    tic
-    copyfile([tosavename '.png'], thisFolder)
-    copyfile([tosavename '.eps'], thisFolder)
-    toc
-end

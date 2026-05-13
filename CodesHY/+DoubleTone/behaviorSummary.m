@@ -266,6 +266,6 @@ title(axBottom{3}, 'Performance by trigger type', 'FontWeight', 'normal');
 EasyPlot.set(axBottom{3}, 'Width', 10);
 
 EasyPlot.cropFigure(fig);
-EasyPlot.exportFigure(fig, fullfile('.', sprintf('BehaviorSummary_GAVI_%s.png', dateTag)), 'type', 'png');
-EasyPlot.exportFigure(fig, fullfile('.', sprintf('BehaviorSummary_GAVI_%s.pdf', dateTag)), 'type', 'pdf');
+EasyPlot.exportFigure(fig, fullfile(pwd, sprintf('BehaviorSummary_GAVI_%s.png', dateTag)), 'type', 'png');
+EasyPlot.exportFigure(fig, fullfile(pwd, sprintf('BehaviorSummary_GAVI_%s.pdf', dateTag)), 'type', 'pdf');
 end

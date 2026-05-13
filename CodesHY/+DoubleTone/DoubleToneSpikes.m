@@ -678,19 +678,24 @@ end
 
 if takeall
 
+   r.PSTH.Events                       = struct();
+   r.PSTH.Events.ANM_Session       = PSTHOut.ANM_Session;
    r.PSTH.Events.Presses            = PSTHOut.Presses;
    r.PSTH.Events.Releases          = PSTHOut.Releases;
    r.PSTH.Events.Pokes               = PSTHOut.Pokes;
    r.PSTH.Events.Triggers            = PSTHOut.Triggers;
    r.PSTH.Events.TaskTypes         = PSTHOut.TaskTypes;
    r.PSTH.Events.OptoEpochs     = PSTHOut.OptoEpochs;
-   r.PSTH.Events.Presses            = PSTHOut.Presses;
+   r.PSTH.Events.SpikeNotes       = PSTHOut.SpikeNotes;
    r.PSTH.PSTHs                         = PSTHOut.PSTH;
 
    r_name = Spikes.r_name;
-   save(r_name, 'r');
+   if isempty(r_name)
+       r_name = ['RTarray_' r.BehaviorClass.Subject '_' r.BehaviorClass.Date '.mat'];
+   end
+   save(r_name, 'r', '-v7.3');
    psth_new_name             =      [r.BehaviorClass.Subject, '_', r.BehaviorClass.Date, '_PSTHs.mat'];
-   save(psth_new_name, 'PSTHOut');
+   save(psth_new_name, 'PSTHOut', '-v7.3');
    try
        % C:\Users\jiani\OneDrive\00_Work\03_Projects\05_Physiology\PSTHs
        thisFolder = fullfile(findonedrive, '00_Work', '03_Projects', '05_Physiology', 'Data', 'PETHs', r.BehaviorClass.Subject);

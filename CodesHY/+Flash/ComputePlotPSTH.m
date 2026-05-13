@@ -1153,7 +1153,7 @@ if strcmpi(ToSave,'on')
     session              =     r.BehaviorClass.Date;
     
     PSTH.ANM_Session = {anm_name, session};
-    thisFolder = fullfile(pwd, 'Fig', 'Flash', 'PerUnit');
+    thisFolder = fullfile(pwd, 'Fig');
     if ~exist(thisFolder, 'dir')
         mkdir(thisFolder)
     end
