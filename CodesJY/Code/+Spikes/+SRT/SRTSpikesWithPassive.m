@@ -679,30 +679,22 @@ else
     passive_start_time = -Inf;
 end
 
-if isfield(rb, 'ToneTimes') && ~isempty(rb.ToneTimes)
-    t_passive_tones = rb.ToneTimes(:);
-    t_passive_tones = sort(t_passive_tones(t_passive_tones > passive_start_time));
-    if ~isempty(ComputeRange)
-        t_passive_tones(t_passive_tones<ComputeRange(1) | t_passive_tones>ComputeRange(2)) = [];
+passive_event_fields = {'ToneTimes', 'SmallToneTimes', 'FlashTimes', 'BothTimes'};
+passive_event_labels = {'Tone', 'SmallTone', 'Flash', 'Both'};
+for i_event = 1:numel(passive_event_fields)
+    if ~isfield(rb, passive_event_fields{i_event}) || isempty(rb.(passive_event_fields{i_event}))
+        continue
     end
-    if ~isempty(t_passive_tones)
-        PassiveEvents.Labels{end+1} = 'Tone';
-        PassiveEvents.Time{end+1} = t_passive_tones;
+    t_passive_events = rb.(passive_event_fields{i_event})(:);
+    t_passive_events = sort(t_passive_events(t_passive_events > passive_start_time));
+    if ~isempty(ComputeRange)
+        t_passive_events(t_passive_events<ComputeRange(1) | t_passive_events>ComputeRange(2)) = [];
+    end
+    if ~isempty(t_passive_events)
+        PassiveEvents.Labels{end+1} = passive_event_labels{i_event};
+        PassiveEvents.Time{end+1} = t_passive_events;
     end
 end
-
-if isfield(rb, 'FlashTimes') && ~isempty(rb.FlashTimes)
-    t_passive_flashes = rb.FlashTimes(:);
-    t_passive_flashes = sort(t_passive_flashes(t_passive_flashes > passive_start_time));
-    if ~isempty(ComputeRange)
-        t_passive_flashes(t_passive_flashes<ComputeRange(1) | t_passive_flashes>ComputeRange(2)) = [];
-    end
-    if ~isempty(t_passive_flashes)
-        PassiveEvents.Labels{end+1} = 'Flash';
-        PassiveEvents.Time{end+1} = t_passive_flashes;
-    end
-end
-
 PSTHOut.PassiveEvents = PassiveEvents;
 
 %% Check how many units we need to compute
