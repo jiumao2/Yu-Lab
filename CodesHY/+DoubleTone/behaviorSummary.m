@@ -4,9 +4,7 @@ rb = r.Behavior;
 eventMarkers = rb.EventMarkers(:);
 eventTimings = rb.EventTimings(:);
 labelNames = cellstr(string(rb.Labels(:)));
-triggerTypeLabels = cellstr(string(rb.TriggerTypeLabels(:)));
 outcomeNames = cellstr(string(rb.Outcome(:)));
-triggerTypeIds = rb.TriggerTypes(:);
 foreperiodMs = rb.Foreperiods(:);
 subjectName = string(r.Meta(1).Subject);
 dateTag = datestr(r.Meta(1).DateTime, 'yyyymmdd');
@@ -21,17 +19,28 @@ end
 pressTimes = eventTimings(eventMarkers == pressMarker);
 releaseTimes = eventTimings(eventMarkers == releaseMarker);
 
+if isfield(rb, 'TriggerTypes') && isfield(rb, 'TriggerTypeLabels')
+    triggerTypeLabels = cellstr(string(rb.TriggerTypeLabels(:)));
+    triggerTypeIds = rb.TriggerTypes(:);
+elseif isfield(rb, 'ExtraTonePlayed')
+    triggerTypeLabels = {'None'; 'Tone500'; 'Tone750'; 'Tone1000'};
+    extraTonePlayed = rb.ExtraTonePlayed(:);
+    triggerTypeIds = nan(numel(outcomeNames), 1);
+    nExtra = min(numel(outcomeNames), numel(extraTonePlayed));
+    triggerTypeIds(1:nExtra) = 1;
+    triggerTypeIds(extraTonePlayed(1:nExtra) == 1) = 3;
+    triggerTypeIds(isnan(extraTonePlayed(1:nExtra))) = NaN;
+else
+    triggerTypeLabels = {'Unknown'};
+    triggerTypeIds = ones(numel(outcomeNames), 1);
+end
+
 nTrials = min([numel(pressTimes), numel(releaseTimes), numel(outcomeNames), numel(triggerTypeIds), numel(foreperiodMs)]);
 pressTimes = pressTimes(1:nTrials);
 releaseTimes = releaseTimes(1:nTrials);
 outcomeNames = outcomeNames(1:nTrials);
 triggerTypeIds = triggerTypeIds(1:nTrials);
 foreperiodMs = foreperiodMs(1:nTrials);
-uniqueForeperiods = unique(foreperiodMs(~isnan(foreperiodMs)));
-if ~isempty(uniqueForeperiods) && any(abs(uniqueForeperiods - 1500) > eps(1500))
-    warning('behaviorSummarySession:ForeperiodMismatch', ...
-        'This function assumes a fixed 1500 ms foreperiod, but found values: %s', mat2str(uniqueForeperiods'));
-end
 
 triggerNames = repmat({''}, nTrials, 1);
 for i = 1:nTrials
@@ -42,39 +51,96 @@ for i = 1:nTrials
     end
 end
 
+if isfield(rb, 'IsProbeTrials')
+    isProbe = logical(rb.IsProbeTrials(:));
+    isProbe = isProbe(1:min(numel(isProbe), nTrials));
+    if numel(isProbe) < nTrials
+        isProbe(end+1:nTrials, 1) = false;
+    end
+else
+    isProbe = false(nTrials, 1);
+end
+isProbe = isProbe | strcmp(outcomeNames, 'NAN');
+
 holdDurationMs = releaseTimes - pressTimes;
-reactionTimeMs = holdDurationMs - 1500;
+foreperiodForRT = foreperiodMs;
+foreperiodForRT(isnan(foreperiodForRT)) = 1500;
+reactionTimeMs = holdDurationMs - foreperiodForRT;
 sessionTimeSec = pressTimes ./ 1000;
 
 eligibleOutcomes = {'Correct', 'Premature', 'Late'};
 correctLateOutcomes = {'Correct', 'Late'};
-triggerOrder = {'None', 'Tone500', 'Tone750', 'Tone1000'};
-triggerPanelMarkerArea = 16;
-triggerLineColors = [
-    0.25 0.25 0.25
-    0.16 0.52 0.78
-    0.95 0.58 0.22
-    0.45 0.33 0.75];
-
 outcomeOrder = {'Correct', 'Premature', 'Late'};
 outcomeColors = [
     0.32 0.84 0.04
     0.92 0.14 0.12
     0.60 0.60 0.60];
 
-isEligible = ismember(outcomeNames, eligibleOutcomes);
-isCorrectLate = ismember(outcomeNames, correctLateOutcomes);
+triggerBaseOrder = {'None', 'Tone500', 'Tone750', 'Tone1000'};
+triggerBaseColors = [
+    0.25 0.25 0.25
+    0.16 0.52 0.78
+    0.95 0.58 0.22
+    0.45 0.33 0.75];
+
+isEligible = ismember(outcomeNames, eligibleOutcomes) & ~isProbe;
+isCorrectLate = ismember(outcomeNames, correctLateOutcomes) & ~isProbe;
 holdDurationMsClipped = min(holdDurationMs, 3000);
 
-triggerOrderIndex = nan(nTrials, 1);
-for i = 1:numel(triggerOrder)
-    triggerOrderIndex(strcmp(triggerNames, triggerOrder{i})) = i;
+uniqueForeperiods = unique(foreperiodMs(~isnan(foreperiodMs)));
+useFPTriggerMode = numel(uniqueForeperiods) > 1;
+
+conditionLabels = {};
+conditionMasks = false(nTrials, 0);
+conditionFPs = [];
+conditionTriggers = {};
+conditionColors = zeros(0, 3);
+
+if useFPTriggerMode
+    for iFP = 1:numel(uniqueForeperiods)
+        fp = uniqueForeperiods(iFP);
+        for iTrigger = 1:numel(triggerBaseOrder)
+            triggerName = triggerBaseOrder{iTrigger};
+            thisMask = foreperiodMs == fp & strcmp(triggerNames, triggerName) & isEligible;
+            if any(thisMask)
+                conditionLabels{end+1} = sprintf('FP%d | %s', round(fp), triggerName); %#ok<AGROW>
+                conditionMasks(:, end+1) = foreperiodMs == fp & strcmp(triggerNames, triggerName); %#ok<AGROW>
+                conditionFPs(end+1) = fp; %#ok<AGROW>
+                conditionTriggers{end+1} = triggerName; %#ok<AGROW>
+                conditionColors(end+1, :) = triggerBaseColors(iTrigger, :); %#ok<AGROW>
+            end
+        end
+    end
+else
+    fpValue = 1500;
+    if ~isempty(uniqueForeperiods)
+        fpValue = uniqueForeperiods(1);
+    end
+    for iTrigger = 1:numel(triggerBaseOrder)
+        triggerName = triggerBaseOrder{iTrigger};
+        conditionLabels{end+1} = triggerName; %#ok<AGROW>
+        conditionMasks(:, end+1) = strcmp(triggerNames, triggerName); %#ok<AGROW>
+        conditionFPs(end+1) = fpValue; %#ok<AGROW>
+        conditionTriggers{end+1} = triggerName; %#ok<AGROW>
+        conditionColors(end+1, :) = triggerBaseColors(iTrigger, :); %#ok<AGROW>
+    end
+end
+
+nConditions = numel(conditionLabels);
+showProbePanel = useFPTriggerMode && any(isProbe);
+nTimelinePanels = nConditions + double(showProbePanel);
+if nTimelinePanels == 0
+    nTimelinePanels = 1;
 end
 
 fig = EasyPlot.figure('Visible', 'on');
 
-axTriggerPanels = EasyPlot.createGridAxes(fig, 1, 4, ...
-    'Width', 4, ...
+timelineWidth = 4;
+if nTimelinePanels > 4
+    timelineWidth = 3.25;
+end
+axTriggerPanels = EasyPlot.createGridAxes(fig, 1, nTimelinePanels, ...
+    'Width', timelineWidth, ...
     'Height', 4, ...
     'MarginLeft', 1.0, ...
     'MarginRight', 0.20, ...
@@ -112,16 +178,27 @@ if maxSessionSec <= 0
     maxSessionSec = 500;
 end
 
-triggerPanelTicks = [0, maxSessionSec];
-triggerPanelTickLabels = {'0', sprintf('%d', maxSessionSec)};
-for iType = 1:numel(triggerOrder)
-    axThis = axTriggerPanels{iType};
-    plot(axThis, [0, maxSessionSec], [1500, 1500], '--', ...
+triggerPanelMarkerArea = 16;
+for iCondition = 1:nConditions
+    axThis = axTriggerPanels{iCondition};
+    fpRef = conditionFPs(iCondition);
+    plot(axThis, [0, maxSessionSec], [fpRef, fpRef], '--', ...
         'Color', [0.45, 0.45, 0.45], 'LineWidth', 0.8);
-    typeMask = strcmp(triggerNames, triggerOrder{iType});
+    triggerRef = NaN;
+    switch conditionTriggers{iCondition}
+        case 'Tone500'
+            triggerRef = 500;
+        case 'Tone750'
+            triggerRef = 750;
+        case 'Tone1000'
+            triggerRef = 1000;
+    end
+    if ~isnan(triggerRef)
+        plot(axThis, [0, maxSessionSec], [triggerRef, triggerRef], ':', ...
+            'Color', conditionColors(iCondition, :), 'LineWidth', 0.8);
+    end
     for iOutcome = 1:numel(outcomeOrder)
-        outcomeMask = strcmp(outcomeNames, outcomeOrder{iOutcome});
-        thisMask = isEligible & typeMask & outcomeMask;
+        thisMask = isEligible & conditionMasks(:, iCondition) & strcmp(outcomeNames, outcomeOrder{iOutcome});
         if any(thisMask)
             scatter(axThis, ...
                 sessionTimeSec(thisMask), ...
@@ -136,8 +213,23 @@ for iType = 1:numel(triggerOrder)
     end
     xlim(axThis, [0, maxSessionSec]);
     xlabel(axThis, 'Time in session (s)');
+    title(axThis, conditionLabels{iCondition}, 'FontWeight', 'normal', 'FontSize', 8);
+end
 
-    title(axThis, triggerOrder{iType}, 'FontWeight', 'normal', 'FontSize', 8);
+if showProbePanel
+    axThis = axTriggerPanels{nTimelinePanels};
+    scatter(axThis, ...
+        sessionTimeSec(isProbe), ...
+        holdDurationMsClipped(isProbe), ...
+        triggerPanelMarkerArea, ...
+        'Marker', 'o', ...
+        'MarkerFaceColor', [0.15 0.15 0.15], ...
+        'MarkerEdgeColor', [0.15 0.15 0.15], ...
+        'MarkerFaceAlpha', 0.7, ...
+        'LineWidth', 0.5);
+    xlim(axThis, [0, maxSessionSec]);
+    xlabel(axThis, 'Time in session (s)');
+    title(axThis, 'Probe', 'FontWeight', 'normal', 'FontSize', 8);
 end
 
 EasyPlot.setYLim(axTriggerPanels, [0, 3000]);
@@ -145,24 +237,28 @@ EasyPlot.setGeneralTitle(axTriggerPanels, sprintf('%s | %s', subjectName, dateTi
     'FontWeight', 'bold', 'FontSize', 12, 'Height', 0.45, 'yShift', 0.5);
 
 holdGridMs = 0:10:3000;
-lineHandlesDist = gobjects(numel(triggerOrder), 1);
-for iType = 1:numel(triggerOrder)
-    typeMask = isEligible & strcmp(triggerNames, triggerOrder{iType});
-    if any(typeMask)
+lineHandlesDist = gobjects(nConditions, 1);
+for iCondition = 1:nConditions
+    typeMask = isEligible & conditionMasks(:, iCondition);
+    if sum(typeMask) >= 2
         cdfValues = ksdensity(holdDurationMs(typeMask), holdGridMs, 'Function', 'cdf');
         pdfValues = ksdensity(holdDurationMs(typeMask), holdGridMs, 'Function', 'pdf');
-        plot(axDist{1}, holdGridMs, cdfValues, '-', 'Color', triggerLineColors(iType, :), 'LineWidth', 1.2);
-        lineHandlesDist(iType) = plot(axDist{2}, holdGridMs, pdfValues, '-', 'Color', triggerLineColors(iType, :), 'LineWidth', 1.2);
+        plot(axDist{1}, holdGridMs, cdfValues, '-', 'Color', conditionColors(iCondition, :), 'LineWidth', 1.2);
+        lineHandlesDist(iCondition) = plot(axDist{2}, holdGridMs, pdfValues, '-', 'Color', conditionColors(iCondition, :), 'LineWidth', 1.2);
     else
-        lineHandlesDist(iType) = plot(axDist{2}, nan, nan, '-', 'Color', triggerLineColors(iType, :), 'LineWidth', 1.2);
+        lineHandlesDist(iCondition) = plot(axDist{2}, nan, nan, '-', 'Color', conditionColors(iCondition, :), 'LineWidth', 1.2);
     end
 end
-plot(axDist{1}, [1500, 1500], [0, 1], '--', 'Color', [0.45, 0.45, 0.45], 'LineWidth', 0.8);
+for iFP = 1:numel(uniqueForeperiods)
+    plot(axDist{1}, [uniqueForeperiods(iFP), uniqueForeperiods(iFP)], [0, 1], '--', 'Color', [0.45, 0.45, 0.45], 'LineWidth', 0.8);
+end
 xlim(axDist{1}, [0, 3000]);
 ylim(axDist{1}, [0, 1]);
 xlim(axDist{2}, [0, 3000]);
 yMaxPdf = axDist{2}.YLim(2);
-plot(axDist{2}, [1500, 1500], [0, yMaxPdf], '--', 'Color', [0.45, 0.45, 0.45], 'LineWidth', 0.8);
+for iFP = 1:numel(uniqueForeperiods)
+    plot(axDist{2}, [uniqueForeperiods(iFP), uniqueForeperiods(iFP)], [0, yMaxPdf], '--', 'Color', [0.45, 0.45, 0.45], 'LineWidth', 0.8);
+end
 xlim(axDist{2}, [0, 3000]);
 ylabel(axDist{1}, 'CDF');
 xlabel(axDist{1}, 'Hold duration (ms)');
@@ -170,12 +266,14 @@ ylabel(axDist{2}, 'PDF (1/ms)');
 xlabel(axDist{2}, 'Hold duration (ms)');
 title(axDist{1}, 'Hold-duration CDF', 'FontWeight', 'normal');
 title(axDist{2}, 'Hold-duration PDF', 'FontWeight', 'normal');
-hTypeLegend = EasyPlot.legend(axDist{2}, triggerOrder, ...
-    'selectedPlots', lineHandlesDist, ...
-    'Location', 'northeastoutside', ...
-    'lineLength', 0.35, ...
-    'Box', 'off');
-EasyPlot.move(hTypeLegend, 'dx', -0.6);
+if nConditions > 0
+    hTypeLegend = EasyPlot.legend(axDist{2}, conditionLabels, ...
+        'selectedPlots', lineHandlesDist, ...
+        'Location', 'northeastoutside', ...
+        'lineLength', 0.35, ...
+        'Box', 'off');
+    EasyPlot.move(hTypeLegend, 'dx', -0.6);
+end
 
 winSize = 25;
 stepSize = 5;
@@ -206,48 +304,52 @@ xlabel(axBottom{1}, 'Time in session (s)');
 ylabel(axBottom{1}, 'Performance (%)');
 title(axBottom{1}, 'Performance over time', 'FontWeight', 'normal');
 
-rtMask = isCorrectLate & ~isnan(triggerOrderIndex);
+conditionOrderIndex = nan(nTrials, 1);
+for iCondition = 1:nConditions
+    conditionOrderIndex(conditionMasks(:, iCondition)) = iCondition;
+end
+rtMask = isCorrectLate & ~isnan(conditionOrderIndex);
 rtValues = reactionTimeMs(rtMask);
-rtCategories = triggerOrderIndex(rtMask);
-violins = EasyPlot.violinplot(axBottom{2}, rtValues, rtCategories, ...
-    'ViolinColor', triggerLineColors, ...
-    'ViolinAlpha', 0.25, ...
-    'MarkerSize', 8, ...
-    'ShowMean', false, ...
-    'ShowBox', true, ...
-    'ShowMedian', true, ...
-    'ShowWhiskers', false, ...
-    'Width', 0.35);
-% for iType = 1:numel(violins)
-%     violins(iType).EdgeColor = [0.25, 0.25, 0.25];
-%     violins(iType).BoxColor = [0.25, 0.25, 0.25];
-%     violins(iType).MedianColor = [1, 1, 1];
-% end
-xlim(axBottom{2}, [0.5, 4.5]);
+rtCategories = conditionOrderIndex(rtMask);
+if ~isempty(rtValues)
+    EasyPlot.violinplot(axBottom{2}, rtValues, rtCategories, ...
+        'ViolinColor', conditionColors, ...
+        'ViolinAlpha', 0.25, ...
+        'MarkerSize', 8, ...
+        'ShowMean', false, ...
+        'ShowBox', true, ...
+        'ShowMedian', true, ...
+        'ShowWhiskers', false, ...
+        'Width', 0.35);
+end
+xlim(axBottom{2}, [0.5, max(nConditions, 1)+0.5]);
 ylim(axBottom{2}, [0, 1500]);
-EasyPlot.setXTicksAndLabels(axBottom{2}, 1:4, triggerOrder);
-xlabel(axBottom{2}, 'Trigger type');
+if nConditions > 0
+    EasyPlot.setXTicksAndLabels(axBottom{2}, 1:nConditions, conditionLabels);
+end
+xtickangle(axBottom{2}, 30);
+xlabel(axBottom{2}, 'Condition');
 ylabel(axBottom{2}, 'Reaction time (ms)');
 title(axBottom{2}, 'RT (Correct + Late)', 'FontWeight', 'normal');
 
-groupedCounts = zeros(numel(triggerOrder), numel(outcomeOrder));
-for iType = 1:numel(triggerOrder)
-    typeMask = strcmp(triggerNames, triggerOrder{iType});
+groupedCounts = zeros(nConditions, numel(outcomeOrder));
+for iCondition = 1:nConditions
+    typeMask = conditionMasks(:, iCondition);
     for iOutcome = 1:numel(outcomeOrder)
-        groupedCounts(iType, iOutcome) = sum(typeMask & strcmp(outcomeNames, outcomeOrder{iOutcome}));
+        groupedCounts(iCondition, iOutcome) = sum(typeMask & strcmp(outcomeNames, outcomeOrder{iOutcome}) & isEligible);
     end
 end
 groupTotals = sum(groupedCounts, 2);
-basePositions = 1:numel(triggerOrder);
+basePositions = 1:nConditions;
 barWidth = 0.25;
 barOffsets = [-barWidth, 0, barWidth];
 for iOutcome = 1:numel(outcomeOrder)
-    for iType = 1:numel(triggerOrder)
-        xBar = basePositions(iType) + barOffsets(iOutcome);
-        thisCount = groupedCounts(iType, iOutcome);
+    for iCondition = 1:nConditions
+        xBar = basePositions(iCondition) + barOffsets(iOutcome);
+        thisCount = groupedCounts(iCondition, iOutcome);
         bar(axBottom{3}, xBar, thisCount, barWidth, 'FaceColor', outcomeColors(iOutcome, :), 'EdgeColor', 'none');
-        if groupTotals(iType) > 0
-            thisPct = 100 * thisCount / groupTotals(iType);
+        if groupTotals(iCondition) > 0
+            thisPct = 100 * thisCount / groupTotals(iCondition);
         else
             thisPct = NaN;
         end
@@ -257,12 +359,15 @@ for iOutcome = 1:numel(outcomeOrder)
             'FontSize', 7);
     end
 end
-xlim(axBottom{3}, [0.5, 4.5]);
-ylim(axBottom{3}, [0, max(groupedCounts(:)) + 8]);
-EasyPlot.setXTicksAndLabels(axBottom{3}, 1:4, triggerOrder);
-xlabel(axBottom{3}, 'Trigger type');
+xlim(axBottom{3}, [0.5, max(nConditions, 1)+0.5]);
+ylim(axBottom{3}, [0, max([groupedCounts(:); 1]) + 8]);
+if nConditions > 0
+    EasyPlot.setXTicksAndLabels(axBottom{3}, 1:nConditions, conditionLabels);
+end
+xtickangle(axBottom{3}, 30);
+xlabel(axBottom{3}, 'Condition');
 ylabel(axBottom{3}, 'Trial count');
-title(axBottom{3}, 'Performance by trigger type', 'FontWeight', 'normal');
+title(axBottom{3}, 'Performance by condition', 'FontWeight', 'normal');
 EasyPlot.set(axBottom{3}, 'Width', 10);
 
 EasyPlot.cropFigure(fig);

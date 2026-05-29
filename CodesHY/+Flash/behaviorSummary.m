@@ -51,13 +51,15 @@ dateTitle = datestr(r.Meta(1).DateTime, 'yyyy-mm-dd');
 
 fig = EasyPlot.figure('Visible', 'on');
 
-axPanels = EasyPlot.createGridAxes(fig, 1, 4, ...
+nCond = numel(info.Labels);
+nDistAxes = 2*numel(info.Foreperiods);
+axPanels = EasyPlot.createGridAxes(fig, 1, nCond, ...
     'Width', 4, 'Height', 4, ...
     'MarginLeft', 1.0, 'MarginRight', 0.25, ...
     'MarginTop', 1.15, 'MarginBottom', 0.95, ...
     'Box', 'on');
 
-axDist = EasyPlot.createGridAxes(fig, 1, 4, ...
+axDist = EasyPlot.createGridAxes(fig, 1, nDistAxes, ...
     'Width', 3.2, 'Height', 3, ...
     'MarginLeft', 1.0, 'MarginRight', 0.8, ...
     'MarginTop', 0.9, 'MarginBottom', 0.95, ...
@@ -82,7 +84,7 @@ if maxSessionSec <= 0
 end
 
 holdDurationClipped = min(holdDurationMs, 3000);
-for iCond = 1:numel(info.Labels)
+for iCond = 1:nCond
     ax = axPanels{iCond};
     fp = info.ConditionFPs(iCond);
     plot(ax, [0, maxSessionSec], [fp, fp], '--', ...
@@ -108,9 +110,19 @@ EasyPlot.setGeneralTitle(axPanels, sprintf('%s | %s', subjectName, dateTitle), .
     'FontWeight', 'bold', 'FontSize', 12, 'Height', 0.45, 'yShift', 0.5);
 
 holdGridMs = 0:10:3000;
-distColors = [
-    0.16 0.52 0.78
-    0.95 0.58 0.22];
+distColors = lines(numel(info.StimNames));
+if numel(info.StimNames) == 2 && any(strcmpi(info.StimNames, 'Flash')) && any(strcmpi(info.StimNames, 'Tone'))
+    distColors = [
+        0.16 0.52 0.78
+        0.95 0.58 0.22];
+else
+    for iStim = 1:numel(info.StimNames)
+        firstCond = find(info.TriggerCodes == info.StimCodes(iStim), 1, 'first');
+        if ~isempty(firstCond)
+            distColors(iStim, :) = info.Colors(firstCond, :);
+        end
+    end
+end
 for iFP = 1:numel(info.Foreperiods)
     fp = info.Foreperiods(iFP);
     axCdf = axDist{(iFP - 1) * 2 + 1};
@@ -144,10 +156,10 @@ for iFP = 1:numel(info.Foreperiods)
 end
 legendHandles = gobjects(numel(info.StimNames), 1);
 for iStim = 1:numel(info.StimNames)
-    legendHandles(iStim) = plot(axDist{4}, nan, nan, '-', ...
+    legendHandles(iStim) = plot(axDist{end}, nan, nan, '-', ...
         'Color', distColors(iStim, :), 'LineWidth', 1.2);
 end
-hLegend = EasyPlot.legend(axDist{4}, info.StimNames, ...
+hLegend = EasyPlot.legend(axDist{end}, info.StimNames, ...
     'selectedPlots', legendHandles, ...
     'Location', 'northeastoutside', ...
     'lineLength', 0.35, ...
@@ -186,35 +198,37 @@ title(axBottom{1}, 'Performance over time', 'FontWeight', 'normal');
 rtMask = isIncluded & ismember(outcomeNames, {'Correct', 'Late'});
 rtValues = reactionTimeMs(rtMask);
 rtCategories = conditionIndex(rtMask);
-EasyPlot.violinplot(axBottom{2}, rtValues, rtCategories, ...
-    'ViolinColor', info.Colors, ...
-    'ViolinAlpha', 0.25, ...
-    'MarkerSize', 8, ...
-    'ShowMean', false, ...
-    'ShowBox', true, ...
-    'ShowMedian', true, ...
-    'ShowWhiskers', false, ...
-    'Width', 0.35);
-xlim(axBottom{2}, [0.5, 4.5]);
+if ~isempty(rtValues)
+    EasyPlot.violinplot(axBottom{2}, rtValues, rtCategories, ...
+        'ViolinColor', info.Colors, ...
+        'ViolinAlpha', 0.25, ...
+        'MarkerSize', 8, ...
+        'ShowMean', false, ...
+        'ShowBox', true, ...
+        'ShowMedian', true, ...
+        'ShowWhiskers', false, ...
+        'Width', 0.35);
+end
+xlim(axBottom{2}, [0.5, nCond + 0.5]);
 ylim(axBottom{2}, [0, 1500]);
-EasyPlot.setXTicksAndLabels(axBottom{2}, 1:4, info.Labels);
+EasyPlot.setXTicksAndLabels(axBottom{2}, 1:nCond, info.Labels);
 xlabel(axBottom{2}, 'Condition');
 ylabel(axBottom{2}, 'Reaction time (ms)');
 title(axBottom{2}, 'RT (Correct + Late)', 'FontWeight', 'normal');
 
-groupedCounts = zeros(numel(info.Labels), numel(info.OutcomeNames));
-for iCond = 1:numel(info.Labels)
+groupedCounts = zeros(nCond, numel(info.OutcomeNames));
+for iCond = 1:nCond
     for iOutcome = 1:numel(info.OutcomeNames)
         groupedCounts(iCond, iOutcome) = sum(isIncluded & conditionIndex == iCond & ...
             strcmp(outcomeNames, info.OutcomeNames{iOutcome}));
     end
 end
-basePositions = 1:numel(info.Labels);
+basePositions = 1:nCond;
 barWidth = 0.22;
 barOffsets = [-barWidth, 0, barWidth];
 groupTotals = sum(groupedCounts, 2);
 for iOutcome = 1:numel(info.OutcomeNames)
-    for iCond = 1:numel(info.Labels)
+    for iCond = 1:nCond
         xBar = basePositions(iCond) + barOffsets(iOutcome);
         thisCount = groupedCounts(iCond, iOutcome);
         bar(axBottom{3}, xBar, thisCount, barWidth, ...
@@ -231,13 +245,13 @@ for iOutcome = 1:numel(info.OutcomeNames)
             'FontSize', 7);
     end
 end
-xlim(axBottom{3}, [0.5, 4.5]);
+xlim(axBottom{3}, [0.5, nCond + 0.5]);
 ylim(axBottom{3}, [0, max(groupedCounts(:)) + 10]);
-EasyPlot.setXTicksAndLabels(axBottom{3}, 1:4, info.Labels);
+EasyPlot.setXTicksAndLabels(axBottom{3}, 1:nCond, info.Labels);
 xlabel(axBottom{3}, 'Condition');
 ylabel(axBottom{3}, 'Trial count');
 title(axBottom{3}, 'Performance by condition', 'FontWeight', 'normal');
-EasyPlot.set(axBottom{3}, 'Width', 10);
+EasyPlot.set(axBottom{3}, 'Width', max(10, 1.6*nCond));
 
 EasyPlot.cropFigure(fig);
 EasyPlot.exportFigure(fig, fullfile(pwd, sprintf('BehaviorSummary_Flash_%s_%s.png', subjectName, dateTag)), 'type', 'png');

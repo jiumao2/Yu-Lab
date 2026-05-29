@@ -1,4 +1,4 @@
-function PSTHOut = DoubleToneSpikes(r, ind, varargin)
+function PSTHOut = DoubleToneLearningSpikes(r, ind, varargin)
 % V3: added a few new parameters
 % V4: 2/17/2021 regular style drinking port. No IR sensor in front of the
 % port. 
@@ -70,79 +70,47 @@ if size(r.Behavior.Foreperiods, 1) ~= size(press_times, 1)
 end
 rb = r.Behavior;
 
-triggerTypesRaw = rb.TriggerTypes(:);
-if size(triggerTypesRaw, 1) ~= size(press_times, 1)
-    triggerTypesRaw = triggerTypesRaw';
+MixedFPs = unique(rb.Foreperiods(~isnan(rb.Foreperiods)));
+if isempty(MixedFPs)
+    MixedFPs = 1500;
 end
-triggerTypesRaw = triggerTypesRaw(:);
-rb.Foreperiods = rb.Foreperiods(:);
+MixedFPs = reshape(MixedFPs, 1, []);
+fixedFP = MixedFPs(1);
 
-if isfield(rb, 'TriggerTypeLabels') && ~isempty(rb.TriggerTypeLabels)
-    triggerLabels = cellstr(string(rb.TriggerTypeLabels(:)))';
+nBehaviorTrials = numel(rb.Outcome);
+if isfield(rb, 'ExtraToneVolumes')
+    extraToneVolumesAll = rb.ExtraToneVolumes(:);
 else
-    triggerLabels = {'None', 'Tone500', 'Tone750', 'Tone1000'};
+    extraToneVolumesAll = nan(nBehaviorTrials, 1);
 end
-triggerCodes = 1:numel(triggerLabels);
-
-triggerToneTimes = nan(1, numel(triggerLabels));
-for iTrigger = 1:numel(triggerLabels)
-    if startsWith(triggerLabels{iTrigger}, 'Tone', 'IgnoreCase', true)
-        triggerToneTimes(iTrigger) = str2double(extractAfter(string(triggerLabels{iTrigger}), "Tone"));
-    end
-end
-
-fixedFPs = unique(rb.Foreperiods(~isnan(rb.Foreperiods)));
-if isempty(fixedFPs)
-    fixedFP = 1500;
+if isfield(rb, 'IsTestTrials')
+    isTestTrialsAll = logical(rb.IsTestTrials(:));
 else
-    fixedFP = fixedFPs(1);
+    isTestTrialsAll = false(nBehaviorTrials, 1);
 end
-
-useFPConditionMode = numel(fixedFPs) > 1;
-taskLabels = {};
-taskFPs = [];
-taskTriggerCodes = [];
-taskTriggerLabels = {};
-toneTimes = [];
-if useFPConditionMode
-    outcomeForCondition = cellstr(string(rb.Outcome(:)));
-    outcomeForCondition = outcomeForCondition(1:min(numel(outcomeForCondition), numel(triggerTypesRaw)));
-    if numel(outcomeForCondition) < numel(triggerTypesRaw)
-        outcomeForCondition(end+1:numel(triggerTypesRaw), 1) = {'NaN'};
-    end
-    validOutcomeForCondition = ismember(outcomeForCondition, {'Correct', 'Premature', 'Late'});
-    for iFP = 1:numel(fixedFPs)
-        for iTrigger = 1:numel(triggerCodes)
-            indCondition = rb.Foreperiods == fixedFPs(iFP) & ...
-                triggerTypesRaw == triggerCodes(iTrigger) & validOutcomeForCondition;
-            if any(indCondition)
-                taskLabels{end+1} = sprintf('FP%d | %s', round(fixedFPs(iFP)), triggerLabels{iTrigger}); %#ok<AGROW>
-                taskFPs(end+1) = fixedFPs(iFP); %#ok<AGROW>
-                taskTriggerCodes(end+1) = triggerCodes(iTrigger); %#ok<AGROW>
-                taskTriggerLabels{end+1} = triggerLabels{iTrigger}; %#ok<AGROW>
-                toneTimes(end+1) = triggerToneTimes(iTrigger); %#ok<AGROW>
-            end
-        end
-    end
+if isfield(rb, 'PostLearningPhaseTrials')
+    postLearningTrialsAll = logical(rb.PostLearningPhaseTrials(:));
 else
-    taskLabels = triggerLabels;
-    taskFPs = repmat(fixedFP, 1, numel(triggerLabels));
-    taskTriggerCodes = triggerCodes;
-    taskTriggerLabels = triggerLabels;
-    toneTimes = triggerToneTimes;
+    postLearningTrialsAll = false(nBehaviorTrials, 1);
 end
-taskCodes = 1:numel(taskLabels);
-nFPs = numel(taskCodes);
+extraToneVolumesAll(end+1:nBehaviorTrials) = nan;
+isTestTrialsAll(end+1:nBehaviorTrials) = false;
+postLearningTrialsAll(end+1:nBehaviorTrials) = false;
+extraToneDelay = 750;
 
-triggerTypes = nan(size(triggerTypesRaw));
+conditionFPs = [];
+conditionVolumes = [];
+for iFP = 1:length(MixedFPs)
+    conditionFPs = [conditionFPs MixedFPs(iFP) MixedFPs(iFP)]; %#ok<AGROW>
+    conditionVolumes = [conditionVolumes 0 1]; %#ok<AGROW>
+end
+taskCodes = 1:length(conditionFPs);
+nFPs = length(taskCodes);
+taskLabels = cell(1, nFPs);
 for iTask = 1:nFPs
-    if useFPConditionMode
-        indCondition = triggerTypesRaw == taskTriggerCodes(iTask) & rb.Foreperiods == taskFPs(iTask);
-    else
-        indCondition = triggerTypesRaw == taskTriggerCodes(iTask);
-    end
-    triggerTypes(indCondition) = taskCodes(iTask);
+    taskLabels{iTask} = ['FP' num2str(conditionFPs(iTask)) '_Vol' num2str(conditionVolumes(iTask))];
 end
+toneTimes = nan(1, nFPs);
 
 %% Check if opto is applied
 if isfield(r, 'Analog') && isfield(r.Analog, 'Opto')
@@ -168,20 +136,29 @@ ind_press                                 =       find(strcmp(rb.Labels, 'LeverP
 t_presses                                 =       rb.EventTimings(rb.EventMarkers == ind_press);
 disp(['Number of presses is ' num2str(length(t_presses))])
 % index and time of correct presses
-t_correct_presses                     =       t_presses(rb.CorrectIndex);
-triggerTypes_correct_presses     =       triggerTypes(rb.CorrectIndex);
-FPs_correct_presses              =       rb.Foreperiods(rb.CorrectIndex);
+ind_vol01                            =       extraToneVolumesAll(1:nBehaviorTrials) == 0 | ...
+                                             extraToneVolumesAll(1:nBehaviorTrials) == 1;
+ind_correct_regular                  =       find(strcmp(r.Behavior.Outcome, 'Correct') & ...
+                                             ~isTestTrialsAll(1:nBehaviorTrials)' & ind_vol01');
+t_correct_presses                     =       t_presses(ind_correct_regular);
+FPs_correct_presses              =       rb.Foreperiods(ind_correct_regular);
+volumes_correct_presses          =       extraToneVolumesAll(ind_correct_regular);
+condition_correct_presses        =       nan(size(FPs_correct_presses));
+for iCondition = 1:nFPs
+    condition_correct_presses(FPs_correct_presses == conditionFPs(iCondition) & ...
+        volumes_correct_presses == conditionVolumes(iCondition)) = taskCodes(iCondition);
+end
 % get correct response grouped by trigger type
 for i =1:nFPs
-    t_correct_presses_sorted{i}      =   t_correct_presses(triggerTypes_correct_presses == taskCodes(i));
+    t_correct_presses_sorted{i}      =   t_correct_presses(condition_correct_presses == taskCodes(i));
 end
 
 %% Release
 ind_release                                  =        find(strcmp(rb.Labels, 'LeverRelease'));
 t_releases                                    =        rb.EventTimings(rb.EventMarkers == ind_release);
-t_correct_releases                       =        t_releases(rb.CorrectIndex);
+t_correct_releases                       =        t_releases(ind_correct_regular);
 for i =1:nFPs
-    t_correct_releases_sorted{i}      =         t_correct_releases(triggerTypes_correct_presses == taskCodes(i));
+    t_correct_releases_sorted{i}      =         t_correct_releases(condition_correct_presses == taskCodes(i));
 end
 
 % the size of FPs can be different in r
@@ -193,7 +170,7 @@ rt_correct                                     =         t_correct_releases - t_
 % reaction time 
 indsort = cell(1, nFPs);
 for i =1:nFPs
-    rt_correct_sorted{i}                      =          rt_correct(triggerTypes_correct_presses == taskCodes(i));
+    rt_correct_sorted{i}                      =          rt_correct(condition_correct_presses == taskCodes(i));
     [rt_correct_sorted{i}, indsort{i}]    =          sort(rt_correct_sorted{i});
     t_correct_presses_sorted{i}        =          t_correct_presses_sorted{i}(indsort{i}); 
     t_correct_releases_sorted{i}       =          t_correct_releases_sorted{i}(indsort{i});
@@ -203,10 +180,17 @@ rt_presses_sorted                        =          rt_correct_sorted;
 rt_releases_sorted                       =          rt_correct_sorted;
 
 %% Premature responses
-ind_premature                   =            find(strcmp(r.Behavior.Outcome, 'Premature'));
+ind_premature                   =            find(strcmp(r.Behavior.Outcome, 'Premature') & ...
+                                             ~isTestTrialsAll(1:nBehaviorTrials)' & ind_vol01');
 t_presses_premature         =            t_presses(ind_premature);
 t_releases_premature         =           t_releases(ind_premature);
-triggerTypes_premature        =            triggerTypes(ind_premature);
+FPs_premature        =            rb.Foreperiods(ind_premature);
+volumes_premature    =            extraToneVolumesAll(ind_premature);
+condition_premature  =            nan(size(FPs_premature));
+for iCondition = 1:nFPs
+    condition_premature(FPs_premature == conditionFPs(iCondition) & ...
+        volumes_premature == conditionVolumes(iCondition)) = taskCodes(iCondition);
+end
 premature_duration_presses    =            t_releases_premature - t_presses_premature;
 t_premature_presses           =            [];
 t_premature_releases          =            [];
@@ -214,22 +198,29 @@ premature_duration_sorted     =            [];
 FPs_premature_presses         =            [];
 FPs_premature_releases        =            [];
 for itask = 1:nFPs
-    ind_task = find(triggerTypes_premature == taskCodes(itask));
+    ind_task = find(condition_premature == taskCodes(itask));
     [dur_task, indsort_task] = sort(premature_duration_presses(ind_task));
     t_premature_presses = [t_premature_presses; t_presses_premature(ind_task(indsort_task))];
     t_premature_releases = [t_premature_releases; t_releases_premature(ind_task(indsort_task))];
     premature_duration_sorted = [premature_duration_sorted; dur_task];
-    FPs_premature_presses = [FPs_premature_presses; triggerTypes_premature(ind_task(indsort_task))];
-    FPs_premature_releases = [FPs_premature_releases; triggerTypes_premature(ind_task(indsort_task))];
+    FPs_premature_presses = [FPs_premature_presses; condition_premature(ind_task(indsort_task))];
+    FPs_premature_releases = [FPs_premature_releases; condition_premature(ind_task(indsort_task))];
 end
 premature_duration_presses = premature_duration_sorted;
 premature_duration_releases   =            premature_duration_sorted;
  
 %% Late response 
-ind_late                   =            find(strcmp(r.Behavior.Outcome, 'Late'));
+ind_late                   =            find(strcmp(r.Behavior.Outcome, 'Late') & ...
+                                      ~isTestTrialsAll(1:nBehaviorTrials)' & ind_vol01');
 t_presses_late         =            t_presses(ind_late);
 t_releases_late         =           t_releases(ind_late);
-triggerTypes_late             =            triggerTypes(ind_late);
+FPs_late             =            rb.Foreperiods(ind_late);
+volumes_late         =            extraToneVolumesAll(ind_late);
+condition_late       =            nan(size(FPs_late));
+for iCondition = 1:nFPs
+    condition_late(FPs_late == conditionFPs(iCondition) & ...
+        volumes_late == conditionVolumes(iCondition)) = taskCodes(iCondition);
+end
 late_duration_presses         =            t_releases_late - t_presses_late;
 t_late_presses                =            [];
 t_late_releases               =            [];
@@ -237,13 +228,13 @@ late_duration_sorted          =            [];
 FPs_late_presses              =            [];
 FPs_late_releases             =            [];
 for itask = 1:nFPs
-    ind_task = find(triggerTypes_late == taskCodes(itask));
+    ind_task = find(condition_late == taskCodes(itask));
     [dur_task, indsort_task] = sort(late_duration_presses(ind_task));
     t_late_presses = [t_late_presses; t_presses_late(ind_task(indsort_task))];
     t_late_releases = [t_late_releases; t_releases_late(ind_task(indsort_task))];
     late_duration_sorted = [late_duration_sorted; dur_task];
-    FPs_late_presses = [FPs_late_presses; triggerTypes_late(ind_task(indsort_task))];
-    FPs_late_releases = [FPs_late_releases; triggerTypes_late(ind_task(indsort_task))];
+    FPs_late_presses = [FPs_late_presses; condition_late(ind_task(indsort_task))];
+    FPs_late_releases = [FPs_late_releases; condition_late(ind_task(indsort_task))];
 end
 late_duration_presses         =            late_duration_sorted;
 late_duration_releases        =            late_duration_sorted;
@@ -251,31 +242,47 @@ late_duration_releases        =            late_duration_sorted;
 %%  Rewards
 ind_rewards                =       find(strcmp(rb.Labels, 'ValveOnset'));
 t_rewards                    =       rb.EventTimings(rb.EventMarkers == ind_rewards);
-move_time                  =       zeros(1, length(t_rewards));
+move_time                  =       nan(1, length(t_rewards));
 tmax                            =      10000; % allow at most 10 second between a successful release and poke
-t_rewards_task           =       zeros(1, length(t_rewards)); % find out task type associated with each reward
+t_rewards_task           =       nan(1, length(t_rewards)); % find out task type associated with each reward
+
+% Match each reward to the immediately preceding correct release first.
+% Test trials and intermediate-volume learning trials are deliberately left
+% unassigned so their rewards cannot be inherited by a previous regular trial.
+nRewardMatchTrials = min([nBehaviorTrials, length(t_releases), length(rb.Foreperiods), ...
+    length(extraToneVolumesAll), length(isTestTrialsAll)]);
+t_releases_for_reward = t_releases(1:nRewardMatchTrials);
+outcome_for_reward = rb.Outcome(1:nRewardMatchTrials);
+foreperiods_for_reward = rb.Foreperiods(1:nRewardMatchTrials);
+volumes_for_reward = extraToneVolumesAll(1:nRewardMatchTrials);
+is_test_for_reward = isTestTrialsAll(1:nRewardMatchTrials);
+
+correct_trial_for_reward = strcmp(outcome_for_reward, 'Correct');
+correct_trial_for_reward = correct_trial_for_reward(:);
+condition_by_trial = nan(nRewardMatchTrials, 1);
+regular_condition_trial = correct_trial_for_reward & ~is_test_for_reward(:) & ...
+    (volumes_for_reward(:) == 0 | volumes_for_reward(:) == 1);
+for iCondition = 1:nFPs
+    condition_by_trial(regular_condition_trial & ...
+        foreperiods_for_reward(:) == conditionFPs(iCondition) & ...
+        volumes_for_reward(:) == conditionVolumes(iCondition)) = taskCodes(iCondition);
+end
 
 for i =1:length(t_rewards)
-    dt = t_rewards(i)-t_correct_releases;
-    dt = dt(dt>0 & dt<tmax); % reward must be collected within 2 sec after a correct release
-    if ~isempty(dt)
-        move_time(i) = dt(end);
-        % FPs_correct_presses
-        ind = find(t_correct_releases==t_rewards(i)-dt(end));
-        if ~isempty(ind)
-%             disp(ind)
-            t_rewards_task(i) = triggerTypes_correct_presses(ind);
-        else
-            disp('Not found')
-        end
+    dt = t_rewards(i)-t_releases_for_reward(:);
+    ind = find(correct_trial_for_reward & dt>0 & dt<tmax, 1, 'last'); % reward must follow the same correct trial
+    if ~isempty(ind)
+        move_time(i) = dt(ind);
+        t_rewards_task(i) = condition_by_trial(ind);
     else
         move_time(i) = NaN;
     end
 end
 
-t_rewards                         =           t_rewards(~isnan(move_time));
-move_time                       =           move_time(~isnan(move_time));
-FP_rewards                     =            t_rewards_task(~isnan(move_time));
+valid_rewards                  =           ~isnan(move_time) & ~isnan(t_rewards_task);
+t_rewards                         =           t_rewards(valid_rewards);
+move_time                       =           move_time(valid_rewards);
+FP_rewards                     =            t_rewards_task(valid_rewards);
 % Check movement time distribution
 Edges =(0:100:5000);
 % figure();
@@ -393,7 +400,7 @@ for i =1:length(t_triggers)
     if ~isempty(ind_recent_press) && abs(t_presses(ind_recent_press)-it_trigger)<2500
         % check the condition
         triggers_types{i} = r.Behavior.Outcome{ind_recent_press};
-        triggers_FPs(i) = triggerTypes(ind_recent_press);
+        triggers_FPs(i) = r.Behavior.Foreperiods(ind_recent_press);
         ind_following_releases = find(t_releases>it_trigger, 1, 'first');
         if ~isempty(ind_following_releases)
             triggers_RTs(i) = t_releases(ind_following_releases) - it_trigger;
@@ -407,8 +414,7 @@ end
 t_triggers_late = t_triggers(strcmp(triggers_types, 'Late'));
 FP_triggers_late = triggers_FPs(strcmp(triggers_types, 'Late'));
 triggers_RTs_late = triggers_RTs(strcmp(triggers_types, 'Late'));
-[~, ind_sorted] = sortrows([FP_triggers_late(:), triggers_RTs_late(:)], [1 2]);
-triggers_RTs_late = triggers_RTs_late(ind_sorted);
+[triggers_RTs_late, ind_sorted] = sort(triggers_RTs_late);
 t_triggers_late = t_triggers_late(ind_sorted);
 FP_triggers_late = FP_triggers_late(ind_sorted);
 % trigger according to task type
@@ -422,6 +428,40 @@ for i =1:nFPs
     [RT_triggers_FPs{i}, ind_sorted] = sort(RT_triggers_FPs{i});
     t_triggers_FPs{i} = t_triggers_FPs{i}(ind_sorted);
 end
+
+%% Extra tone learning trials
+nTrialsLearning = min([numel(r.Behavior.Outcome), numel(t_presses), numel(t_releases), ...
+    numel(r.Behavior.Foreperiods), numel(extraToneVolumesAll), ...
+    numel(isTestTrialsAll), numel(postLearningTrialsAll)]);
+trial_index = (1:nTrialsLearning)';
+trial_outcome = r.Behavior.Outcome(1:nTrialsLearning);
+trial_outcome = trial_outcome(:);
+trial_press = t_presses(1:nTrialsLearning);
+trial_press = trial_press(:);
+trial_release = t_releases(1:nTrialsLearning);
+trial_release = trial_release(:);
+trial_fp = r.Behavior.Foreperiods(1:nTrialsLearning);
+trial_fp = trial_fp(:);
+trial_extra_volume = extraToneVolumesAll(1:nTrialsLearning);
+trial_extra_volume = trial_extra_volume(:);
+trial_is_test = isTestTrialsAll(1:nTrialsLearning);
+trial_is_test = trial_is_test(:);
+trial_is_post_learning = postLearningTrialsAll(1:nTrialsLearning);
+trial_is_post_learning = trial_is_post_learning(:);
+trial_hold_duration = trial_release - trial_press;
+trial_rt = trial_release - trial_press - trial_fp;
+trial_extra_onset = trial_press + extraToneDelay;
+trial_has_extra_window = strcmp(trial_outcome, 'Correct') | strcmp(trial_outcome, 'Late') | ...
+    (strcmp(trial_outcome, 'Premature') & trial_hold_duration >= extraToneDelay);
+trial_learning_regular = trial_has_extra_window & ~trial_is_test & ~trial_is_post_learning;
+trial_full_volume = trial_has_extra_window & trial_extra_volume == 1;
+
+[~, ind_learning_extra] = sort(trial_press(trial_learning_regular));
+[~, ind_full_volume] = sort(trial_press(trial_full_volume));
+learning_idx = find(trial_learning_regular);
+full_volume_idx = find(trial_full_volume);
+learning_idx = learning_idx(ind_learning_extra);
+full_volume_idx = full_volume_idx(ind_full_volume);
 
 %% Check ComputeRange
 
@@ -661,40 +701,6 @@ if ~isempty(t_opto_begs)
 %%%%% all events that fall within opto-stim duration are not removed.
 %%%%% %%%%%%%%%%%%%%%%%%%%%%%%%
 end
-
-%% Extra tone 750
-indTone750 = find(strcmpi(taskTriggerLabels, 'Tone750'));
-t_extra750_correct_by_condition = cell(1, numel(indTone750));
-rt_extra750_correct_by_condition = cell(1, numel(indTone750));
-t_extra750_premature_by_condition = cell(1, numel(indTone750));
-rt_extra750_premature_by_condition = cell(1, numel(indTone750));
-for iTone750 = 1:numel(indTone750)
-    thisCondition = indTone750(iTone750);
-    t_extra750_correct_by_condition{iTone750} = t_correct_presses_sorted{thisCondition} + 750;
-    rt_extra750_correct_by_condition{iTone750} = t_correct_releases_sorted{thisCondition} - ...
-        t_extra750_correct_by_condition{iTone750};
-
-    ind_extra750_premature = find(FPs_premature_presses == thisCondition & premature_duration_presses >= 750);
-    t_extra750_premature_by_condition{iTone750} = t_premature_presses(ind_extra750_premature) + 750;
-    rt_extra750_premature_by_condition{iTone750} = t_premature_releases(ind_extra750_premature) - ...
-        t_extra750_premature_by_condition{iTone750};
-    [rt_extra750_premature_by_condition{iTone750}, indsort_extra750_premature] = ...
-        sort(rt_extra750_premature_by_condition{iTone750});
-    t_extra750_premature_by_condition{iTone750} = ...
-        t_extra750_premature_by_condition{iTone750}(indsort_extra750_premature);
-end
-if isempty(t_extra750_correct_by_condition)
-    t_extra750_correct = [];
-    rt_extra750_correct = [];
-    t_extra750_premature = [];
-    rt_extra750_premature = [];
-else
-    t_extra750_correct = vertcat(t_extra750_correct_by_condition{:});
-    rt_extra750_correct = vertcat(rt_extra750_correct_by_condition{:});
-    t_extra750_premature = vertcat(t_extra750_premature_by_condition{:});
-    rt_extra750_premature = vertcat(rt_extra750_premature_by_condition{:});
-end
-
 %% Summarize
 
 PSTHOut.ANM_Session                               =     {r.BehaviorClass.Subject, r.BehaviorClass.Date};
@@ -702,9 +708,8 @@ PSTHOut.TaskTypes.Codes                            =     taskCodes;
 PSTHOut.TaskTypes.Labels                           =     taskLabels;
 PSTHOut.TaskTypes.ToneTimes                        =     toneTimes;
 PSTHOut.TaskTypes.FixedFP                          =     fixedFP;
-PSTHOut.TaskTypes.FPs                              =     taskFPs;
-PSTHOut.TaskTypes.TriggerCodes                     =     taskTriggerCodes;
-PSTHOut.TaskTypes.TriggerLabels                    =     taskTriggerLabels;
+PSTHOut.TaskTypes.ConditionFPs                     =     conditionFPs;
+PSTHOut.TaskTypes.ConditionVolumes                 =     conditionVolumes;
 
 PSTHOut.Presses.Labels                             =     [taskLabels, 'Premature', 'Late', 'All'];
 PSTHOut.Presses.Time                                =     [t_correct_presses_sorted, t_premature_presses, t_late_presses, t_presses];
@@ -731,16 +736,30 @@ PSTHOut.Triggers.Time                                     =       [t_triggers_FP
 PSTHOut.Triggers.RT                                        =       [RT_triggers_FPs, triggers_RTs_late];
 PSTHOut.Triggers.FP                                         =       {taskCodes, FP_triggers_late};
 
-PSTHOut.ExtraTone750.Labels                         =       {'Correct', 'Premature'};
-PSTHOut.ExtraTone750.Time                           =       {t_extra750_correct, t_extra750_premature};
-PSTHOut.ExtraTone750.RT                             =       {rt_extra750_correct, rt_extra750_premature};
-PSTHOut.ExtraTone750.ConditionCodes                 =       indTone750;
-PSTHOut.ExtraTone750.ConditionLabels                =       taskLabels(indTone750);
-PSTHOut.ExtraTone750.ConditionFPs                   =       taskFPs(indTone750);
-PSTHOut.ExtraTone750.Correct.Time                   =       t_extra750_correct_by_condition;
-PSTHOut.ExtraTone750.Correct.RT                     =       rt_extra750_correct_by_condition;
-PSTHOut.ExtraTone750.Premature.Time                 =       t_extra750_premature_by_condition;
-PSTHOut.ExtraTone750.Premature.RT                   =       rt_extra750_premature_by_condition;
+PSTHOut.Learning.ExtraToneDelay              =       extraToneDelay;
+PSTHOut.Learning.TrialInfo.Index             =       trial_index;
+PSTHOut.Learning.TrialInfo.Outcome           =       trial_outcome;
+PSTHOut.Learning.TrialInfo.PressTime         =       trial_press;
+PSTHOut.Learning.TrialInfo.ReleaseTime       =       trial_release;
+PSTHOut.Learning.TrialInfo.Foreperiod        =       trial_fp;
+PSTHOut.Learning.TrialInfo.HoldDuration      =       trial_hold_duration;
+PSTHOut.Learning.TrialInfo.RT                =       trial_rt;
+PSTHOut.Learning.TrialInfo.ExtraToneOnset    =       trial_extra_onset;
+PSTHOut.Learning.TrialInfo.ExtraToneVolumes  =       trial_extra_volume;
+PSTHOut.Learning.TrialInfo.IsTestTrials      =       trial_is_test;
+PSTHOut.Learning.TrialInfo.PostLearningPhaseTrials = trial_is_post_learning;
+PSTHOut.Learning.TrialInfo.HasExtraToneWindow =      trial_has_extra_window;
+
+PSTHOut.ExtraTone.Labels                     =       {'LearningRegular', 'FullVolume'};
+PSTHOut.ExtraTone.Time                       =       {trial_extra_onset(learning_idx), trial_extra_onset(full_volume_idx)};
+PSTHOut.ExtraTone.RT                         =       {trial_rt(learning_idx), trial_rt(full_volume_idx)};
+PSTHOut.ExtraTone.FP                         =       {trial_fp(learning_idx), trial_fp(full_volume_idx)};
+PSTHOut.ExtraTone.Volume                     =       {trial_extra_volume(learning_idx), trial_extra_volume(full_volume_idx)};
+PSTHOut.ExtraTone.IsTest                     =       {trial_is_test(learning_idx), trial_is_test(full_volume_idx)};
+PSTHOut.ExtraTone.PostLearning               =       {trial_is_post_learning(learning_idx), trial_is_post_learning(full_volume_idx)};
+PSTHOut.ExtraTone.Outcome                    =       {trial_outcome(learning_idx), trial_outcome(full_volume_idx)};
+PSTHOut.ExtraTone.PressTime                  =       {trial_press(learning_idx), trial_press(full_volume_idx)};
+PSTHOut.ExtraTone.ReleaseTime                =       {trial_release(learning_idx), trial_release(full_volume_idx)};
 
 PSTHOut.OptoEpochs.Begs                             =     t_opto_begs;
 PSTHOut.OptoEpochs.Ends                             =     t_opto_ends;
@@ -760,7 +779,7 @@ for iku =1:length(ku_all)
     disp('##########################################')
     disp(['Computing this unit: ' num2str(ku)])
     disp('##########################################')
-    PSTHOut.PSTH(iku)       = DoubleTone.ComputePlotPSTH(r, PSTHOut, ku,...
+    PSTHOut.PSTH(iku)       = DoubleTone.ComputePlotPSTHLearning(r, PSTHOut, ku,...
         'PressTimeDomain', PressTimeDomain, ...
         'ReleaseTimeDomain', ReleaseTimeDomain, ...
         'RewardTimeDomain', RewardTimeDomain,...
@@ -780,8 +799,9 @@ if takeall
    r.PSTH.Events.Releases          = PSTHOut.Releases;
    r.PSTH.Events.Pokes               = PSTHOut.Pokes;
    r.PSTH.Events.Triggers            = PSTHOut.Triggers;
-   r.PSTH.Events.ExtraTone750        = PSTHOut.ExtraTone750;
    r.PSTH.Events.TaskTypes         = PSTHOut.TaskTypes;
+   r.PSTH.Events.ExtraTone          = PSTHOut.ExtraTone;
+   r.PSTH.Events.Learning           = PSTHOut.Learning;
    r.PSTH.Events.OptoEpochs     = PSTHOut.OptoEpochs;
    r.PSTH.Events.SpikeNotes       = PSTHOut.SpikeNotes;
    r.PSTH.PSTHs                         = PSTHOut.PSTH;

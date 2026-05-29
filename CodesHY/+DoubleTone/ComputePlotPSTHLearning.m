@@ -1,4 +1,4 @@
-function PSTH = ComputePlotPSTH(r, PSTHOut, ku, varargin)
+function PSTH = ComputePlotPSTHLearning(r, PSTHOut, ku, varargin)
 
 % Jianing Yu 5/8/2023
 % For plotting PSTHs under DoubleTone condition.
@@ -35,51 +35,31 @@ end
 press_col = [5 191 219]/255;
 trigger_col = [242 182 250]/255;
 release_col = [87, 108, 188]/255;
+full_volume_spike_col = [0.55, 0.20, 0.45];
 reward_col = [164, 208, 164]/255;
 taskCodes = PSTHOut.TaskTypes.Codes;
 taskLabels = PSTHOut.TaskTypes.Labels;
 toneTimes = PSTHOut.TaskTypes.ToneTimes;
 fixedFP = PSTHOut.TaskTypes.FixedFP;
-if isfield(PSTHOut.TaskTypes, 'FPs')
-    taskFPs = PSTHOut.TaskTypes.FPs;
+if isfield(PSTHOut.TaskTypes, 'ConditionFPs')
+    conditionFPs = PSTHOut.TaskTypes.ConditionFPs;
 else
-    taskFPs = repmat(fixedFP, size(PSTHOut.TaskTypes.Codes));
+    conditionFPs = taskCodes;
 end
-if isfield(PSTHOut.TaskTypes, 'TriggerLabels')
-    taskTriggerLabels = PSTHOut.TaskTypes.TriggerLabels;
+if isfield(PSTHOut.TaskTypes, 'ConditionVolumes')
+    conditionVolumes = PSTHOut.TaskTypes.ConditionVolumes;
 else
-    taskTriggerLabels = taskLabels;
+    conditionVolumes = ones(size(taskCodes));
 end
 nFPs = length(taskCodes);
-full_volume_spike_col = [0.55, 0.20, 0.45];
-triggerBaseLabels = {'None', 'Tone500', 'Tone750', 'Tone1000'};
-triggerBaseColors = [0.25 0.25 0.25; 0.16 0.52 0.78; full_volume_spike_col; 0.45 0.33 0.75];
-FP_cols = zeros(nFPs, 3);
-for iTask = 1:nFPs
-    indTriggerColor = find(strcmpi(taskTriggerLabels{iTask}, triggerBaseLabels), 1, 'first');
-    if isempty(indTriggerColor)
-        FP_cols(iTask, :) = [0.25 0.25 0.25];
-    else
-        FP_cols(iTask, :) = triggerBaseColors(indTriggerColor, :);
-    end
-end
-uniqueTaskFPs = unique(taskFPs(~isnan(taskFPs)));
-lineStyleSet = {'-', '--', ':', '-.'};
-FP_line_styles = cell(1, nFPs);
-for iTask = 1:nFPs
-    indFP = find(uniqueTaskFPs == taskFPs(iTask), 1, 'first');
-    if isempty(indFP)
-        indFP = 1;
-    end
-    FP_line_styles{iTask} = lineStyleSet{mod(indFP-1, numel(lineStyleSet))+1};
-end
+FP_cols = [0.25 0.25 0.25; 0.16 0.52 0.78; 0.95 0.58 0.22; 0.45 0.33 0.75];
 premature_col = [0.9 0.4 0.1];
 late_col = [0.6 0.6 0.6];
 extra_tone_shade_col = [0.66 0.78 0.92];
 extra_tone_alpha = 0.30;
 reward_ref_lw = 0.8;
 reward_move_lw = 0.8;
-printsize = [2 2 37 25];
+printsize = [2 2 35.5 25];
 
 %% PSTHs for press and release
 params_press.pre            =             5000; % take a longer pre-press activity so we can compute z score easily later.
@@ -272,82 +252,94 @@ for i =1:nFPs
         tspkmat_trigger_correct{i}, t_triggers_correct{i}, RT_triggers_correct{i}, taskCodes(i)};
 end
 
-% extra tone750 PSTH
-if isfield(PSTHOut, 'ExtraTone750') && isfield(PSTHOut.ExtraTone750, 'Correct')
-    extra750_condition_codes = PSTHOut.ExtraTone750.ConditionCodes;
-    extra750_condition_labels = PSTHOut.ExtraTone750.ConditionLabels;
-    extra750_condition_fps = PSTHOut.ExtraTone750.ConditionFPs;
-    t_extra750_correct_by_condition = PSTHOut.ExtraTone750.Correct.Time;
-    RT_extra750_correct_by_condition = PSTHOut.ExtraTone750.Correct.RT;
-    t_extra750_premature_by_condition = PSTHOut.ExtraTone750.Premature.Time;
-    RT_extra750_premature_by_condition = PSTHOut.ExtraTone750.Premature.RT;
-elseif isfield(PSTHOut, 'ExtraTone750')
-    extra750_condition_codes = find(strcmpi(taskTriggerLabels, 'Tone750'), 1, 'first');
-    extra750_condition_labels = taskLabels(extra750_condition_codes);
-    extra750_condition_fps = taskFPs(extra750_condition_codes);
-    t_extra750_correct_by_condition = PSTHOut.ExtraTone750.Time(1);
-    RT_extra750_correct_by_condition = PSTHOut.ExtraTone750.RT(1);
-    t_extra750_premature_by_condition = PSTHOut.ExtraTone750.Time(2);
-    RT_extra750_premature_by_condition = PSTHOut.ExtraTone750.RT(2);
-else
-    extra750_condition_codes = [];
-    extra750_condition_labels = {};
-    extra750_condition_fps = [];
-    t_extra750_correct_by_condition = {};
-    RT_extra750_correct_by_condition = {};
-    t_extra750_premature_by_condition = {};
-    RT_extra750_premature_by_condition = {};
+% extra tone PSTH for learning trials
+for i =1:length(PSTHOut.ExtraTone.Time)
+    t_extra_tone{i} = PSTHOut.ExtraTone.Time{i};
+    RT_extra_tone{i} = PSTHOut.ExtraTone.RT{i};
+    FP_extra_tone{i} = PSTHOut.ExtraTone.FP{i};
+    volume_extra_tone{i} = PSTHOut.ExtraTone.Volume{i};
+    is_test_extra_tone{i} = PSTHOut.ExtraTone.IsTest{i};
+    post_learning_extra_tone{i} = PSTHOut.ExtraTone.PostLearning{i};
+    outcome_extra_tone{i} = PSTHOut.ExtraTone.Outcome{i};
+    press_extra_tone{i} = PSTHOut.ExtraTone.PressTime{i};
+    release_extra_tone{i} = PSTHOut.ExtraTone.ReleaseTime{i};
+    [psth_extra_tone{i}, ts_extra_tone{i}, trialspxmat_extra_tone{i}, tspkmat_extra_tone{i}, ...
+        t_extra_tone{i}, ind] = Spikes.jpsth(r.Units.SpikeTimes(ku).timings, ...
+        t_extra_tone{i}, params);
+    psth_extra_tone{i} = smoothdata(psth_extra_tone{i}, 'gaussian', 5);
+    RT_extra_tone{i} = RT_extra_tone{i}(ind);
+    FP_extra_tone{i} = FP_extra_tone{i}(ind);
+    volume_extra_tone{i} = volume_extra_tone{i}(ind);
+    is_test_extra_tone{i} = is_test_extra_tone{i}(ind);
+    post_learning_extra_tone{i} = post_learning_extra_tone{i}(ind);
+    outcome_extra_tone{i} = outcome_extra_tone{i}(ind);
+    press_extra_tone{i} = press_extra_tone{i}(ind);
+    release_extra_tone{i} = release_extra_tone{i}(ind);
+    PSTH.ExtraTone{i} = {psth_extra_tone{i}, ts_extra_tone{i}, trialspxmat_extra_tone{i}, ...
+        tspkmat_extra_tone{i}, t_extra_tone{i}, RT_extra_tone{i}, FP_extra_tone{i}, ...
+        volume_extra_tone{i}, is_test_extra_tone{i}, post_learning_extra_tone{i}, outcome_extra_tone{i}};
 end
+PSTH.ExtraToneLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', ...
+    'RT', 'FP', 'Volume', 'IsTest', 'PostLearning', 'Outcome'};
 
-nExtra750Conditions = numel(extra750_condition_codes);
-psth_extra750_correct = cell(1, nExtra750Conditions);
-ts_extra750_correct = cell(1, nExtra750Conditions);
-trialspxmat_extra750_correct = cell(1, nExtra750Conditions);
-tspkmat_extra750_correct = cell(1, nExtra750Conditions);
-t_extra750_correct = cell(1, nExtra750Conditions);
-RT_extra750_correct = cell(1, nExtra750Conditions);
-psth_extra750_premature = cell(1, nExtra750Conditions);
-ts_extra750_premature = cell(1, nExtra750Conditions);
-trialspxmat_extra750_premature = cell(1, nExtra750Conditions);
-tspkmat_extra750_premature = cell(1, nExtra750Conditions);
-t_extra750_premature = cell(1, nExtra750Conditions);
-RT_extra750_premature = cell(1, nExtra750Conditions);
-for iExtra = 1:nExtra750Conditions
-    t_extra750_correct{iExtra} = t_extra750_correct_by_condition{iExtra};
-    RT_extra750_correct{iExtra} = RT_extra750_correct_by_condition{iExtra};
-    [psth_extra750_correct{iExtra}, ts_extra750_correct{iExtra}, trialspxmat_extra750_correct{iExtra}, ...
-        tspkmat_extra750_correct{iExtra}, t_extra750_correct{iExtra}, ind] = ...
-        Spikes.jpsth(r.Units.SpikeTimes(ku).timings, t_extra750_correct{iExtra}, params);
-    RT_extra750_correct{iExtra} = RT_extra750_correct{iExtra}(ind);
-    psth_extra750_correct{iExtra} = smoothdata(psth_extra750_correct{iExtra}, 'gaussian', 5);
+trialInfo = PSTHOut.Learning.TrialInfo;
+ind_learning_press = find(~strcmp(trialInfo.Outcome, 'Dark') & ~trialInfo.IsTestTrials);
+[~, ind_learning_press_sort] = sort(trialInfo.PressTime(ind_learning_press));
+ind_learning_press = ind_learning_press(ind_learning_press_sort);
+t_learning_press = trialInfo.PressTime(ind_learning_press);
+learning_press_outcome = trialInfo.Outcome(ind_learning_press);
+learning_press_volume = trialInfo.ExtraToneVolumes(ind_learning_press);
+learning_press_test = trialInfo.IsTestTrials(ind_learning_press);
+learning_press_post = trialInfo.PostLearningPhaseTrials(ind_learning_press);
+learning_press_fp = trialInfo.Foreperiod(ind_learning_press);
+learning_press_hold_duration = trialInfo.HoldDuration(ind_learning_press);
+[psth_learning_press, ts_learning_press, trialspxmat_learning_press, tspkmat_learning_press, ...
+    t_learning_press, ind] = Spikes.jpsth(r.Units.SpikeTimes(ku).timings, ...
+    t_learning_press, params_press);
+psth_learning_press = smoothdata(psth_learning_press, 'gaussian', 5);
+learning_press_outcome = learning_press_outcome(ind);
+learning_press_volume = learning_press_volume(ind);
+learning_press_test = learning_press_test(ind);
+learning_press_post = learning_press_post(ind);
+learning_press_fp = learning_press_fp(ind);
+learning_press_hold_duration = learning_press_hold_duration(ind);
+PSTH.LearningPress = {psth_learning_press, ts_learning_press, trialspxmat_learning_press, ...
+    tspkmat_learning_press, t_learning_press, learning_press_outcome, ...
+    learning_press_volume, learning_press_test, learning_press_post, learning_press_fp, ...
+    learning_press_hold_duration};
 
-    t_extra750_premature{iExtra} = t_extra750_premature_by_condition{iExtra};
-    RT_extra750_premature{iExtra} = RT_extra750_premature_by_condition{iExtra};
-    [psth_extra750_premature{iExtra}, ts_extra750_premature{iExtra}, trialspxmat_extra750_premature{iExtra}, ...
-        tspkmat_extra750_premature{iExtra}, t_extra750_premature{iExtra}, ind] = ...
-        Spikes.jpsth(r.Units.SpikeTimes(ku).timings, t_extra750_premature{iExtra}, params);
-    RT_extra750_premature{iExtra} = RT_extra750_premature{iExtra}(ind);
-    psth_extra750_premature{iExtra} = smoothdata(psth_extra750_premature{iExtra}, 'gaussian', 5);
+ind_learning_press_vol_lt1 = learning_press_volume < 1;
+ind_learning_press_vol_eq1 = learning_press_volume == 1;
+psth_learning_press_vol_lt1 = nan(size(ts_learning_press));
+psth_learning_press_vol_eq1 = nan(size(ts_learning_press));
+if any(ind_learning_press_vol_lt1)
+    [psth_learning_press_vol_lt1, ~] = Spikes.jpsth(r.Units.SpikeTimes(ku).timings, ...
+        t_learning_press(ind_learning_press_vol_lt1), params_press);
+    psth_learning_press_vol_lt1 = smoothdata(psth_learning_press_vol_lt1, 'gaussian', 5);
 end
-
-PSTH.ExtraTone750Correct = {psth_extra750_correct, ts_extra750_correct, trialspxmat_extra750_correct,...
-    tspkmat_extra750_correct, t_extra750_correct, RT_extra750_correct, extra750_condition_codes, extra750_condition_fps};
-PSTH.ExtraTone750Premature = {psth_extra750_premature, ts_extra750_premature, trialspxmat_extra750_premature,...
-    tspkmat_extra750_premature, t_extra750_premature, RT_extra750_premature, extra750_condition_codes, extra750_condition_fps};
-PSTH.ExtraTone750Labels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'ReleaseTime'};
+if any(ind_learning_press_vol_eq1)
+    [psth_learning_press_vol_eq1, ~] = Spikes.jpsth(r.Units.SpikeTimes(ku).timings, ...
+        t_learning_press(ind_learning_press_vol_eq1), params_press);
+    psth_learning_press_vol_eq1 = smoothdata(psth_learning_press_vol_eq1, 'gaussian', 5);
+end
+PSTH.LearningPressByVolume = {psth_learning_press_vol_lt1, psth_learning_press_vol_eq1, ...
+    ts_learning_press, sum(ind_learning_press_vol_lt1), sum(ind_learning_press_vol_eq1)};
 
 %% Plot raster and spks
 figure();
 set(gcf, 'unit', 'centimeters', 'position', printsize, 'paperpositionmode', 'auto' ,'color', 'w')
+x_trial_col = 0.85;
+trial_width = 5.2;
+perf_width = trial_width;
+x_perf_col = x_trial_col + trial_width + 0.6;
 % PSTH of correct trials
 yshift_row1 = 1;
-ha_press_psth =  axes('unit', 'centimeters', 'position', [1.25 yshift_row1 6 2], 'nextplot', 'add', 'xlim', [-PressTimeDomain(1) PressTimeDomain(2)]);
+ha_press_psth =  axes('unit', 'centimeters', 'position', [x_perf_col yshift_row1 perf_width 2], 'nextplot', 'add', 'xlim', [-PressTimeDomain(1) PressTimeDomain(2)]);
 yshift_row2 = yshift_row1+2+0.25;
 hplot_press= zeros(1, nFPs);
 FRMax = 3;
 for i =1:nFPs
-    hplot_press(i) = plot(ts_press{i}, psth_presses_correct{i}, ...
-        'color', FP_cols(i, :), 'linestyle', FP_line_styles{i}, 'linewidth', 1.5);
+    hplot_press(i) = plot(ts_press{i}, psth_presses_correct{i}, 'color', FP_cols(i, :),  'linewidth', 1.5);
     FRMax = max([FRMax max(psth_presses_correct{i})]);
 %     disp(FRMax)
 end
@@ -356,7 +348,7 @@ xlabel('Time from press (ms)')
 ylabel ('Spks per s')
 
 % PSTH of error trials (premature and late)
-ha_press_psth_error =  axes('unit', 'centimeters', 'position', [1.25 yshift_row2 6 2], 'nextplot', 'add',...
+ha_press_psth_error =  axes('unit', 'centimeters', 'position', [x_perf_col yshift_row2 perf_width 2], 'nextplot', 'add',...
     'xlim',  [-PressTimeDomain(1) PressTimeDomain(2)], 'xticklabel', []);
 yshift_row3 = yshift_row2 +2+0.25;
 % plot premature and late as well
@@ -372,6 +364,42 @@ if  size(trialspxmat_late_press, 2)>3
 end
 axis 'auto y'
 hline_press_error = line([0 0], get(gca, 'ylim'), 'color', press_col, 'linewidth', 1);
+
+% Learning press PSTH split by extra-tone volume, from the trial-time raster trials
+ha_learning_press_psth_volume = axes('unit', 'centimeters', 'position', [x_trial_col yshift_row1 trial_width 2], ...
+    'nextplot', 'add', 'xlim', [-PressTimeDomain(1) PressTimeDomain(2)]);
+h_learning_press_volume = gobjects(1, 2);
+if any(ind_learning_press_vol_lt1)
+    h_learning_press_volume(1) = plot(ts_learning_press, psth_learning_press_vol_lt1, ...
+        'color', [0.25 0.25 0.25], 'linewidth', 1.5);
+    FRMax = max([FRMax max(psth_learning_press_vol_lt1(:))]);
+end
+if any(ind_learning_press_vol_eq1)
+    h_learning_press_volume(2) = plot(ts_learning_press, psth_learning_press_vol_eq1, ...
+        'color', full_volume_spike_col, 'linewidth', 1.5);
+    FRMax = max([FRMax max(psth_learning_press_vol_eq1(:))]);
+end
+axis 'auto y'
+xlabel('Time from press (ms)')
+ylabel('Spks per s')
+ind_learning_press_volume_legend = isgraphics(h_learning_press_volume);
+if any(ind_learning_press_volume_legend)
+    learning_press_volume_legend_labels = {'Vol < 1', 'Vol = 1'};
+    learning_press_volume_legend_cols = [0.25 0.25 0.25; full_volume_spike_col];
+    ha_learning_press_volume_legend = axes('unit', 'centimeters', ...
+        'position', [x_trial_col yshift_row1+2.15 trial_width 0.6], ...
+        'nextplot', 'add', 'xlim', [0 1], 'ylim', [0 1], 'visible', 'off');
+    klegend = 0;
+    for ileg = find(ind_learning_press_volume_legend)
+        klegend = klegend + 1;
+        ylegend = 1.05 - 0.42*klegend;
+        line(ha_learning_press_volume_legend, [0.05 0.28], [ylegend ylegend], ...
+            'color', learning_press_volume_legend_cols(ileg, :), 'linewidth', 1.5);
+        text(ha_learning_press_volume_legend, 0.34, ylegend, ...
+            learning_press_volume_legend_labels{ileg}, 'fontsize', 6, ...
+            'verticalalignment', 'middle');
+    end
+end
 
 % make raster plot  750 ms FP
 if num2str(length(t_presses))>200
@@ -390,14 +418,70 @@ for i =1:nFPs
     nFP_i(i) = size(trialspxmat_press{i}, 2);
     ntrials_press = ntrials_press + nFP_i(i);
 end
-axes('unit', 'centimeters', 'position', [1.25 yshift_row3 6 ntrials_press*rasterheight],...
+ntrial_learning_press = size(trialspxmat_learning_press, 2);
+axes('unit', 'centimeters', 'position', [x_trial_col yshift_row3 trial_width max([ntrial_learning_press 1])*rasterheight],...
+    'nextplot', 'add', 'xlim', [-PressTimeDomain(1) PressTimeDomain(2)], ...
+    'ylim', [-max([ntrial_learning_press 1]) 1], 'box', 'on');
+ap_mat = trialspxmat_learning_press;
+t_mat = tspkmat_learning_press;
+xx_all = [];
+yy_all = [];
+xxrt_all = [];
+yyrt_all = [];
+x_vol = [];
+y_vol = [];
+c_vol = [];
+x_test = [];
+y_test = [];
+for i =1:ntrial_learning_press
+    xx = t_mat(ap_mat(:, i)==1);
+    yy1 = [0 0.8]-i+1;
+    yy2 = [0 1]-i+1;
+    yy_shade = [-i+1 -i+1; 1-i+1 1-i+1];
+    iFP = learning_press_fp(i);
+    plotshaded([0 iFP], yy_shade, trigger_col);
+    if learning_press_volume(i)>0
+        patch([0 750 750 0], [-i+1 -i+1 1-i+1 1-i+1], ...
+            extra_tone_shade_col, 'FaceAlpha', extra_tone_alpha, 'EdgeColor', 'none');
+    end
+    for i_xx = 1:length(xx)
+        xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+        yy_all = [yy_all, yy1, NaN];
+    end
+    if ~isnan(learning_press_hold_duration(i))
+        xxrt_all = [xxrt_all, learning_press_hold_duration(i), learning_press_hold_duration(i), NaN];
+        yyrt_all = [yyrt_all, yy2, NaN];
+    end
+    x_vol = [x_vol, -PressTimeDomain(1)-75];
+    y_vol = [y_vol, -i+1+0.5];
+    c_vol = [c_vol, learning_press_volume(i)];
+    if learning_press_test(i)
+        x_test = [x_test, PressTimeDomain(2)+75];
+        y_test = [y_test, -i+1+0.5];
+    end
+end
+line(xx_all, yy_all, 'color', [0.2 0.2 0.2], 'linewidth', 1);
+line(xxrt_all, yyrt_all, 'color', release_col, 'linewidth', 1.5);
+ind_vol_valid = ~isnan(c_vol);
+scatter(x_vol(ind_vol_valid), y_vol(ind_vol_valid), 12, c_vol(ind_vol_valid), ...
+    's', 'filled', 'MarkerEdgeColor', 'none', 'Clipping', 'off');
+scatter(x_vol(~ind_vol_valid), y_vol(~ind_vol_valid), 12, [0.75 0.75 0.75], ...
+    's', 'filled', 'MarkerEdgeColor', 'none', 'Clipping', 'off');
+plot(x_test, y_test, '|', 'color', 'k', 'markersize', 4, 'linewidth', 1);
+colormap(gca, parula);
+caxis([0 1]);
+line([0 0], get(gca, 'ylim'), 'color', press_col, 'linewidth', 1);
+title('Trial time', 'fontsize', 7, 'fontweight','bold');
+axis off
+yshift_trial_press = yshift_row3+max([ntrial_learning_press 1])*rasterheight+0.5;
+
+axes('unit', 'centimeters', 'position', [x_perf_col yshift_row3 perf_width ntrials_press*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-PressTimeDomain(1) PressTimeDomain(2)], 'ylim', [-ntrials_press 1], 'box', 'on');
 yshift_row4 = yshift_row3+ntrials_press*rasterheight+0.5;
 % Paint the foreperiod
 k=0;
 for m =1:nFPs
-    k_start = k;
     ap_mat = trialspxmat_press{m};
     t_mat = tspkmat_press{m};
     rt = rt_presses_sorted{m};
@@ -409,14 +493,14 @@ for m =1:nFPs
     y_portin = [];
     for i =1:nFP_i(m)
         irt = rt(i); % time from foreperiod to release
+        mFP = conditionFPs(m);
         xx = t_mat(ap_mat(:, i)==1);
         yy1 = [0 0.8]-k;
         yy2 = [0 1]-k;
-        iFP = taskFPs(m);
-        xxrt = irt + iFP;
-        plotshaded([0 iFP],[-k -k; 1-k 1-k], trigger_col);
-        if ~isnan(toneTimes(m))
-            patch([0 toneTimes(m) toneTimes(m) 0], ...
+        xxrt = irt + mFP;
+        plotshaded([0 mFP],[-k -k; 1-k 1-k], trigger_col);
+        if conditionVolumes(m)>0
+            patch([0 750 750 0], ...
                 [-k -k 1-k 1-k], extra_tone_shade_col, 'FaceAlpha', extra_tone_alpha, 'EdgeColor', 'none');
         end
 
@@ -450,7 +534,7 @@ axis off
 
 % Premature press raster plot
 ntrial_premature = size(trialspxmat_premature_press, 2); % number of trials
-axes('unit', 'centimeters', 'position', [1.25 yshift_row4 6 ntrial_premature*rasterheight],...
+axes('unit', 'centimeters', 'position', [x_perf_col yshift_row4 perf_width ntrial_premature*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-PressTimeDomain(1) PressTimeDomain(2)], 'ylim', [-ntrial_premature 1], 'box', 'on');
 yshift_row5    =      yshift_row4 + 0.5 + ntrial_premature*rasterheight;
@@ -469,12 +553,10 @@ for i =1:size(ap_mat, 2)
     yy1 = [0 0.8]-k;
     yy2 = [0 1]-k;
     xxrt = ipredur;
-    iCondition = FPs_premature_presses(i);
-    iFP = taskFPs(iCondition);
-    itrigger = toneTimes(iCondition);
+    iFP = conditionFPs(FPs_premature_presses(i));
     plotshaded([0 iFP], [-k -k; 1-k 1-k], trigger_col);
-    if ~isnan(itrigger)
-        patch([0 itrigger itrigger 0], ...
+    if conditionVolumes(FPs_premature_presses(i))>0
+        patch([0 750 750 0], ...
             [-k -k 1-k 1-k], extra_tone_shade_col, 'FaceAlpha', extra_tone_alpha, 'EdgeColor', 'none');
     end
 
@@ -506,7 +588,7 @@ axis off
 
 % Late response raster plot
 ntrial_late = size(trialspxmat_late_press, 2); % number of trials
-axes('unit', 'centimeters', 'position', [1.25 yshift_row5  6 ntrial_late*rasterheight],...
+axes('unit', 'centimeters', 'position', [x_perf_col yshift_row5  perf_width ntrial_late*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-PressTimeDomain(1) PressTimeDomain(2)], 'ylim', [-ntrial_late 1], 'box', 'on');
 yshift_row6             =      yshift_row5 + 0.5 + ntrial_late*rasterheight;
@@ -525,12 +607,10 @@ for i =1:size(ap_mat, 2)
     yy1 = [0 0.8]-k;
     yy2 = [0 1]-k;
     xxrt = ilatedur;
-    iCondition = FPs_late_presses(i);
-    iFP = taskFPs(iCondition);
-    itrigger = toneTimes(iCondition);
+    iFP = conditionFPs(FPs_late_presses(i));
     plotshaded([0 iFP], [-k -k; 1-k 1-k], trigger_col);
-    if ~isnan(itrigger)
-        patch([0 itrigger itrigger 0], ...
+    if conditionVolumes(FPs_late_presses(i))>0
+        patch([0 750 750 0], ...
             [-k -k 1-k 1-k], extra_tone_shade_col, 'FaceAlpha', extra_tone_alpha, 'EdgeColor', 'none');
     end
 
@@ -559,11 +639,16 @@ scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'ma
 line([0 0], get(gca, 'ylim'), 'color', press_col, 'linewidth', 1)
 title('Late', 'fontsize', 7, 'fontweight','bold')
 axis off
+yshift_row6 = max([yshift_row6, yshift_trial_press]);
 
 % this is the position of last panel
 % Add information
-uicontrol('Style','text','Units','centimeters','Position',[0.5 yshift_row6  6 1],...
-    'string', 'A. Press-related activity', ...
+uicontrol('Style','text','Units','centimeters','Position',[x_trial_col-0.4 yshift_row6  trial_width+0.5 1],...
+    'string', 'A. Trial-time press', ...
+    'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],...
+    'HorizontalAlignment','Left');
+uicontrol('Style','text','Units','centimeters','Position',[x_perf_col-0.4 yshift_row6  perf_width+0.5 1],...
+    'string', 'B. Press-related activity', ...
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],...
     'HorizontalAlignment','Left');
 
@@ -591,14 +676,14 @@ fig_height = yshift_row7+2;
 %% Release PSTHs
 % Release-related PSTHs
 width = 6*sum(ReleaseTimeDomain)/sum(PressTimeDomain);
+x_release_col = x_perf_col + perf_width + 0.85;
 yshift_row1 = 1;
-ha_release_psth =  axes('unit', 'centimeters', 'position', [8.25 yshift_row1 width 2], 'nextplot', 'add', ...
+ha_release_psth =  axes('unit', 'centimeters', 'position', [x_release_col yshift_row1 width 2], 'nextplot', 'add', ...
     'xlim', [-ReleaseTimeDomain(1) ReleaseTimeDomain(2)]);
 yshift_row2 = yshift_row1+2+0.25;
 
 for i =1:nFPs
-    hplot_release(i) = plot(ts_release{i}, psth_release_correct{i}, ...
-        'color', FP_cols(i, :), 'linestyle', FP_line_styles{i}, 'linewidth', 1.5);
+    hplot_release(i) = plot(ts_release{i}, psth_release_correct{i}, 'color', FP_cols(i, :),  'linewidth', 1.5);
     FRMax = max([FRMax max(psth_release_correct{i})]);
 %     disp(FRMax)
 end
@@ -608,7 +693,7 @@ xlabel('Time from release (ms)')
 ylabel ('Spks per s')
 
 % error PSTHs
-ha_release_psth_error =  axes('unit', 'centimeters', 'position', [8.25 yshift_row2 width 2], 'nextplot', 'add', ...
+ha_release_psth_error =  axes('unit', 'centimeters', 'position', [x_release_col yshift_row2 width 2], 'nextplot', 'add', ...
     'xlim', [-ReleaseTimeDomain(1) ReleaseTimeDomain(2)], 'xticklabel',[]);
 yshift_row3 = yshift_row2 +2+0.25;
 if  size(trialspxmat_premature_release, 2)>3
@@ -633,7 +718,7 @@ for i =1:nFPs
     ntrials_release = ntrials_release + nFP_i(i);
 end
 
-axes('unit', 'centimeters', 'position', [8.25 yshift_row3 width ntrials_release*rasterheight],...
+axes('unit', 'centimeters', 'position', [x_release_col yshift_row3 width ntrials_release*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-ReleaseTimeDomain(1) ReleaseTimeDomain(2)], 'ylim', [-ntrials_release 1], 'box', 'on');
 yshift_row4 = yshift_row3+ntrials_release*rasterheight+0.5;
@@ -641,7 +726,6 @@ yshift_row4 = yshift_row3+ntrials_release*rasterheight+0.5;
 n_start = 1;
 k=0;
 for m =1:nFPs
-    k_start = k;
     ap_mat = trialspxmat_release{m};
     t_mat = tspkmat_release{m};
     rt = rt_releases_sorted{m};
@@ -653,19 +737,19 @@ for m =1:nFPs
     y_portin = [];
     for i =1:nFP_i(m)
         irt = rt(i); % time from foreperiod to release
+        mFP = conditionFPs(m);
         xx = t_mat(ap_mat(:, i)==1);
         yy1 = [0 0.8]-k;
         yy2 = [0 1]-k;
 
         % paint foreperiod
-        iFP = taskFPs(m);
-        plotshaded([-irt-iFP -irt], [-k -k; 1-k 1-k], trigger_col);
+        plotshaded([-irt-mFP -irt]-n_start, [-k -k; 1-k 1-k], trigger_col);
 
         for i_xx = 1:length(xx)
             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
             yy_all = [yy_all, yy1, NaN];
         end
-        xxrt_all = [xxrt_all, -irt-iFP, -irt-iFP, NaN];
+        xxrt_all = [xxrt_all, -irt-mFP, -irt-mFP, NaN];
         yyrt_all = [yyrt_all, yy2, NaN];
 
         % port access time
@@ -691,7 +775,7 @@ axis off
 
 % Premature release raster plot
 ntrial_premature = size(trialspxmat_premature_release, 2); % number of trials
-axes('unit', 'centimeters', 'position', [8.25 yshift_row4 width ntrial_premature*rasterheight],...
+axes('unit', 'centimeters', 'position', [x_release_col yshift_row4 width ntrial_premature*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-ReleaseTimeDomain(1) ReleaseTimeDomain(2)], 'ylim', [-ntrial_premature 1], 'box', 'on');
 yshift_row5    =      yshift_row4 + 0.5 + ntrial_premature*rasterheight;
@@ -714,8 +798,7 @@ for i =1:size(ap_mat, 2)
     y_predur_all = [y_predur_all, yy, NaN];
 
     % paint foreperiod
-    iCondition = FPs_premature_releases(i);
-    iFP = taskFPs(iCondition);
+    iFP = conditionFPs(FPs_premature_releases(i));
     plotshaded([-ipredur -ipredur+iFP], [-k -k; 1-k 1-k], trigger_col);
 
     for i_xx = 1:length(xx)
@@ -744,7 +827,7 @@ axis off
 
 % Late response raster plot
 ntrial_late = size(trialspxmat_late_release, 2); % number of trials
-axes('unit', 'centimeters', 'position', [8.25 yshift_row5  width ntrial_late*rasterheight],...
+axes('unit', 'centimeters', 'position', [x_release_col yshift_row5  width ntrial_late*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-ReleaseTimeDomain(1) ReleaseTimeDomain(2)], 'ylim', [-ntrial_late 1], 'box', 'on');
 yshift_row6    =      yshift_row5 + 0.5 + ntrial_late*rasterheight;
@@ -763,8 +846,7 @@ for i =1:size(ap_mat, 2)
     yy1 = [0 0.8]-k;
     yy = [0 1]-k;
     % paint foreperiod
-    iCondition = FPs_late_releases(i);
-    iFP = taskFPs(iCondition);
+    iFP = conditionFPs(FPs_late_releases(i));
     plotshaded([-ilatedur -ilatedur+iFP], [-k -k; 1-k 1-k], trigger_col);
     x_latedur_all = [x_latedur_all, -ilatedur, -ilatedur, NaN];
     y_latedur_all = [y_latedur_all, yy, NaN];
@@ -793,19 +875,18 @@ title('Late', 'fontsize', 7)
 axis off
 
 % Add information
-uicontrol('Style','text','Units','centimeters','Position',[7.75 yshift_row6 width+1 1],...
-    'string', 'B. Release-related', ...
+uicontrol('Style','text','Units','centimeters','Position',[x_release_col-0.5 yshift_row6 width+1 1],...
+    'string', 'C. Release-related', ...
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],...
     'HorizontalAlignment','Left');
 
 %% Reward
-col3 = 13;
+col3 = x_release_col + width + 1.8;
 width = 6*sum(RewardTimeDomain)/sum(PressTimeDomain);
 ha_poke =  axes('unit', 'centimeters', 'position', [col3 yshift_row1 width 2], 'nextplot', 'add', ...
     'xlim', [-RewardTimeDomain(1) RewardTimeDomain(2)]);
 for i =1:nFPs
-    plot(ts_reward_pokes{i}, psth_reward_pokes{i}, ...
-        'color', FP_cols(i, :), 'linestyle', FP_line_styles{i}, 'linewidth', 1.5);
+    plot(ts_reward_pokes{i}, psth_reward_pokes{i}, 'color', FP_cols(i, :), 'linewidth', 1.5);
     FRMax = max([FRMax max(psth_reward_pokes{i})]);
 %     disp(FRMax)
 end
@@ -940,7 +1021,7 @@ title('Nonrewarded pokes', 'fontname', 'dejavu sans', 'fontsize', 7)
 
 % Add information  13.5 3+0.5 6 ntrial4*rasterheight
 uicontrol('Style','text','Units','centimeters','Position',[col3-0.5 yshift_row4new 5 1.75],...
-    'string', 'C. Rewarded/Nonrewarded poke-related activity', ...
+    'string', 'D. Rewarded/Nonrewarded poke-related activity', ...
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
     'HorizontalAlignment','Left');
 
@@ -969,276 +1050,142 @@ ylabel('Spk rate (Hz)')
 yshift_row6new = yshift_row5new+3;
 % Add information  13.5 3+0.5 6 ntrial4*rasterheight
 uicontrol('Style','text','Units','centimeters','Position',[col3-0.5 yshift_row6new 4 0.5],...
-    'string', 'D.  Activity vs time', ...
+    'string', 'E.  Activity vs time', ...
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
     'HorizontalAlignment','Left');
 
 fig_height = max([fig_height, yshift_row6new+1]);
 
-%% plot trigger-related activity
-col4 = 20;
-width = 6*sum(TriggerTimeDomain)/sum(PressTimeDomain);
+%% plot extra-tone-related activity
+col4 = col3 + 7.2;
+width = 3.2;
 col4b = col4 + width + 0.9;
+extra_titles = {'Learning extra', 'Full-volume extra'};
+extra_cols = [0.25 0.25 0.25; full_volume_spike_col];
+ha_trigger = gobjects(1, length(PSTHOut.ExtraTone.Time));
+ha_extra_raster = gobjects(1, length(PSTHOut.ExtraTone.Time));
+yshift_row4_all = zeros(1, length(PSTHOut.ExtraTone.Time));
+for igroup = 1:length(PSTHOut.ExtraTone.Time)
+    if igroup == 1
+        this_col = col4;
+    else
+        this_col = col4b;
+    end
+    ha_trigger(igroup) = axes('unit', 'centimeters', 'position', [this_col yshift_row1 width 2], ...
+        'nextplot', 'add', 'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)]);
+    plot(ts_extra_tone{igroup}, psth_extra_tone{igroup}, 'color', extra_cols(igroup, :), 'linewidth', 1.5);
+    if ~isempty(psth_extra_tone{igroup})
+        FRMax = max([FRMax max(psth_extra_tone{igroup}(:))]);
+    end
+    xlabel('Time from extra tone (ms)')
+    ylabel('Spks per s')
+    axis 'auto y'
 
-ha_trigger =  axes('unit', 'centimeters', 'position', [col4 yshift_row1 width 2], 'nextplot', 'add', ...
-    'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)]);
-for i=1:nFPs
-    plot(ts_trigger_correct{i}, psth_trigger_correct{i}, ...
-        'color', FP_cols(i, :), 'linestyle', FP_line_styles{i}, 'linewidth', 1.5);
-    FRMax = max([FRMax max(psth_trigger_correct{i})]);
-%     disp(FRMax)
-end
-plot(ts_late_trigger, psth_late_trigger, 'color', late_col, 'linewidth', 1.5)
-xlabel('Time from trigger stimulus (ms)')
-ylabel ('Spks per s')
-
-% FRMax = max([FRMax max(psth_late_trigger)]);
-% disp(FRMax)
-xlim = max(get(gca, 'xlim'));
-axis 'auto y'
-
-% raster plot of trigger-related activity
-ntrials_trigger = 0;
-nFP_i = zeros(1, nFPs);
-for i =1:nFPs
-    nFP_i(i) = size(trialspxmat_trigger_correct{i}, 2);
-    ntrials_trigger = ntrials_trigger + nFP_i(i);
-end
-
-axes('unit', 'centimeters', 'position', [col4 yshift_row2 width ntrials_trigger*rasterheight],...
-    'nextplot', 'add',...
-    'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)], 'ylim', [-ntrials_trigger 1], 'box', 'on');
-yshift_row3 = yshift_row2+ntrials_trigger*rasterheight+0.5;
-% Paint the foreperiod
-k=0;
-for m =1:nFPs
-    k_start = k;
-    ap_mat = trialspxmat_trigger_correct{m};
-    t_mat = tspkmat_trigger_correct{m};
-    rt = RT_triggers_correct{m};
+    ntrials_extra = size(trialspxmat_extra_tone{igroup}, 2);
+    ha_extra_raster(igroup) = axes('unit', 'centimeters', 'position', [this_col yshift_row2 width max([ntrials_extra 1])*rasterheight], ...
+        'nextplot', 'add', 'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)], ...
+        'ylim', [-max([ntrials_extra 1]) 1], 'box', 'on');
+    yshift_row4_all(igroup) = yshift_row2 + max([ntrials_extra 1])*rasterheight + 0.5;
+    ap_mat = trialspxmat_extra_tone{igroup};
+    t_mat = tspkmat_extra_tone{igroup};
+    rt = RT_extra_tone{igroup};
+    volumes = volume_extra_tone{igroup};
+    is_test = is_test_extra_tone{igroup};
+    press_time = press_extra_tone{igroup};
     xx_all = [];
     yy_all = [];
     xxrt_all = [];
     yyrt_all = [];
     x_portin = [];
     y_portin = [];
-    for i =1:nFP_i(m)
-        irt = rt(i); % time from trigger to release
+    x_vol = [];
+    y_vol = [];
+    c_vol = [];
+    for i =1:ntrials_extra
         xx = t_mat(ap_mat(:, i)==1);
-        yy1 = [0 0.8]-k;
-        yy = [0 1]-k;
+        yy1 = [0 0.8]-i+1;
+        yy2 = [0 1]-i+1;
+        target_from_extra = FP_extra_tone{igroup}(i) - 750;
+        if target_from_extra > 0
+            plotshaded([0 target_from_extra], [-i+1 -i+1; 1-i+1 1-i+1], trigger_col);
+        end
         for i_xx = 1:length(xx)
             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
             yy_all = [yy_all, yy1, NaN];
-        end 
-
-        % plot release time
-        xxrt_all = [xxrt_all, irt, irt, NaN];
-        yyrt_all = [yyrt_all, yy, NaN];
-
-        % port access time
-        it_trigger =t_triggers_correct{m}(i);
-        i_portin = t_portin - it_trigger;
+        end
+        release_from_extra = FP_extra_tone{igroup}(i) - 750 + rt(i);
+        xxrt_all = [xxrt_all, release_from_extra, release_from_extra, NaN];
+        yyrt_all = [yyrt_all, yy2, NaN];
+        i_portin = t_portin - t_extra_tone{igroup}(i);
         i_portin = i_portin(i_portin>=-TriggerTimeDomain(1) & i_portin<=TriggerTimeDomain(2));
         if ~isempty(i_portin)
             i_portin = reshape(i_portin,1,[]);
             x_portin = [x_portin, i_portin];
-            y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+            y_portin = [y_portin, (-i+1+0.4)*ones(1,length(i_portin))];
         end
-        k = k+1;
+        x_vol = [x_vol, -TriggerTimeDomain(1)-75];
+        y_vol = [y_vol, -i+1+0.5];
+        c_vol = [c_vol, volumes(i)];
     end
-    line(xx_all, yy_all, 'color', FP_cols(m, :), 'linewidth', 1);
+    line(xx_all, yy_all, 'color', extra_cols(igroup, :), 'linewidth', 1);
     line(xxrt_all, yyrt_all, 'color', release_col, 'linewidth', 1.5);
-    scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
-end
-line([0 0], get(gca, 'ylim'), 'color', trigger_col, 'linewidth', 1);
-title('Correct', 'fontsize', 7);
-axis off
-
-% trigger following late FP
-ntrials_trigger_late = size(trialspxmat_late_trigger, 2);
-axes('unit', 'centimeters', 'position', [col4 yshift_row3 width ntrials_trigger_late*rasterheight],...
-    'nextplot', 'add', 'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)], 'ylim', [-ntrials_trigger_late 1], ...
-    'box', 'on', 'xticklabel', []);
-yshift_row4 = yshift_row3+ntrials_trigger_late*rasterheight+0.5;
-k =0;
-xx_all = [];
-yy_all = [];
-xxrt_all = [];
-yyrt_all = [];
-x_portin = [];
-y_portin = [];
-for i =1:ntrials_trigger_late
-    xx =  tspkmat_late_trigger(trialspxmat_late_trigger(:, i)==1);
-    iFP = FP_triggers_late(i);
-    yy1 = [0 0.8]-k;
-    yy2 = [0 1]-k;
-    for i_xx = 1:length(xx)
-        xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
-        yy_all = [yy_all, yy1, NaN];
-    end 
-
-    % plot release time
-    irt = RT_triggers_late(i);
-    xxrt_all = [xxrt_all, irt, irt, NaN];
-    yyrt_all = [yyrt_all, yy2, NaN];
-    % plot port poke time
-    itrigger = t_triggers_late(i);
-    i_portin = t_portin-itrigger;
-    i_portin = i_portin(i_portin>=-TriggerTimeDomain(1) & i_portin<=TriggerTimeDomain(2));
-    if ~isempty(i_portin)
-        i_portin = reshape(i_portin,1,[]);
-        x_portin = [x_portin, i_portin];
-        y_portin = [y_portin, (0.4-k)*ones(1,length(i_portin))];
+    scatter(x_portin, y_portin, 8, 'o', 'filled', 'MarkerFaceColor', reward_col, ...
+        'markerfacealpha', 0.5, 'MarkerEdgeColor', 'none');
+    ind_vol_valid = ~isnan(c_vol);
+    scatter(x_vol(ind_vol_valid), y_vol(ind_vol_valid), 12, c_vol(ind_vol_valid), ...
+        's', 'filled', 'MarkerEdgeColor', 'none', 'Clipping', 'off');
+    scatter(x_vol(~ind_vol_valid), y_vol(~ind_vol_valid), 12, [0.75 0.75 0.75], ...
+        's', 'filled', 'MarkerEdgeColor', 'none', 'Clipping', 'off');
+    if igroup == 2
+        ind_test_rows = find(is_test & ~post_learning_extra_tone{igroup});
+        if ~isempty(ind_test_rows)
+            x_test_line = TriggerTimeDomain(2)+75;
+            d_test = diff(ind_test_rows);
+            block_start = [ind_test_rows(1); ind_test_rows(find(d_test>1)+1)];
+            block_end = [ind_test_rows(find(d_test>1)); ind_test_rows(end)];
+            for iBlock = 1:length(block_start)
+                line([x_test_line x_test_line], [-block_end(iBlock)+1 -block_start(iBlock)+1], ...
+                    'color', 'k', 'linewidth', 2, 'Clipping', 'off');
+            end
+        end
     end
-    k = k+1;
+    colormap(gca, parula);
+    caxis([0 1]);
+    line([0 0], get(gca, 'ylim'), 'color', trigger_col, 'linewidth', 1);
+    title(extra_titles{igroup}, 'fontsize', 7);
+    axis off
 end
 
-line(xx_all, yy_all, 'color', late_col, 'linewidth', 1);
-line(xxrt_all, yyrt_all, 'color', release_col, 'linewidth', 1.5);
-scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
-
-line([0 0], get(gca, 'ylim'), 'color',trigger_col, 'linewidth', 1)
-title('late', 'fontname', 'dejavu sans', 'fontsize', 7)
-axis off
+if ~isempty(ha_extra_raster)
+    colormap(ha_extra_raster(end), parula);
+    caxis(ha_extra_raster(end), [0 1]);
+    cb_vol = colorbar(ha_extra_raster(end));
+    set(cb_vol, 'Units', 'centimeters', 'Position', [col4b+width+0.35 yshift_row2 0.18 2.0], ...
+        'Ticks', [0 0.5 1], 'FontSize', 6);
+    ylabel(cb_vol, 'Vol', 'FontSize', 6);
+end
 
 % Add information
-uicontrol('Style','text','Units','centimeters','Position',[col4-0.5  yshift_row4 5 1.2],...
-    'string', 'E. Trigger-related activity', ...
+yshift_row4 = max(yshift_row4_all);
+uicontrol('Style','text','Units','centimeters','Position',[col4-0.5  yshift_row4 width+0.8 1.2],...
+    'string', 'F. Extra-tone-related activity', ...
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
     'HorizontalAlignment','Left');
-
-ha_extra750 = axes('unit', 'centimeters', 'position', [col4b yshift_row1 width 2], 'nextplot', 'add', ...
-    'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)]);
-for iExtra = 1:nExtra750Conditions
-    if ~isempty(psth_extra750_correct{iExtra})
-        plot(ts_extra750_correct{iExtra}, psth_extra750_correct{iExtra}, ...
-            'color', full_volume_spike_col, 'linestyle', FP_line_styles{extra750_condition_codes(iExtra)}, 'linewidth', 1.5);
-        FRMax = max([FRMax max(psth_extra750_correct{iExtra})]);
-    end
-    if ~isempty(psth_extra750_premature{iExtra})
-        plot(ts_extra750_premature{iExtra}, psth_extra750_premature{iExtra}, ...
-            'color', premature_col, 'linestyle', FP_line_styles{extra750_condition_codes(iExtra)}, 'linewidth', 1.5);
-        FRMax = max([FRMax max(psth_extra750_premature{iExtra})]);
-    end
-end
-xlabel('Time from extra tone750 (ms)')
-ylabel ('Spks per s')
-axis 'auto y'
-
-ntrials_extra750_correct_by_condition = zeros(1, nExtra750Conditions);
-for iExtra = 1:nExtra750Conditions
-    ntrials_extra750_correct_by_condition(iExtra) = size(trialspxmat_extra750_correct{iExtra}, 2);
-end
-ntrials_extra750_premature_by_condition = zeros(1, nExtra750Conditions);
-for iExtra = 1:nExtra750Conditions
-    ntrials_extra750_premature_by_condition(iExtra) = size(trialspxmat_extra750_premature{iExtra}, 2);
-end
-
-extra750_unique_fps = unique(extra750_condition_fps(~isnan(extra750_condition_fps)));
-if isempty(extra750_unique_fps) && ~isempty(extra750_condition_fps)
-    extra750_unique_fps = extra750_condition_fps;
-end
-yshift_extra750_row4 = yshift_row2;
-if isempty(extra750_unique_fps)
-    axes('unit', 'centimeters', 'position', [col4b yshift_row2 width rasterheight],...
-        'nextplot', 'add', 'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)], ...
-        'ylim', [-1 1], 'box', 'on', 'xticklabel', []);
-    line([0 0], get(gca, 'ylim'), 'color', trigger_col, 'linewidth', 1);
-    title('FP', 'fontsize', 7);
-    axis off
-    yshift_extra750_row4 = yshift_row2 + rasterheight + 0.5;
-else
-    for iFPBlock = 1:numel(extra750_unique_fps)
-        indExtraForFP = find(extra750_condition_fps == extra750_unique_fps(iFPBlock));
-        all_rt = [];
-        all_outcome = [];
-        all_trial_index = [];
-        all_condition_index = [];
-        for iCondition = indExtraForFP
-            n_correct_condition = ntrials_extra750_correct_by_condition(iCondition);
-            n_premature_condition = ntrials_extra750_premature_by_condition(iCondition);
-            all_rt = [all_rt; RT_extra750_correct{iCondition}(:); RT_extra750_premature{iCondition}(:)]; %#ok<AGROW>
-            all_outcome = [all_outcome; ones(n_correct_condition, 1); 2*ones(n_premature_condition, 1)]; %#ok<AGROW>
-            all_trial_index = [all_trial_index; (1:n_correct_condition)'; (1:n_premature_condition)']; %#ok<AGROW>
-            all_condition_index = [all_condition_index; iCondition*ones(n_correct_condition+n_premature_condition, 1)]; %#ok<AGROW>
-        end
-        [all_rt, indsort] = sort(all_rt);
-        all_outcome = all_outcome(indsort);
-        all_trial_index = all_trial_index(indsort);
-        all_condition_index = all_condition_index(indsort);
-        ntrials_extra750_fp = numel(all_rt);
-        axes('unit', 'centimeters', 'position', [col4b yshift_extra750_row4 width max([ntrials_extra750_fp 1])*rasterheight],...
-            'nextplot', 'add',...
-            'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)], 'ylim', [-max([ntrials_extra750_fp 1]) 1], ...
-            'box', 'on', 'xticklabel', []);
-        xx_correct = [];
-        yy_correct = [];
-        xx_premature = [];
-        yy_premature = [];
-        xxrt_all = [];
-        yyrt_all = [];
-        x_portin = [];
-        y_portin = [];
-        for i = 1:ntrials_extra750_fp
-            iCondition = all_condition_index(i);
-            iTrial = all_trial_index(i);
-            yy1 = [0 0.8]-i+1;
-            yy2 = [0 1]-i+1;
-            target_from_extra = extra750_condition_fps(iCondition) - 750;
-            if target_from_extra > 0
-                plotshaded([0 target_from_extra], [-i+1 -i+1; 1-i+1 1-i+1], trigger_col);
-            end
-            if all_outcome(i) == 1
-                xx = tspkmat_extra750_correct{iCondition}(trialspxmat_extra750_correct{iCondition}(:, iTrial)==1);
-                for i_xx = 1:length(xx)
-                    xx_correct = [xx_correct, xx(i_xx), xx(i_xx), NaN]; %#ok<AGROW>
-                    yy_correct = [yy_correct, yy1, NaN]; %#ok<AGROW>
-                end
-                i_portin = t_portin - t_extra750_correct{iCondition}(iTrial);
-            else
-                xx = tspkmat_extra750_premature{iCondition}(trialspxmat_extra750_premature{iCondition}(:, iTrial)==1);
-                for i_xx = 1:length(xx)
-                    xx_premature = [xx_premature, xx(i_xx), xx(i_xx), NaN]; %#ok<AGROW>
-                    yy_premature = [yy_premature, yy1, NaN]; %#ok<AGROW>
-                end
-                i_portin = t_portin - t_extra750_premature{iCondition}(iTrial);
-            end
-            xxrt_all = [xxrt_all, all_rt(i), all_rt(i), NaN]; %#ok<AGROW>
-            yyrt_all = [yyrt_all, yy2, NaN]; %#ok<AGROW>
-            i_portin = i_portin(i_portin>=-TriggerTimeDomain(1) & i_portin<=TriggerTimeDomain(2));
-            if ~isempty(i_portin)
-                i_portin = reshape(i_portin, 1, []);
-                x_portin = [x_portin, i_portin]; %#ok<AGROW>
-                y_portin = [y_portin, (0.4-i+1)*ones(1, length(i_portin))]; %#ok<AGROW>
-            end
-        end
-        line(xx_correct, yy_correct, 'color', full_volume_spike_col, 'linewidth', 1);
-        line(xx_premature, yy_premature, 'color', premature_col, 'linewidth', 1);
-        line(xxrt_all, yyrt_all, 'color', release_col, 'linewidth', 1.5);
-        scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
-        line([0 0], get(gca, 'ylim'), 'color', trigger_col, 'linewidth', 1);
-        title(sprintf('FP%d', round(extra750_unique_fps(iFPBlock))), 'fontsize', 7);
-        axis off
-        yshift_extra750_row4 = yshift_extra750_row4 + max([ntrials_extra750_fp 1])*rasterheight + 0.5;
-    end
-end
-
-uicontrol('Style','text','Units','centimeters','Position',[col4b-0.5  yshift_extra750_row4 7 1.2],...
-    'string', 'F. Extra tone750-related activity', ...
+uicontrol('Style','text','Units','centimeters','Position',[col4b-0.5  yshift_row4 width+0.8 1.2],...
+    'string', 'G. Full-volume extra', ...
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
     'HorizontalAlignment','Left');
-yshift_row5=max([yshift_row4, yshift_extra750_row4])+1.2+1.2;
+yshift_row5=yshift_row4+1.2+1.2;
 
+FRMax = max(FRMax(:));
 FRrange = [0 FRMax*1.1];
 set(ha_press_psth, 'ylim', FRrange);
 line(ha_press_psth, [0 0], FRrange, 'color', press_col, 'linewidth', 1);
 
-for iFP = 1:numel(uniqueTaskFPs)
-    line(ha_press_psth, [uniqueTaskFPs(iFP) uniqueTaskFPs(iFP)], FRrange, ...
-        'color', trigger_col, 'linestyle', ':', 'linewidth', 1);
-end
+line(ha_press_psth, [fixedFP fixedFP], FRrange, 'color', trigger_col, 'linestyle', ':', 'linewidth', 1);
 
+set(ha_learning_press_psth_volume, 'ylim', FRrange);
+line(ha_learning_press_psth_volume, [0 0], FRrange, 'color', press_col, 'linewidth', 1);
 set(ha_press_psth_error, 'ylim', FRrange);
 line(ha_press_psth_error, [0 0], FRrange, 'color', press_col, 'linewidth', 1);
 set(ha_release_psth, 'ylim', FRrange);
@@ -1247,10 +1194,10 @@ set(ha_release_psth_error, 'ylim', FRrange);
 line(ha_release_psth_error, [0 0], FRrange, 'color', release_col, 'linewidth', 1);
 set(ha_poke, 'ylim', FRrange);
 line(ha_poke, [0 0], FRrange, 'color', reward_col, 'linewidth', 1);
-set(ha_trigger, 'ylim', FRrange);
-line(ha_trigger, [0 0], FRrange, 'color', trigger_col, 'linewidth', 1);
-set(ha_extra750, 'ylim', FRrange);
-line(ha_extra750, [0 0], FRrange, 'color', trigger_col, 'linewidth', 1);
+for i =1:length(ha_trigger)
+    set(ha_trigger(i), 'ylim', FRrange);
+    line(ha_trigger(i), [0 0], FRrange, 'color', trigger_col, 'linewidth', 1);
+end
 
 
 %% plot spks
@@ -1361,12 +1308,12 @@ else
 end
 
 uicontrol('Style','text','Units','centimeters','Position',[col5-0.5 yshift_row7 5 1.5],...
-    'string', 'G. Spike waveform and autocorrelation', ...
+    'string', 'H. Spike waveform and autocorrelation', ...
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
     'HorizontalAlignment','Left');
 fig_height = max([fig_height, yshift_row7+2]);
 % change the height of the figure
-set(gcf, 'position', [2 2 37 fig_height])
+set(gcf, 'position', [2 2 35.5 fig_height])
 toc;
 
 if strcmpi(ToSave,'on')
@@ -1379,7 +1326,7 @@ if strcmpi(ToSave,'on')
     if ~exist(thisFolder, 'dir')
         mkdir(thisFolder)
     end
-    tosavename2= fullfile(thisFolder, [anm_name '_' session '_Ch'  num2str(ch) '_Unit' num2str(unit_no) ]);
+    tosavename2= fullfile(thisFolder, [anm_name '_' session '_Learning_Ch'  num2str(ch) '_Unit' num2str(unit_no) ]);
     print (gcf,'-dpng', tosavename2)
     
     % save PSTH as well save(psth_new_name, 'PSTHOut');

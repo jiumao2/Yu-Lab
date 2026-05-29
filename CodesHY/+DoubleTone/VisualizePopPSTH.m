@@ -16,6 +16,11 @@ taskCodes         = Pop.TriggerTypes;
 taskLabels        = Pop.TriggerTypeLabels;
 toneTimes         = Pop.ToneTimes;
 fixedFP             = Pop.FixedFP;
+if isfield(Pop, 'ConditionFPs')
+    conditionFPs = Pop.ConditionFPs;
+else
+    conditionFPs = repmat(fixedFP, size(taskCodes));
+end
 
 press_col = [5 191 219]/255;
 trigger_col = [242 182 250]/255;
@@ -114,12 +119,12 @@ for ifp =1:nFP
     colormap('Parula')
     yrange = [0.5 n_unit+0.5];
     line([0 0], yrange, 'color', press_col, 'linestyle', ':', 'linewidth', 1.5);
-    line([fixedFP fixedFP], yrange, 'color', 'm', 'linestyle', ':', 'linewidth', 1.5)
+    line([conditionFPs(ifp) conditionFPs(ifp)], yrange, 'color', 'm', 'linestyle', ':', 'linewidth', 1.5)
     if ~isnan(toneTimes(ifp))
         line([toneTimes(ifp) toneTimes(ifp)], yrange, 'color', [0.75 0.2 0.2], 'linestyle', ':', 'linewidth', 1.25)
     end
     plotshaded([get(gca, 'xlim')], [nsig+.5 nsig+.5; n_unit+0.5 n_unit+0.5],  'w', 0.75)
-    title(sprintf('Ntrials=%2.0d, Task = %s', Pop.Trials(ifp), taskLabels{ifp}));
+    title(sprintf('Ntrials=%2.0d, Task = %s', Pop.Trials(ifp), taskLabels{ifp}), 'Interpreter', 'none');
 end
 ylevel_now = ylevel_start+(map_height+0.5)*(nFP-1)+map_height+0.5;
 uicontrol('Style','text','Units','centimeters','Position',[xlevel_start-1 ylevel_now  6 0.7],...
@@ -207,12 +212,12 @@ for ifp =1:nFP
     imagesc(tPressPSTHs{ifp} , [1:n_unit],  PressPSTHZs{ifp}, zrange);
     yrange = [0.5 n_unit+0.5];
     line([0 0], yrange, 'color', press_col, 'linestyle', ':', 'linewidth', 1.5);
-    line([fixedFP fixedFP], yrange, 'color', 'm', 'linestyle', ':', 'linewidth', 1.5)
+    line([conditionFPs(ifp) conditionFPs(ifp)], yrange, 'color', 'm', 'linestyle', ':', 'linewidth', 1.5)
     if ~isnan(toneTimes(ifp))
         line([toneTimes(ifp) toneTimes(ifp)], yrange, 'color', [0.75 0.2 0.2], 'linestyle', ':', 'linewidth', 1.25)
     end
     plotshaded([get(gca, 'xlim')], [nsig+.5 nsig+.5; n_unit+0.5 n_unit+0.5],  'w', 0.75)
-    title(sprintf('Ntrials=%2.0d, Task = %s', Pop.Trials(ifp), taskLabels{ifp}));
+    title(sprintf('Ntrials=%2.0d, Task = %s', Pop.Trials(ifp), taskLabels{ifp}), 'Interpreter', 'none');
 end
 
 ylevel_now = ylevel_start+(map_height+0.5)*(nFP-1)+map_height+0.5;

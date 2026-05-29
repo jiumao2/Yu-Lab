@@ -20,6 +20,11 @@ if isfield(r.PSTH, 'Events') && isfield(r.PSTH.Events, 'TaskTypes')
     taskLabels = r.PSTH.Events.TaskTypes.Labels;
     toneTimes = r.PSTH.Events.TaskTypes.ToneTimes;
     fixedFP = r.PSTH.Events.TaskTypes.FixedFP;
+    if isfield(r.PSTH.Events.TaskTypes, 'FPs')
+        conditionFPs = r.PSTH.Events.TaskTypes.FPs;
+    else
+        conditionFPs = repmat(fixedFP, size(taskCodes));
+    end
 else
     taskCodes = 1:numel(r.Behavior.TriggerTypeLabels);
     taskLabels = cellstr(string(r.Behavior.TriggerTypeLabels(:)))';
@@ -33,6 +38,7 @@ else
     end
     fixedFP = unique(r.Behavior.Foreperiods(:));
     fixedFP = fixedFP(1);
+    conditionFPs = repmat(fixedFP, size(taskCodes));
 end
 nFP = numel(taskCodes);
 PSTH_Press                  =             cell(1, nFP); % one for each trigger type
@@ -66,7 +72,6 @@ t_baseline = [-5000 -1000]; % from -5000 to -500 ms is considered to be the base
 % 1 Hz), we will then use the whole press_all activity to compute z score. 
 
 for i = 1:n_unit
-    PSTH_baseline = [];
     % PSTH.PressesAll =  {psth_presses_all, ts_press_all, trialspxmat_press_all, tspkmat_press_all,  t_correct_presses_all};
     if i==1
         PSTH_PressAll(1, :)          =           r.PSTH.PSTHs(i).PressesAll{2};
@@ -80,6 +85,20 @@ for i = 1:n_unit
     StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
     PSTH_PressAllStat.StatOut(i)  = StatOut;
     PSTH_Trials = zeros(1, length( r.PSTH.PSTHs(i).Presses));
+
+    PSTH_baseline = [];
+    for kbase = 1:length(r.PSTH.PSTHs(i).Presses)
+        PSTH_baseline = [PSTH_baseline r.PSTH.PSTHs(i).Presses{kbase}{1}]; %#ok<AGROW>
+        PSTH_baseline = [PSTH_baseline r.PSTH.PSTHs(i).Releases{kbase}{1}]; %#ok<AGROW>
+        if kbase <= length(r.PSTH.PSTHs(i).RewardPokes)
+            PSTH_baseline = [PSTH_baseline r.PSTH.PSTHs(i).RewardPokes{kbase}{1}]; %#ok<AGROW>
+        end
+    end
+    mean_baseline = mean(PSTH_baseline, 'omitnan');
+    sd_baseline = std(PSTH_baseline, 'omitnan');
+    if isempty(sd_baseline) || isnan(sd_baseline) || sd_baseline == 0
+        sd_baseline = 1;
+    end
 
     for kfp = 1:length( r.PSTH.PSTHs(i).Presses)
         if i==1
@@ -106,7 +125,6 @@ for i = 1:n_unit
         StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
         PSTH_PressStat{kfp}.StatOut(i) =  StatOut;
         PSTH_Trials(kfp) = size(trialspxmat, 2);
-        PSTH_baseline = [PSTH_baseline r.PSTH.PSTHs(i).Presses{kfp}{1}];
 
         PSTH_Release{kfp} = [PSTH_Release{kfp};  r.PSTH.PSTHs(i).Releases{kfp}{1}];
         tspkmat  =  r.PSTH.PSTHs(i).Releases{kfp}{4};
@@ -121,7 +139,6 @@ for i = 1:n_unit
         StatOut = ExamineTaskResponsive(tspkmat, trialspxmat);
         StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
         PSTH_ReleaseStat{kfp}.StatOut(i) =  StatOut;
-        PSTH_baseline = [PSTH_baseline  r.PSTH.PSTHs(i).Releases{kfp}{1}];
 
         PSTH_Trigger{kfp} = [PSTH_Trigger{kfp}; r.PSTH.PSTHs(i).Triggers{kfp}{1}];
         tspkmat  =  r.PSTH.PSTHs(i).Triggers{kfp}{4};
@@ -144,11 +161,8 @@ for i = 1:n_unit
 
         StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
         PSTH_RewardStat{kfp}.StatOut(i) =  StatOut;
-        PSTH_baseline = [PSTH_baseline  r.PSTH.PSTHs(i).RewardPokes{kfp}{1}];
 
         % compute z
-        mean_baseline        =        mean(PSTH_baseline);
-        sd_baseline              =        std(PSTH_baseline);
         PSTH_PressZ{kfp} = [PSTH_PressZ{kfp};  (r.PSTH.PSTHs(i).Presses{kfp}{1}-mean_baseline)/sd_baseline];
         PSTH_ReleaseZ{kfp} = [PSTH_ReleaseZ{kfp};  (r.PSTH.PSTHs(i).Releases{kfp}{1}-mean_baseline)/sd_baseline];
         PSTH_TriggerZ{kfp} = [PSTH_TriggerZ{kfp};  (r.PSTH.PSTHs(i).Triggers{kfp}{1}-mean_baseline)/sd_baseline];
@@ -161,6 +175,7 @@ PopOut.TriggerTypes       =        taskCodes;
 PopOut.TriggerTypeLabels  =        taskLabels;
 PopOut.ToneTimes          =        toneTimes;
 PopOut.FixedFP            =        fixedFP;
+PopOut.ConditionFPs       =        conditionFPs;
 PopOut.Trials              =    PSTH_Trials;
 PopOut.Session          =    r.BehaviorClass.Date;
 PopOut.Date              =        strrep(r.Meta(1).DateTime(1:11), '-','_');

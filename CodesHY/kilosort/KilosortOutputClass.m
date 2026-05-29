@@ -2263,7 +2263,7 @@ classdef KilosortOutputClass<handle
             for k = 1:n_channel
                 colors(k,:) = colormap_this(sum(all_channels==k)+1,:);
             end
-            scatter(ax, obj.ChanMap.xcoords,obj.ChanMap.ycoords,2,colors,"filled","o");
+            scatter(ax, obj.ChanMap.xcoords,obj.ChanMap.ycoords,10,colors,"filled","o");
             ylim(ax, [min(obj.ChanMap.ycoords), max(obj.ChanMap.ycoords)]);
             xlim(ax, [min(obj.ChanMap.xcoords), max(obj.ChanMap.xcoords)]);
 

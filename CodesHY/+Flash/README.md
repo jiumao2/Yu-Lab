@@ -1,13 +1,13 @@
-# Flash 2x2 analysis workflow
+# Flash trigger analysis workflow
 
-This package contains analysis code for the active Flash/Tone 2x2 task and optional passive cue response panels. The task conditions are defined by stimulus identity and foreperiod:
+This package contains analysis code for active trigger-based tasks and optional passive cue response panels. The original use case is the Flash/Tone 2x2 task, where conditions are defined by stimulus identity and foreperiod:
 
 - `Tone750`
 - `Flash750`
 - `Tone1500`
 - `Flash1500`
 
-`Both` trials and trials outside FP 750/1500 are not part of the active 2x2 condition set.
+The same code can also be used for related trigger tasks with different labels, for example `{'Tone', 'Tone (Vol=0.1)'}`. In those sessions, `Flash.conditionInfo(r)` builds conditions from the trigger types listed in `TriggerTypeLabels` and the task foreperiods 750/1500 ms.
 
 ## Standard input r
 
@@ -30,7 +30,7 @@ The required active-task behavior fields are:
 - `r.Behavior.TriggerTypeLabels`
 - `r.Behavior.Foreperiods`
 
-`r.Behavior.TriggerTypeLabels` must include `Tone` and `Flash`. `Flash.conditionInfo(r)` maps those labels plus `Foreperiods` into the four active conditions above, in the fixed order `Tone750`, `Flash750`, `Tone1500`, `Flash1500`.
+`r.Behavior.TriggerTypes` should use MATLAB/Bpod-style integer codes, where code `1` maps to `r.Behavior.TriggerTypeLabels{1}`, code `2` maps to `r.Behavior.TriggerTypeLabels{2}`, and so on. `Flash.conditionInfo(r)` uses all labels in `TriggerTypeLabels` and combines them with 750/1500 ms task foreperiods. When `r.BehaviorClass.MixedFP` contains 750 and/or 1500, that field defines which of those foreperiods are active; otherwise the code falls back to `[750, 1500]`. It does not expand the condition list from every value that happens to appear in `r.Behavior.Foreperiods`. For the original Flash/Tone 2x2 task, it preserves the historical fixed order `Tone750`, `Flash750`, `Tone1500`, `Flash1500`; for other tasks, conditions are ordered by foreperiod from short to long, then by trigger label order.
 
 ## Optional passive fields
 

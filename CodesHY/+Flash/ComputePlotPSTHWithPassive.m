@@ -51,7 +51,14 @@ else
     conditionFPs = repmat(PSTHOut.TaskTypes.FixedFP, size(taskCodes));
 end
 nFPs = length(taskCodes);
-FP_cols = [0.25 0.25 0.25; 0.16 0.52 0.78; 0.95 0.58 0.22; 0.45 0.33 0.75];
+if isfield(PSTHOut.TaskTypes, 'Colors') && size(PSTHOut.TaskTypes.Colors, 1) >= nFPs
+    FP_cols = PSTHOut.TaskTypes.Colors;
+else
+    FP_cols = [0.25 0.25 0.25; 0.16 0.52 0.78; 0.95 0.58 0.22; 0.45 0.33 0.75];
+    if nFPs > size(FP_cols, 1)
+        FP_cols = lines(nFPs);
+    end
+end
 premature_col = [0.9 0.4 0.1];
 late_col = [0.6 0.6 0.6];
 extra_tone_shade_col = [0.66 0.78 0.92];
