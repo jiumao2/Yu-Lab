@@ -1104,7 +1104,7 @@ classdef KilosortOutputClass<handle
             % end
             
             tic
-            dt = datetime(BpodFile.date, 'InputFormat', 'dd-MMM-yyyy HH:mm:ss', 'Locale', 'zh_CN');
+            dt = datetime(BpodFile.date, 'InputFormat', 'dd-MMM-yyyy HH:mm:ss');
             dt = yyyymmdd(dt);
             r.BehaviorClass.Date = num2str(dt);
             r.BehaviorClass.Subject = Subject;
