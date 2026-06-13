@@ -1,4 +1,4 @@
-function fig = behaviorSummary(r)
+﻿function fig = behaviorSummary(r)
 
 rb = r.Behavior;
 eventMarkers = rb.EventMarkers(:);
@@ -371,6 +371,7 @@ title(axBottom{3}, 'Performance by condition', 'FontWeight', 'normal');
 EasyPlot.set(axBottom{3}, 'Width', 10);
 
 EasyPlot.cropFigure(fig);
-EasyPlot.exportFigure(fig, fullfile(pwd, sprintf('BehaviorSummary_GAVI_%s.png', dateTag)), 'type', 'png');
-EasyPlot.exportFigure(fig, fullfile(pwd, sprintf('BehaviorSummary_GAVI_%s.pdf', dateTag)), 'type', 'pdf');
+EasyPlot.exportFigure(fig, fullfile(pwd, sprintf('BehaviorSummary_%s_%s.png', subjectName, dateTag)), 'type', 'png');
+EasyPlot.exportFigure(fig, fullfile(pwd, sprintf('BehaviorSummary_%s_%s.pdf', subjectName, dateTag)), 'type', 'pdf');
 end
+

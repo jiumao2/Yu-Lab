@@ -32,6 +32,12 @@ end
 PressIndexEphys    =               ones(1, length(PressEphys));
 % Start to map
 IndMatched                                                       =             findseqmatch(PressBehavior, PressEphys);
+plotMatchingResults(PressBehavior, PressEphys, IndMatched);
+if any(diff(IndMatched)<=0)
+    idx_bad = find(diff(IndMatched)<=0, 1, 'first')+1;
+    error('findseqmatch failed at ephys press #%d (behavior %d -> %d).', ...
+        idx_bad, IndMatched(idx_bad-1), IndMatched(idx_bad));
+end
 IndNaN                                                              =             find(isnan(IndMatched));
 IndValid                                                             =              find(~isnan(IndMatched));
 

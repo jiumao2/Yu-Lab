@@ -1,4 +1,4 @@
-function r = buildRLearning(KilosortOutput, varargin)
+﻿function r = buildRLearning(KilosortOutput, varargin)
 % buildRLearning Build RTarray r for DoubleTone learning Neuropixels sessions.
 %
 % Usage:
@@ -390,7 +390,11 @@ trialHasPress = false(1, nTrials);
 t0 = SessionData.TrialStartTimestamp(1);
 
 for iTrial = 1:nTrials
-    trialEvents = SessionData.RawEvents.Trial{iTrial}.Events;
+    if iscell(SessionData.RawEvents.Trial)
+        trialEvents = SessionData.RawEvents.Trial{iTrial}.Events;
+    else
+        trialEvents = SessionData.RawEvents.Trial(iTrial).Events;
+    end
     if isfield(trialEvents, 'AnalogIn1_1') && ~isempty(trialEvents.AnalogIn1_1)
         trialPress(iTrial) = SessionData.TrialStartTimestamp(iTrial) + ...
             trialEvents.AnalogIn1_1(1) - t0;
@@ -430,3 +434,4 @@ if isfield(SessionData, fieldName)
 end
 
 end
+

@@ -1,4 +1,4 @@
-%% find input files
+﻿%% find input files
 session_dir = '../';
 mat_files = dir(fullfile('./*.mat'));
 session_data_files = {mat_files.name};
@@ -10,7 +10,8 @@ load(session_data_files{1}, 'SessionData');
 
 mat_files = dir(fullfile('../RTarray_*.mat'));
 r_files = {mat_files.name};
-event_out_files = {fullfile('EventOut.mat')};
+event_out_dir = dir(fullfile(session_dir, 'EventOut.mat'));
+event_out_files = {event_out_dir.name};
 if length(r_files) ~= 1
     error('Expected exactly one r MAT file, found %d: %s', ...
         length(r_files), strjoin(r_files, ', '));
@@ -164,3 +165,4 @@ EasyPlot.setYLim(ax);
 
 EasyPlot.cropFigure(fig);
 EasyPlot.exportFigure(fig, fullfile('./ResponsiveUnitLocations'));
+

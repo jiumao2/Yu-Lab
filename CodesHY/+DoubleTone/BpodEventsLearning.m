@@ -1,4 +1,4 @@
-function events = BpodEventsLearning(sd)
+﻿function events = BpodEventsLearning(sd)
 % BpodEventsLearning Extract Bpod events for DoubleTone learning sessions.
 %
 % This function mirrors the fields used by UpdatePokeFromBpodEvents, but it
@@ -26,7 +26,11 @@ t0 = sd.TrialStartTimestamp(1);
 
 for k = 1:Ntrials
     t_trial = sd.TrialStartTimestamp(k);
-    trial = sd.RawEvents.Trial{k};
+    if iscell(sd.RawEvents.Trial)
+        trial = sd.RawEvents.Trial{k};
+    else
+        trial = sd.RawEvents.Trial(k);
+    end
     states = trial.States;
     trialEvents = trial.Events;
 
@@ -105,3 +109,4 @@ events.BadPokeInFirst = bad_pokein;
 events.BadPokeOutFirst = bad_pokeout;
 
 end
+

@@ -1,4 +1,4 @@
-function r = buildRStandard(KilosortOutput, varargin)
+﻿function r = buildRStandard(KilosortOutput, varargin)
 % buildRStandard Build RTarray r for DoubleTone standard Neuropixels sessions.
 %
 % Usage:
@@ -288,7 +288,11 @@ if ~isempty(SessionData)
         trialHasPress = false(1, nBpodTrials);
         t0Bpod = SessionData.TrialStartTimestamp(1);
         for iBpodTrial = 1:nBpodTrials
-            trialEvents = SessionData.RawEvents.Trial{iBpodTrial}.Events;
+            if iscell(SessionData.RawEvents.Trial)
+                trialEvents = SessionData.RawEvents.Trial{iBpodTrial}.Events;
+            else
+                trialEvents = SessionData.RawEvents.Trial(iBpodTrial).Events;
+            end
             if isfield(trialEvents, 'AnalogIn1_1') && ~isempty(trialEvents.AnalogIn1_1)
                 trialPress(iBpodTrial) = SessionData.TrialStartTimestamp(iBpodTrial) + ...
                     trialEvents.AnalogIn1_1(1) - t0Bpod;
@@ -495,3 +499,4 @@ disp('~~~~~R is ready~~~~~')
 disp('~~~~~~~~~~~~~~~~~~')
 
 end
+

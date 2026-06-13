@@ -82,6 +82,13 @@ fprintf(['DoubleTone.behaviorSummary included %d/%d trials. Excluded: Dark=%d, '
     sum(isIncluded), nTrials, sum(isDark), sum(isShortHold), ...
     excludedOther);
 
+activeConditionCodes = find(arrayfun(@(x) any(isIncluded & conditionIndex == x), 1:numel(conditionLabels)));
+if isempty(activeConditionCodes)
+    activeConditionCodes = 1:numel(conditionLabels);
+end
+activeConditionLabels = conditionLabels(activeConditionCodes);
+activeConditionColors = conditionColors(activeConditionCodes, :);
+
 fig = EasyPlot.figure('Visible', 'on');
 
 axTop = EasyPlot.createGridAxes(fig, 1, 2, ...
@@ -140,20 +147,21 @@ EasyPlot.colorbar(axTop{2}, ...
     'MarginRight', 0.8);
 
 holdGridMs = 0:10:3000;
-legendHandles = gobjects(numel(conditionLabels), 1);
+legendHandles = gobjects(numel(activeConditionCodes), 1);
 for iFP = 1:numel(uniqueForeperiods)
     fp = uniqueForeperiods(iFP);
     axCdf = axDist{(iFP - 1) * 2 + 1};
     axPdf = axDist{(iFP - 1) * 2 + 2};
-    for iCond = 1:numel(conditionLabels)
-        mask = isIncluded & foreperiodMs == fp & conditionIndex == iCond;
+    for iCond = 1:numel(activeConditionCodes)
+        thisCondition = activeConditionCodes(iCond);
+        mask = isIncluded & foreperiodMs == fp & conditionIndex == thisCondition;
         if sum(mask) >= 2
             cdfValues = ksdensity(holdDurationMs(mask), holdGridMs, 'Function', 'cdf');
             pdfValues = ksdensity(holdDurationMs(mask), holdGridMs, 'Function', 'pdf');
-            plot(axCdf, holdGridMs, cdfValues, '-', 'Color', conditionColors(iCond, :), 'LineWidth', 1.2);
-            plot(axPdf, holdGridMs, pdfValues, '-', 'Color', conditionColors(iCond, :), 'LineWidth', 1.2);
+            plot(axCdf, holdGridMs, cdfValues, '-', 'Color', activeConditionColors(iCond, :), 'LineWidth', 1.2);
+            plot(axPdf, holdGridMs, pdfValues, '-', 'Color', activeConditionColors(iCond, :), 'LineWidth', 1.2);
         else
-            plot(axPdf, nan, nan, '-', 'Color', conditionColors(iCond, :), 'LineWidth', 1.2);
+            plot(axPdf, nan, nan, '-', 'Color', activeConditionColors(iCond, :), 'LineWidth', 1.2);
         end
     end
     plot(axCdf, [fp, fp], [0, 1], '--', 'Color', [0.45, 0.45, 0.45], 'LineWidth', 0.8);
@@ -171,11 +179,11 @@ for iFP = 1:numel(uniqueForeperiods)
     title(axCdf, sprintf('FP=%d CDF', fp), 'FontWeight', 'normal', 'FontSize', 8);
     title(axPdf, sprintf('FP=%d PDF', fp), 'FontWeight', 'normal', 'FontSize', 8);
 end
-for iCond = 1:numel(conditionLabels)
+for iCond = 1:numel(activeConditionCodes)
     legendHandles(iCond) = plot(axDist{min(numel(axDist), 2)}, nan, nan, '-', ...
-        'Color', conditionColors(iCond, :), 'LineWidth', 1.2);
+        'Color', activeConditionColors(iCond, :), 'LineWidth', 1.2);
 end
-hLegend = EasyPlot.legend(axDist{min(numel(axDist), 2)}, conditionLabels, ...
+hLegend = EasyPlot.legend(axDist{min(numel(axDist), 2)}, activeConditionLabels, ...
     'selectedPlots', legendHandles, ...
     'Location', 'northeastoutside', ...
     'lineLength', 0.35, ...
@@ -211,7 +219,7 @@ xlabel(axBottom{1}, 'Time in session (s)');
 ylabel(axBottom{1}, 'Performance (%)');
 title(axBottom{1}, 'Performance over time', 'FontWeight', 'normal');
 
-[groupLabels, groupFPs, groupConditions] = makeGroupLabels(uniqueForeperiods, conditionLabels);
+[groupLabels, groupFPs, groupConditions] = makeGroupLabels(uniqueForeperiods, activeConditionLabels, activeConditionCodes);
 rtMask = isIncluded & ismember(outcomeNames, {'Correct', 'Late'});
 rtCategories = nan(nTrials, 1);
 for iGroup = 1:numel(groupLabels)
@@ -348,7 +356,7 @@ EasyPlot.exportFigure(fig, fullfile(pwd, sprintf('BehaviorSummary_DoubleToneLear
         title(ax, panelTitle, 'FontWeight', 'normal', 'FontSize', 8);
     end
 
-    function [labels, fps, conds] = makeGroupLabels(fpsIn, condLabels)
+    function [labels, fps, conds] = makeGroupLabels(fpsIn, condLabels, condCodes)
         labels = strings(1, numel(fpsIn) * numel(condLabels));
         fps = nan(1, numel(labels));
         conds = nan(1, numel(labels));
@@ -358,7 +366,7 @@ EasyPlot.exportFigure(fig, fullfile(pwd, sprintf('BehaviorSummary_DoubleToneLear
                 idx = idx + 1;
                 labels(idx) = sprintf('FP%d %s', fpsIn(iFPGroup), condLabels{iCondGroup});
                 fps(idx) = fpsIn(iFPGroup);
-                conds(idx) = iCondGroup;
+                conds(idx) = condCodes(iCondGroup);
             end
         end
     end
