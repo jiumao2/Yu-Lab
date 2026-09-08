@@ -374,9 +374,9 @@ axis 'auto y'
 hline_press_error = line([0 0], get(gca, 'ylim'), 'color', press_col, 'linewidth', 1);
 
 % make raster plot  750 ms FP
-if num2str(length(t_presses))>200
+if length(t_presses)>200
     rasterheight = 0.01;
-elseif num2str(length(t_presses))>100
+elseif length(t_presses)>100
     rasterheight = 0.02;
 else
     rasterheight = 0.04;

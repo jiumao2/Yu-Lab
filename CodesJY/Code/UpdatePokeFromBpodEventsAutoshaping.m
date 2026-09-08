@@ -26,6 +26,7 @@ seqson = trigger_ephys;
 
 if length(seqson)>=3
     Indout = findseqmatch(seqmom, seqson);
+    plotMatchingResults(seqmom, seqson, Indout);
     trigger_ephys_new                 =   seqson(~isnan(Indout)); % trigger in ephys not including nan
     trigger_ephys_new_toBpod    =   seqmom(Indout(~isnan(Indout)));
 else

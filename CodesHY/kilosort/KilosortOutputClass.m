@@ -17,7 +17,7 @@ classdef KilosortOutputClass<handle
                 dir_name_spikeTable = './';
             end
             chanMap = load(fullfile(dir_name_kilosort,'chanMap.mat'));
-            load(fillfile(dir_name_kilosort,'ops.mat'));
+            load(fullfile(dir_name_kilosort,'ops.mat'));
             load(fullfile(dir_name_spikeTable,'spikeTable.mat'));
             KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
         end  
@@ -97,9 +97,9 @@ classdef KilosortOutputClass<handle
                         case 'blocks'
                             blocks =  varargin{i+1}; 
                         case 'ephys_block_start'
-                            ephys_block_start = varargin{k+1};
+                            ephys_block_start = varargin{i+1};
                         case 'behavior_block_start'
-                            behavior_block_start = varargin{k+1};
+                            behavior_block_start = varargin{i+1};
                         case 'Experimenter'
                             Experimenter =  varargin{i+1}; 
                         case 'NS6all'

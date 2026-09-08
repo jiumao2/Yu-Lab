@@ -225,10 +225,17 @@ rtCategories = nan(nTrials, 1);
 for iGroup = 1:numel(groupLabels)
     rtCategories(foreperiodMs == groupFPs(iGroup) & conditionIndex == groupConditions(iGroup)) = iGroup;
 end
-rtValues = reactionTimeMs(rtMask & ~isnan(rtCategories));
-rtGroupValues = rtCategories(rtMask & ~isnan(rtCategories));
+rtGroupIds = find(arrayfun(@(x) any(rtMask & rtCategories == x), 1:numel(groupLabels)));
+rtValues = [];
+rtGroupValues = [];
+for iRTGroup = 1:numel(rtGroupIds)
+    thisGroup = rtGroupIds(iRTGroup);
+    thisMask = rtMask & rtCategories == thisGroup;
+    rtValues = [rtValues; reactionTimeMs(thisMask)]; %#ok<AGROW>
+    rtGroupValues = [rtGroupValues; repmat(iRTGroup, sum(thisMask), 1)]; %#ok<AGROW>
+end
 if ~isempty(rtValues)
-    violinColors = conditionColors(groupConditions, :);
+    violinColors = conditionColors(groupConditions(rtGroupIds), :);
     EasyPlot.violinplot(axBottom{2}, rtValues, rtGroupValues, ...
         'ViolinColor', violinColors, ...
         'ViolinAlpha', 0.25, ...
@@ -239,9 +246,13 @@ if ~isempty(rtValues)
         'ShowWhiskers', false, ...
         'Width', 0.35);
 end
-xlim(axBottom{2}, [0.5, numel(groupLabels) + 0.5]);
+xlim(axBottom{2}, [0.5, max(numel(rtGroupIds), 1) + 0.5]);
 ylim(axBottom{2}, [0, 1500]);
-EasyPlot.setXTicksAndLabels(axBottom{2}, 1:numel(groupLabels), groupLabels);
+if ~isempty(rtGroupIds)
+    EasyPlot.setXTicksAndLabels(axBottom{2}, 1:numel(rtGroupIds), groupLabels(rtGroupIds));
+else
+    EasyPlot.setXTicksAndLabels(axBottom{2}, [], []);
+end
 xtickangle(axBottom{2}, 35);
 xlabel(axBottom{2}, 'FP x condition');
 ylabel(axBottom{2}, 'Reaction time (ms)');

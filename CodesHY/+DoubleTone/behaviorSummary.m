@@ -1,4 +1,4 @@
-﻿function fig = behaviorSummary(r)
+function fig = behaviorSummary(r)
 
 rb = r.Behavior;
 eventMarkers = rb.EventMarkers(:);
@@ -309,11 +309,18 @@ for iCondition = 1:nConditions
     conditionOrderIndex(conditionMasks(:, iCondition)) = iCondition;
 end
 rtMask = isCorrectLate & ~isnan(conditionOrderIndex);
-rtValues = reactionTimeMs(rtMask);
-rtCategories = conditionOrderIndex(rtMask);
+rtConditionIds = find(arrayfun(@(x) any(rtMask & conditionOrderIndex == x), 1:nConditions));
+rtValues = [];
+rtGroupValues = [];
+for iRTCondition = 1:numel(rtConditionIds)
+    thisCondition = rtConditionIds(iRTCondition);
+    thisMask = rtMask & conditionOrderIndex == thisCondition;
+    rtValues = [rtValues; reactionTimeMs(thisMask)]; %#ok<AGROW>
+    rtGroupValues = [rtGroupValues; repmat(iRTCondition, sum(thisMask), 1)]; %#ok<AGROW>
+end
 if ~isempty(rtValues)
-    EasyPlot.violinplot(axBottom{2}, rtValues, rtCategories, ...
-        'ViolinColor', conditionColors, ...
+    EasyPlot.violinplot(axBottom{2}, rtValues, rtGroupValues, ...
+        'ViolinColor', conditionColors(rtConditionIds, :), ...
         'ViolinAlpha', 0.25, ...
         'MarkerSize', 8, ...
         'ShowMean', false, ...
@@ -322,10 +329,12 @@ if ~isempty(rtValues)
         'ShowWhiskers', false, ...
         'Width', 0.35);
 end
-xlim(axBottom{2}, [0.5, max(nConditions, 1)+0.5]);
+xlim(axBottom{2}, [0.5, max(numel(rtConditionIds), 1)+0.5]);
 ylim(axBottom{2}, [0, 1500]);
-if nConditions > 0
-    EasyPlot.setXTicksAndLabels(axBottom{2}, 1:nConditions, conditionLabels);
+if ~isempty(rtConditionIds)
+    EasyPlot.setXTicksAndLabels(axBottom{2}, 1:numel(rtConditionIds), conditionLabels(rtConditionIds));
+else
+    EasyPlot.setXTicksAndLabels(axBottom{2}, [], []);
 end
 xtickangle(axBottom{2}, 30);
 xlabel(axBottom{2}, 'Condition');

@@ -196,11 +196,18 @@ ylabel(axBottom{1}, 'Performance (%)');
 title(axBottom{1}, 'Performance over time', 'FontWeight', 'normal');
 
 rtMask = isIncluded & ismember(outcomeNames, {'Correct', 'Late'});
-rtValues = reactionTimeMs(rtMask);
-rtCategories = conditionIndex(rtMask);
+rtConditionIds = find(arrayfun(@(x) any(rtMask & conditionIndex == x), 1:nCond));
+rtValues = [];
+rtGroupValues = [];
+for iRTCondition = 1:numel(rtConditionIds)
+    thisCondition = rtConditionIds(iRTCondition);
+    thisMask = rtMask & conditionIndex == thisCondition;
+    rtValues = [rtValues; reactionTimeMs(thisMask)]; %#ok<AGROW>
+    rtGroupValues = [rtGroupValues; repmat(iRTCondition, sum(thisMask), 1)]; %#ok<AGROW>
+end
 if ~isempty(rtValues)
-    EasyPlot.violinplot(axBottom{2}, rtValues, rtCategories, ...
-        'ViolinColor', info.Colors, ...
+    EasyPlot.violinplot(axBottom{2}, rtValues, rtGroupValues, ...
+        'ViolinColor', info.Colors(rtConditionIds, :), ...
         'ViolinAlpha', 0.25, ...
         'MarkerSize', 8, ...
         'ShowMean', false, ...
@@ -209,9 +216,13 @@ if ~isempty(rtValues)
         'ShowWhiskers', false, ...
         'Width', 0.35);
 end
-xlim(axBottom{2}, [0.5, nCond + 0.5]);
+xlim(axBottom{2}, [0.5, max(numel(rtConditionIds), 1) + 0.5]);
 ylim(axBottom{2}, [0, 1500]);
-EasyPlot.setXTicksAndLabels(axBottom{2}, 1:nCond, info.Labels);
+if ~isempty(rtConditionIds)
+    EasyPlot.setXTicksAndLabels(axBottom{2}, 1:numel(rtConditionIds), info.Labels(rtConditionIds));
+else
+    EasyPlot.setXTicksAndLabels(axBottom{2}, [], []);
+end
 xlabel(axBottom{2}, 'Condition');
 ylabel(axBottom{2}, 'Reaction time (ms)');
 title(axBottom{2}, 'RT (Correct + Late)', 'FontWeight', 'normal');

@@ -3,6 +3,7 @@ function PSTH = ComputePlotPSTH(r, PSTHOut, ku, varargin)
 % Jianing Yu 5/8/2023
 % For plotting PSTHs under Flash 2x2 condition.
 % Extracted from SRTSpikes and adapted to trigger-type grouping.
+% Cue-condition colors are labeled beside the correct press raster.
 
 % Modified by Yue Huang on 6/26/2023
 % Change the way of making raster plots to run faster
@@ -45,6 +46,14 @@ else
     conditionFPs = repmat(PSTHOut.TaskTypes.FixedFP, size(taskCodes));
 end
 nFPs = length(taskCodes);
+if isfield(PSTHOut.TaskTypes, 'ShortLabels') && numel(PSTHOut.TaskTypes.ShortLabels) >= nFPs
+    cueLegendLabels = PSTHOut.TaskTypes.ShortLabels(1:nFPs);
+else
+    cueLegendLabels = taskLabels(1:nFPs);
+end
+cueLegendLabels = strrep(cueLegendLabels, 'Flash |', 'Flash cue |');
+cueLegendLabels = strrep(cueLegendLabels, 'Tone |', 'Tone cue |');
+cueLegendLabels = strrep(cueLegendLabels, 'Both |', 'Both cues |');
 if isfield(PSTHOut.TaskTypes, 'Colors') && size(PSTHOut.TaskTypes.Colors, 1) >= nFPs
     FP_cols = PSTHOut.TaskTypes.Colors;
 else
@@ -289,9 +298,9 @@ axis 'auto y'
 hline_press_error = line([0 0], get(gca, 'ylim'), 'color', press_col, 'linewidth', 1);
 
 % make raster plot  750 ms FP
-if num2str(length(t_presses))>200
-    rasterheight = 0.01;
-elseif num2str(length(t_presses))>100
+if length(t_presses)>200
+    rasterheight = 0.02;
+elseif length(t_presses)>100
     rasterheight = 0.02;
 else
     rasterheight = 0.04;
@@ -305,7 +314,7 @@ for i =1:nFPs
     nFP_i(i) = size(trialspxmat_press{i}, 2);
     ntrials_press = ntrials_press + nFP_i(i);
 end
-axes('unit', 'centimeters', 'position', [1.25 yshift_row3 6 ntrials_press*rasterheight],...
+ha_press_raster = axes('unit', 'centimeters', 'position', [1.25 yshift_row3 6 ntrials_press*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-PressTimeDomain(1) PressTimeDomain(2)], 'ylim', [-ntrials_press 1], 'box', 'on');
 yshift_row4 = yshift_row3+ntrials_press*rasterheight+0.5;
@@ -358,9 +367,25 @@ for m =1:nFPs
     scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', reward_col,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
 end
 
-line([0 0], get(gca, 'ylim'), 'color', press_col, 'linewidth', 1);
-title('Correct', 'fontsize', 7, 'fontweight','bold');
-axis off
+cueLabelY = 0.4 - (cumsum(nFP_i) - nFP_i + (nFP_i-1)/2);
+for iCond = 1:nFPs
+    if nFP_i(iCond) == 0
+        continue
+    elseif startsWith(cueLegendLabels{iCond}, 'Flash cue')
+        cueLabel = 'Flash';
+    elseif startsWith(cueLegendLabels{iCond}, 'Tone cue')
+        cueLabel = 'Tone';
+    else
+        continue
+    end
+    text(ha_press_raster, -PressTimeDomain(1)-120, cueLabelY(iCond), cueLabel, ...
+        'FontName', 'Dejavu Sans', 'FontSize', 8, 'HorizontalAlignment', 'right', ...
+        'VerticalAlignment', 'middle', 'Clipping', 'off');
+end
+
+line(ha_press_raster, [0 0], get(ha_press_raster, 'ylim'), 'color', press_col, 'linewidth', 1);
+title(ha_press_raster, 'Correct', 'fontsize', 7, 'fontweight','bold');
+axis(ha_press_raster, 'off')
 
 % Premature press raster plot
 ntrial_premature = size(trialspxmat_premature_press, 2); % number of trials
